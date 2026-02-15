@@ -4,6 +4,7 @@ import 'package:fl_lib/fl_lib.dart';
 import 'package:server_box/core/route.dart';
 import 'package:server_box/data/provider/server/single.dart';
 import 'package:server_box/view/page/container/container.dart';
+import 'package:server_box/view/page/process.dart';
 import 'package:server_box/view/page/server/detail/dashboard.dart';
 import 'package:server_box/view/page/snippet/list.dart';
 import 'package:server_box/view/page/storage/sftp.dart';
@@ -85,6 +86,7 @@ class _ServerDetailPageState extends ConsumerState<ServerDetailPage> {
                       ServerDashboard(args: widget.args),
                       SftpPage(args: SftpPageArgs(spi: widget.args.spi)),
                       ContainerPage(args: widget.args),
+                      ProcessPage(args: widget.args),
                       const SnippetListPage(),
                     ],
                   ),
