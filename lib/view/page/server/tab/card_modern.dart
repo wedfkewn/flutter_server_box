@@ -193,7 +193,7 @@ class ServerCardModern extends StatelessWidget {
           constraints: const BoxConstraints(maxWidth: 80),
           child: Text(
             detail ?? '${(value * 100).toStringAsFixed(1)}%',
-            style: Theme.of(context).textTheme.bodySmall,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 10),
             textAlign: TextAlign.end,
             overflow: TextOverflow.ellipsis,
           ),
@@ -259,7 +259,7 @@ class ServerCardModern extends StatelessWidget {
                     TextSpan(
                       text: speed,
                       style: Theme.of(context).textTheme.bodyMedium
-                          ?.copyWith(fontWeight: FontWeight.bold),
+                          ?.copyWith(fontWeight: FontWeight.bold, fontSize: 12),
                     ),
                     TextSpan(
                       text: ' ($total)',
@@ -268,7 +268,7 @@ class ServerCardModern extends StatelessWidget {
                     ),
                   ],
                 ),
-                maxLines: 1,
+                maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
             ],
