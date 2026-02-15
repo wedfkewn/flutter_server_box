@@ -4,7 +4,6 @@ extension _Server on _AppSettingsPageState {
   Widget _buildServer() {
     return Column(
       children: [
-        _buildServerLogoUrl(),
         _buildServerFuncBtns(),
         _buildNetViewType(),
         _buildServerSeq(),
@@ -225,47 +224,6 @@ extension _Server on _AppSettingsPageState {
     );
   }
 
-  Widget _buildServerLogoUrl() {
-    void onSave(String url) {
-      if (url.isEmpty || !url.startsWith('http')) {
-        context.showRoundDialog(title: libL10n.fail, child: Text('${l10n.invalid} URL'), actions: Btnx.oks);
-        return;
-      }
-      _setting.serverLogoUrl.put(url);
-      context.pop();
-    }
-
-    return ListTile(
-      leading: const Icon(Icons.image),
-      title: const Text('Logo URL'),
-      trailing: const Icon(Icons.keyboard_arrow_right),
-      onTap: () {
-        context.showRoundDialog(
-          title: 'Logo URL',
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Input(
-                controller: _serverLogoCtrl,
-                autoFocus: true,
-                hint: 'https://example.com/logo.png',
-                icon: Icons.link,
-                maxLines: 2,
-                suggestion: false,
-                onSubmitted: onSave,
-              ),
-              ListTile(
-                title: Text(libL10n.doc),
-                trailing: const Icon(Icons.open_in_new),
-                onTap: Urls.appWiki.launchUrl,
-              ),
-            ],
-          ),
-          actions: Btn.ok(onTap: () => onSave(_serverLogoCtrl.text)).toList,
-        );
-      },
-    );
-  }
 
   Widget _buildServerTabPreferDiskAmount() {
     return ListTile(
