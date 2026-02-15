@@ -27,8 +27,10 @@ import 'package:server_box/view/page/server/edit/edit.dart';
 import 'package:server_box/view/page/setting/entry.dart';
 import 'package:server_box/view/widget/percent_circle.dart';
 import 'package:server_box/view/widget/server_func_btns.dart';
+import 'package:server_box/data/model/server/system.dart';
 
 part 'card_stat.dart';
+part 'card_modern.dart';
 part 'content.dart';
 part 'landscape.dart';
 part 'top_bar.dart';
@@ -44,7 +46,7 @@ class ServerPage extends ConsumerStatefulWidget {
 }
 
 const _cardPad = 74.0;
-const _cardPadSingle = 13.0;
+const _cardPadSingle = 17.0;
 
 class _ServerPageState extends ConsumerState<ServerPage>
     with AutomaticKeepAliveClientMixin, AfterLayoutMixin {
@@ -232,6 +234,10 @@ class _ServerPageState extends ConsumerState<ServerPage>
     final title = _buildServerCardTitle(srv);
 
     return cardStatus.listenVal((_) {
+      if (srv.conn == ServerConn.finished && !cardStatus.value.flip) {
+        return ServerCardModern(srv: srv, spi: srv.spi);
+      }
+
       final List<Widget> children = [title];
       if (srv.conn == ServerConn.finished) {
         if (cardStatus.value.flip) {

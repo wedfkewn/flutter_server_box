@@ -21,6 +21,8 @@ class AppTabAdapter extends TypeAdapter<AppTab> {
         return AppTab.file;
       case 3:
         return AppTab.snippet;
+      case 4:
+        return AppTab.settings;
       default:
         return AppTab.server;
     }
@@ -37,6 +39,8 @@ class AppTabAdapter extends TypeAdapter<AppTab> {
         writer.writeByte(2);
       case AppTab.snippet:
         writer.writeByte(3);
+      case AppTab.settings:
+        writer.writeByte(4);
     }
   }
 

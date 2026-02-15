@@ -15,22 +15,9 @@ final class _TopBar extends ConsumerWidget implements PreferredSizeWidget {
 
     final Widget leading;
     if (isMobile) {
-      // Keep this btn. For issue #657.
-      leading = InkWell(
-        borderRadius: BorderRadius.circular(13),
-        onTap: () {
-          SettingsPage.route.go(context);
-        },
-        child: const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-          child: Row(
-            children: [
-              Text(BuildData.name, style: TextStyle(fontSize: 19)),
-              SizedBox(width: 5),
-              Icon(Icons.settings, size: 17),
-            ],
-          ),
-        ),
+      leading = const Padding(
+        padding: EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+        child: Text(BuildData.name, style: TextStyle(fontSize: 19)),
       );
     } else {
       final servers = ref.watch(serversProvider);

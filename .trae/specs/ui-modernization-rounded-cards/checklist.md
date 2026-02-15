@@ -1,0 +1,5 @@
+- [x] Cards in the Server List have 16px rounded corners.
+- [x] Cards in the Settings page have 16px rounded corners.
+- [x] Tapping on a card shows a ripple effect that is clipped to the rounded corners (does not bleed out).
+- [x] Dark mode cards also have the same rounded style.
+- [x] No layout regressions (e.g., content cut off, weird spacing).

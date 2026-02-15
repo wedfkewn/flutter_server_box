@@ -44,18 +44,26 @@ class _MyAppState extends State<MyApp> {
     UIs.colorSeed = colorSeed;
     UIs.primaryColor = colorSeed;
 
+    const cardTheme = CardThemeData(
+      elevation: 2.0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(16.0))),
+      clipBehavior: Clip.antiAlias,
+    );
+
     return _buildApp(
       context,
       light: ThemeData(
         useMaterial3: true,
         colorSchemeSeed: UIs.colorSeed,
-        appBarTheme: AppBarTheme(scrolledUnderElevation: 0.0),
+        appBarTheme: const AppBarTheme(scrolledUnderElevation: 0.0),
+        cardTheme: cardTheme,
       ),
       dark: ThemeData(
         useMaterial3: true,
         brightness: Brightness.dark,
         colorSchemeSeed: UIs.colorSeed,
-        appBarTheme: AppBarTheme(scrolledUnderElevation: 0.0),
+        appBarTheme: const AppBarTheme(scrolledUnderElevation: 0.0),
+        cardTheme: cardTheme,
       ),
     );
   }
@@ -66,16 +74,24 @@ class _MyAppState extends State<MyApp> {
         final lightSeed = light?.primary;
         final darkSeed = dark?.primary;
 
+        const cardTheme = CardThemeData(
+          elevation: 2.0,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(16.0))),
+          clipBehavior: Clip.antiAlias,
+        );
+
         final lightTheme = ThemeData(
           useMaterial3: true,
           colorSchemeSeed: lightSeed,
-          appBarTheme: AppBarTheme(scrolledUnderElevation: 0.0),
+          appBarTheme: const AppBarTheme(scrolledUnderElevation: 0.0),
+          cardTheme: cardTheme,
         );
         final darkTheme = ThemeData(
           useMaterial3: true,
           brightness: Brightness.dark,
           colorSchemeSeed: darkSeed,
-          appBarTheme: AppBarTheme(scrolledUnderElevation: 0.0),
+          appBarTheme: const AppBarTheme(scrolledUnderElevation: 0.0),
+          cardTheme: cardTheme,
         );
 
         if (context.isDark && dark != null) {

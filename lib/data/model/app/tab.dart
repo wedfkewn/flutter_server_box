@@ -4,7 +4,7 @@ import 'package:hive_ce_flutter/adapters.dart';
 import 'package:icons_plus/icons_plus.dart';
 import 'package:server_box/core/extension/context/locale.dart';
 import 'package:server_box/view/page/server/tab/tab.dart';
-// import 'package:server_box/view/page/setting/entry.dart';
+import 'package:server_box/view/page/setting/entry.dart';
 import 'package:server_box/view/page/snippet/list.dart';
 import 'package:server_box/view/page/ssh/tab.dart';
 import 'package:server_box/view/page/storage/local.dart';
@@ -20,14 +20,14 @@ enum AppTab {
   @HiveField(2)
   file,
   @HiveField(3)
-  snippet
-  //settings,
-  ;
+  snippet,
+  @HiveField(4)
+  settings;
 
   Widget get page {
     return switch (this) {
       server => const ServerPage(),
-      //settings => const SettingsPage(),
+      settings => const SettingsPage(),
       ssh => const SSHTabPage(),
       file => const LocalFilePage(),
       snippet => const SnippetListPage(),
@@ -41,11 +41,11 @@ enum AppTab {
         label: l10n.server,
         selectedIcon: const Icon(BoxIcons.bxs_server),
       ),
-      // settings => NavigationDestination(
-      //     icon: const Icon(Icons.settings),
-      //     label: libL10n.setting,
-      //     selectedIcon: const Icon(Icons.settings),
-      //   ),
+      settings => NavigationDestination(
+          icon: const Icon(Icons.settings),
+          label: libL10n.setting,
+          selectedIcon: const Icon(Icons.settings),
+        ),
       ssh => const NavigationDestination(
         icon: Icon(Icons.terminal_outlined),
         label: 'SSH',
@@ -71,11 +71,11 @@ enum AppTab {
         label: Text(l10n.server),
         selectedIcon: const Icon(BoxIcons.bxs_server),
       ),
-      // settings => NavigationRailDestination(
-      //     icon: const Icon(Icons.settings),
-      //     label: libL10n.setting,
-      //     selectedIcon: const Icon(Icons.settings),
-      //   ),
+      settings => NavigationRailDestination(
+          icon: const Icon(Icons.settings),
+          label: Text(libL10n.setting),
+          selectedIcon: const Icon(Icons.settings),
+        ),
       ssh => const NavigationRailDestination(
         icon: Icon(Icons.terminal_outlined),
         label: Text('SSH'),

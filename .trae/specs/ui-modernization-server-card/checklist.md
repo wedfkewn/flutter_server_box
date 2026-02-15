@@ -1,0 +1,8 @@
+- [x] `StatusCmdType` includes `arch` and `kernel`.
+- [x] `ServerStatus` correctly populates `arch` and `kernel` in `more` map.
+- [x] Server Card displays correct OS, Arch, and Kernel info.
+- [x] Server Card displays correct Uptime.
+- [x] Server Card displays CPU, Memory, Disk usage with linear bars.
+- [x] Server Card displays Network speed and totals.
+- [x] Action buttons on the card work correctly.
+- [x] UI layout matches the requested design (approximate structure).

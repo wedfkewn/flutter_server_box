@@ -75,6 +75,24 @@ Future<ServerStatus> _getLinuxStatus(ServerStatusUpdateReq req) async {
   }
 
   try {
+    final arch = StatusCmdType.arch.findInMap(parsedOutput);
+    if (arch.isNotEmpty) {
+      req.ss.more[StatusCmdType.arch] = arch.trim();
+    }
+  } catch (e, s) {
+    Loggers.app.warning(e, s);
+  }
+
+  try {
+    final kernel = StatusCmdType.kernel.findInMap(parsedOutput);
+    if (kernel.isNotEmpty) {
+      req.ss.more[StatusCmdType.kernel] = kernel.trim();
+    }
+  } catch (e, s) {
+    Loggers.app.warning(e, s);
+  }
+
+  try {
     final cpus = SingleCpuCore.parse(StatusCmdType.cpu.findInMap(parsedOutput));
     req.ss.cpu.update(cpus);
     final brand = CpuBrand.parse(StatusCmdType.cpuBrand.findInMap(parsedOutput));
@@ -216,6 +234,24 @@ Future<ServerStatus> _getBsdStatus(ServerStatusUpdateReq req) async {
   }
 
   try {
+    final arch = BSDStatusCmdType.arch.findInMap(parsedOutput);
+    if (arch.isNotEmpty) {
+      req.ss.more[StatusCmdType.arch] = arch.trim();
+    }
+  } catch (e, s) {
+    Loggers.app.warning(e, s);
+  }
+
+  try {
+    final kernel = BSDStatusCmdType.kernel.findInMap(parsedOutput);
+    if (kernel.isNotEmpty) {
+      req.ss.more[StatusCmdType.kernel] = kernel.trim();
+    }
+  } catch (e, s) {
+    Loggers.app.warning(e, s);
+  }
+
+  try {
     req.ss.cpu = parseBsdCpu(BSDStatusCmdType.cpu.findInMap(parsedOutput));
   } catch (e, s) {
     Loggers.app.warning(e, s);
@@ -315,6 +351,7 @@ Future<ServerStatus> _getWindowsStatus(ServerStatusUpdateReq req) async {
   _parseWindowsNetworkData(req, parsedOutput, time);
   _parseWindowsSystemData(req, parsedOutput);
   _parseWindowsHostData(req, parsedOutput);
+  _parseWindowsArchKernelData(req, parsedOutput);
   _parseWindowsCpuData(req, parsedOutput);
   _parseWindowsMemoryData(req, parsedOutput);
   _parseWindowsDiskData(req, parsedOutput);
@@ -369,6 +406,27 @@ void _parseWindowsHostData(ServerStatusUpdateReq req, Map<String, String> parsed
     }
   } catch (e, s) {
     Loggers.app.warning('Windows host parsing failed: $e', s);
+  }
+}
+
+/// Parse Windows Arch and Kernel data
+void _parseWindowsArchKernelData(ServerStatusUpdateReq req, Map<String, String> parsedOutput) {
+  try {
+    final arch = WindowsStatusCmdType.arch.findInMap(parsedOutput);
+    if (arch.isNotEmpty && !arch.contains('Error') && !arch.contains('Exception')) {
+      req.ss.more[StatusCmdType.arch] = arch.trim();
+    }
+  } catch (e, s) {
+    Loggers.app.warning('Windows arch parsing failed: $e', s);
+  }
+
+  try {
+    final kernel = WindowsStatusCmdType.kernel.findInMap(parsedOutput);
+    if (kernel.isNotEmpty && !kernel.contains('Error') && !kernel.contains('Exception')) {
+      req.ss.more[StatusCmdType.kernel] = kernel.trim();
+    }
+  } catch (e, s) {
+    Loggers.app.warning('Windows kernel parsing failed: $e', s);
   }
 }
 

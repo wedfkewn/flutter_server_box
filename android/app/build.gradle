@@ -14,14 +14,16 @@ if (localPropertiesFile.exists()) {
 
 def keystoreProperties = new Properties()
 def keystorePropertiesFile = rootProject.file('key.properties')
+def useKeystore = false
 if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
-} else {
-    System.err.printf(" [!] key.properties not found in %s (%s). Build will fail. \n", rootProject, rootProject.file('.'))
+    if (keystoreProperties['storeFile'] && file(keystoreProperties['storeFile']).exists()) {
+        useKeystore = true
+    }
 }
 
-if (keystoreProperties['storeFile'] == null || !file(keystoreProperties['storeFile']).exists()) {
-    System.err.printf(" [!] storeFile defined in key.properties does not exist in %s. Build will fail. \n", file('.'))
+if (!useKeystore) {
+    println " [!] key.properties not found or storeFile missing. Release build will not be signed."
 }
 
 def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
@@ -70,16 +72,20 @@ android {
 
     signingConfigs {
         release {
-            keyAlias keystoreProperties['keyAlias']
-            keyPassword keystoreProperties['keyPassword']
-            storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
-            storePassword keystoreProperties['storePassword']
+            if (useKeystore) {
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+                storeFile file(keystoreProperties['storeFile'])
+                storePassword keystoreProperties['storePassword']
+            }
         }
     }
 
     buildTypes {
         release {
-            signingConfig signingConfigs.release
+            if (useKeystore) {
+                signingConfig signingConfigs.release
+            }
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }

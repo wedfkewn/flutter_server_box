@@ -116,7 +116,9 @@ enum StatusCmdType implements ShellCmdType {
   /// - May require elevated privileges for some drives
   /// - smartctl must be installed (part of smartmontools package)
   diskSmart('for d in \$(lsblk -dn -o KNAME); do smartctl -a -j /dev/\$d; echo; done'),
-  cpuBrand('cat /proc/cpuinfo | grep "model name"');
+  cpuBrand('cat /proc/cpuinfo | grep "model name"'),
+  arch('uname -m'),
+  kernel('uname -r');
 
   @override
   final String cmd;
@@ -144,7 +146,9 @@ enum BSDStatusCmdType implements ShellCmdType {
   disk('df -k'), // Keep df -k for BSD systems as lsblk is not available on macOS/BSD
   mem('top -l 1 | grep PhysMem'),
   host('hostname'),
-  cpuBrand('sysctl -n machdep.cpu.brand_string');
+  cpuBrand('sysctl -n machdep.cpu.brand_string'),
+  arch('uname -m'),
+  kernel('uname -r');
 
   @override
   final String cmd;
@@ -285,7 +289,9 @@ enum WindowsStatusCmdType implements ShellCmdType {
     'Select-Object DeviceId, Temperature, TemperatureMax, Wear, PowerOnHours | '
     'ConvertTo-Json',
   ),
-  cpuBrand('(Get-WmiObject -Class Win32_Processor).Name');
+  cpuBrand('(Get-WmiObject -Class Win32_Processor).Name'),
+  arch(r'echo $env:PROCESSOR_ARCHITECTURE'),
+  kernel(r'[System.Environment]::OSVersion.Version.ToString()');
 
   @override
   final String cmd;
