@@ -25,6 +25,7 @@ import 'package:server_box/view/page/server/connection_stats.dart';
 import 'package:server_box/view/page/server/detail/view.dart';
 import 'package:server_box/view/page/server/edit/edit.dart';
 import 'package:server_box/view/page/setting/entry.dart';
+import 'package:server_box/view/widget/ip_location_query.dart';
 import 'package:server_box/view/widget/percent_circle.dart';
 import 'package:server_box/view/widget/server_func_btns.dart';
 import 'package:server_box/data/model/server/system.dart';

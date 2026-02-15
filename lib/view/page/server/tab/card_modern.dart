@@ -19,6 +19,8 @@ class ServerCardModern extends StatelessWidget {
         const SizedBox(height: 12),
         _buildTags(context),
         const SizedBox(height: 12),
+        IpLocationQuery(ip: spi.ip),
+        const SizedBox(height: 12),
         _buildStats(context),
         const SizedBox(height: 12),
         _buildNetwork(context),
