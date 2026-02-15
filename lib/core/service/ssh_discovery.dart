@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:fl_lib/fl_lib.dart';
 import 'package:server_box/data/model/server/discovery_result.dart';
 
@@ -80,8 +79,8 @@ class SshDiscoveryService {
     }
   }
 
-  static bool get _isLinux => Platform.isLinux;
-  static bool get _isMac => Platform.isMacOS;
+  static const bool _isLinux = false;
+  static const bool _isMac = false;
 
   static Future<Set<InternetAddress>> _neighborsIPv4() async {
     final set = <InternetAddress>{};

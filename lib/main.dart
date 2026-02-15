@@ -102,7 +102,6 @@ Future<void> _doDbMigrate() async {
 }
 
 Future<void> _initWindow() async {
-  if (!isDesktop) return;
   final windowStateProp = Stores.setting.windowState;
   final windowState = windowStateProp.fetch();
   final hideTitleBar = Stores.setting.hideTitleBar.fetch();

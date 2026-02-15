@@ -40,27 +40,25 @@ dependencies:
   xml: ^6.4.2 # for parsing nvidia-smi
   url_launcher: ^6.2.6
   dartssh2:
-    path: packages/dartssh2
+    git:
+      url: https://github.com/lollipopkit/dartssh2
+      ref: master
   circle_chart:
     git:
       url: https://github.com/lollipopkit/circle_chart
       ref: main
   xterm:
-    path: packages/xterm
+    git:
+      url: https://github.com/lollipopkit/xterm.dart
+      ref: master
   computer:
     git:
       url: https://github.com/lollipopkit/dart_computer
       ref: v1.0.88
-  watch_connectivity:
-    git:
-      url: https://github.com/lollipopkit/watch_connectivity
-      ref: v1.0.85
-  plain_notification_token:
-    git:
-      url: https://github.com/lollipopkit/plain_notification_token
-      ref: v1.0.23
   fl_lib:
-    path: packages/fl_lib
+    git:
+      url: https://github.com/lollipopkit/fl_lib
+      ref: main
 
 dependency_overrides:
   # webdav_client_plus:
@@ -73,10 +71,6 @@ dependency_overrides:
   #   path: ../fl_lib
   # fl_build:
   #   path: ../fl_build
-  gtk: # TODO: remove it after fixed in upstream
-    git:
-      url: https://github.com/lollipopkit/gtk.dart
-      ref: v0.0.36
 
 dev_dependencies:
   analyzer: ^8.1.1
@@ -94,8 +88,6 @@ dev_dependencies:
   #   git:
   #     url: https://github.com/lollipopkit/riverpod_reg
   #     ref: v0.0.2
-  fl_build:
-    path: packages/fl_build
 
 flutter:
   generate: true
@@ -127,8 +119,4 @@ flutter_native_splash:
   color: "#ffffff"
   image: assets/app_icon.png
   color_dark: "#121212"
-  info_plist_files:
-    - "ios/Runner/Info-Debug.plist"
-    - "ios/Runner/Info-Profile.plist"
-    - "ios/Runner/Info-Release.plist"
   android12: true

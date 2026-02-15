@@ -23,7 +23,6 @@ abstract final class MethodChans {
   }
 
   static void updateHomeWidget() async {
-    if (!isIOS && !isAndroid) return;
     if (!Stores.setting.autoUpdateHomeWidget.fetch()) return;
     await _channel.invokeMethod('updateHomeWidget');
   }
@@ -52,36 +51,11 @@ abstract final class MethodChans {
     }
   }
 
-  // iOS Live Activities controls
-  static Future<void> startLiveActivity(String payload) async {
-    if (!isIOS) return;
-    try {
-      Loggers.app.info('Starting iOS Live Activity: $payload');
-      await _channel.invokeMethod('startLiveActivity', payload);
-    } catch (e, s) {
-      Loggers.app.warning('Failed to start iOS Live Activity', e, s);
-    }
-  }
+  static Future<void> startLiveActivity(String payload) async {}
 
-  static Future<void> updateLiveActivity(String payload) async {
-    if (!isIOS) return;
-    try {
-      Loggers.app.info('Updating iOS Live Activity: $payload');
-      await _channel.invokeMethod('updateLiveActivity', payload);
-    } catch (e, s) {
-      Loggers.app.warning('Failed to update iOS Live Activity', e, s);
-    }
-  }
+  static Future<void> updateLiveActivity(String payload) async {}
 
-  static Future<void> stopLiveActivity() async {
-    if (!isIOS) return;
-    try {
-      Loggers.app.info('Stopping iOS Live Activity');
-      await _channel.invokeMethod('stopLiveActivity');
-    } catch (e, s) {
-      Loggers.app.warning('Failed to stop iOS Live Activity', e, s);
-    }
-  }
+  static Future<void> stopLiveActivity() async {}
 
   /// Register a handler for native -> Flutter callbacks.
   /// Currently handles: 

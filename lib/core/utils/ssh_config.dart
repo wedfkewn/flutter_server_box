@@ -20,17 +20,7 @@ abstract final class SSHConfig {
     final homePath = _homePath;
 
     if (homePath != null) {
-      // Standard path
       paths.add('$homePath/.ssh/config');
-
-      // On macOS, also try the actual user home directory
-      if (isMacOS) {
-        // Try to get the real user home directory
-        final username = Platform.environment['USER'];
-        if (username != null) {
-          paths.add('/Users/$username/.ssh/config');
-        }
-      }
     }
 
     return paths;

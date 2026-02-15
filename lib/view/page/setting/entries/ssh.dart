@@ -10,7 +10,6 @@ extension _SSH on _AppSettingsPageState {
         _buildFont(),
         _buildTermFontSize(),
         _buildSshBg(),
-        if (isDesktop) _buildDesktopTerminal(),
         _buildSSHVirtualKeyAutoOff(),
         if (isMobile) _buildSSHVirtKeys(),
       ].map((e) => CardX(child: e)).toList(),
@@ -66,14 +65,9 @@ extension _SSH on _AppSettingsPageState {
     final path = await Pfs.pickFilePath();
     if (path == null) return;
 
-    // iOS can't copy file to app dir, so we need to use the original path
-    if (isIOS) {
-      _setting.fontPath.put(path);
-    } else {
-      final fontFile = File(path);
-      await fontFile.copy(Paths.font);
-      _setting.fontPath.put(Paths.font);
-    }
+    final fontFile = File(path);
+    await fontFile.copy(Paths.font);
+    _setting.fontPath.put(Paths.font);
 
     context.pop();
     RNodes.app.notify();
@@ -111,36 +105,7 @@ extension _SSH on _AppSettingsPageState {
   }
 
   Widget _buildDesktopTerminal() {
-    return _setting.desktopTerminal.listenable().listenVal((val) {
-      return ListTile(
-        leading: const Icon(Icons.terminal),
-        title: TipText(l10n.terminal, l10n.desktopTerminalTip),
-        trailing: Text(val, style: UIs.text15, maxLines: 1, overflow: TextOverflow.ellipsis),
-        onTap: () {
-          withTextFieldController((ctrl) async {
-            ctrl.text = val;
-            void onSave() {
-              _setting.desktopTerminal.put(ctrl.text.trim());
-              context.pop();
-            }
-
-            await context.showRoundDialog<bool>(
-              title: libL10n.select,
-              child: Input(
-                controller: ctrl,
-                autoFocus: true,
-                label: l10n.terminal,
-                hint: 'x-terminal-emulator / gnome-terminal',
-                icon: Icons.edit,
-                suggestion: false,
-                onSubmitted: (_) => onSave(),
-              ),
-              actions: Btn.ok(onTap: onSave).toList,
-            );
-          });
-        },
-      );
-    });
+    return UIs.placeholder;
   }
 
   Widget _buildTermTheme() {

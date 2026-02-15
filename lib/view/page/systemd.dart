@@ -28,7 +28,7 @@ final class _SystemdPageState extends ConsumerState<SystemdPage> {
     return Scaffold(
       appBar: CustomAppBar(
         title: const Text('Systemd'),
-        actions: isDesktop ? [Btn.icon(icon: const Icon(Icons.refresh), onTap: _notifier.getUnits)] : null,
+        actions: [Btn.icon(icon: const Icon(Icons.refresh), onTap: _notifier.getUnits)],
       ),
       body: RefreshIndicator(onRefresh: _notifier.getUnits, child: _buildBody()),
     );

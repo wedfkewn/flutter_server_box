@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:fl_lib/fl_lib.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -209,67 +207,9 @@ void _onTapMoreBtns(ServerFuncBtn value, Spi spi, BuildContext context, WidgetRe
   }
 }
 
-void _gotoSSH(Spi spi, BuildContext context) async {
-  // run built-in ssh on macOS due to incompatibility
-  if (isMobile || isMacOS) {
-    final args = SshPageArgs(spi: spi);
-    SSHPage.route.go(context, args);
-    return;
-  }
-  final extraArgs = <String>[];
-  if (spi.port != 22) {
-    extraArgs.addAll(['-p', '${spi.port}']);
-  }
-
-  final path = await () async {
-    final tempKeyFileName = 'srvbox_pk_${spi.keyId}';
-
-    /// For security reason, save the private key file to app doc path
-    return Paths.doc.joinPath(tempKeyFileName);
-  }();
-  final file = File(path);
-  final shouldGenKey = spi.keyId != null;
-  if (shouldGenKey) {
-    if (await file.exists()) {
-      await file.delete();
-    }
-    await file.writeAsString(getPrivateKey(spi.keyId!));
-    extraArgs.addAll(['-i', path]);
-  }
-
-  final sshCommand = ['ssh', '${spi.user}@${spi.ip}'] + extraArgs;
-  final system = Pfs.type;
-  switch (system) {
-    case Pfs.windows:
-      await Process.start('cmd', ['/c', 'start'] + sshCommand);
-      break;
-    case Pfs.linux:
-      final scriptFile = File('${Directory.systemTemp.path}/srvbox_launch_term.sh');
-      await scriptFile.writeAsString(_runEmulatorShell);
-
-      if (Platform.isLinux || Platform.isMacOS) {
-        await Process.run('chmod', ['+x', scriptFile.path]);
-      }
-
-      try {
-        var terminal = Stores.setting.desktopTerminal.fetch();
-        if (terminal.isEmpty) terminal = 'x-terminal-emulator';
-
-        await Process.start(scriptFile.path, [terminal, ...sshCommand]);
-      } catch (e, s) {
-        context.showErrDialog(e, s, l10n.emulator);
-      } finally {
-        await scriptFile.delete();
-      }
-      break;
-    default:
-      context.showSnackBar('Mismatch system: $system');
-  }
-
-  if (shouldGenKey) {
-    if (!await file.exists()) return;
-    await Future.delayed(const Duration(seconds: 2), file.delete);
-  }
+void _gotoSSH(Spi spi, BuildContext context) {
+  final args = SshPageArgs(spi: spi);
+  SSHPage.route.go(context, args);
 }
 
 bool _checkClient(BuildContext context, String id, WidgetRef ref) {
@@ -280,27 +220,3 @@ bool _checkClient(BuildContext context, String id, WidgetRef ref) {
   }
   return true;
 }
-
-const _runEmulatorShell = '''
-#!/bin/sh
-TERMINAL="\$1"
-shift
-
-if [ -z "\$TERMINAL" ] || [ "\$TERMINAL" = "x-terminal-emulator" ]; then
-    for term in kitty alacritty gnome-terminal gnome-console konsole xfce4-terminal terminator tilix wezterm foot xterm; do
-        command -v "\$term" >/dev/null 2>&1 && { TERMINAL="\$term"; break; }
-    done
-    [ -z "\$TERMINAL" ] && TERMINAL="x-terminal-emulator"
-fi
-
-case "\$TERMINAL" in
-    gnome-terminal|gnome-console) exec "\$TERMINAL" -- "\$@" ;;
-    alacritty) 
-        "\$TERMINAL" --version 2>&1 | grep -q "alacritty 0\\.1[3-9]" && 
-        exec "\$TERMINAL" --command "\$@" || exec "\$TERMINAL" -e "\$@" ;;
-    kitty|foot) exec "\$TERMINAL" "\$@" ;;
-    wezterm) exec "\$TERMINAL" start -- "\$@" ;;
-    xfce4-terminal) exec "\$TERMINAL" -e "\$*" ;;
-    *) exec "\$TERMINAL" -e "\$@" ;;
-esac
-''';

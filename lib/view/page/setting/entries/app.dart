@@ -80,13 +80,7 @@ extension _App on _AppSettingsPageState {
   }
 
   Widget? _buildPlatformSetting() {
-    if (!isIOS) return null;
-    return ListTile(
-      leading: const Icon(MingCute.apple_fill),
-      title: Text('iOS ${libL10n.setting}'),
-      trailing: const Icon(Icons.keyboard_arrow_right),
-      onTap: () => IosSettingsPage.route.go(context),
-    );
+    return null;
   }
 
   Widget _buildCheckUpdate() {
@@ -156,30 +150,7 @@ extension _App on _AppSettingsPageState {
             title: libL10n.primaryColorSeed,
             child: StatefulBuilder(
               builder: (context, setState) {
-                final children = <Widget>[
-                  if (!isIOS)
-                    DynamicColorBuilder(
-                      builder: (light, dark) {
-                        final supported = light != null || dark != null;
-                        if (!supported) {
-                          if (!_setting.useSystemPrimaryColor.fetch()) {
-                            _setting.useSystemPrimaryColor.put(false);
-                            WidgetsBinding.instance.addPostFrameCallback((_) {
-                              setState(() {});
-                            });
-                          }
-                          return const SizedBox.shrink();
-                        }
-                        return ListTile(
-                          title: Text(l10n.followSystem),
-                          trailing: StoreSwitch(
-                            prop: _setting.useSystemPrimaryColor,
-                            callback: (_) => setState(() {}),
-                          ),
-                        );
-                      },
-                    ),
-                ];
+                final children = <Widget>[];
                 if (!_setting.useSystemPrimaryColor.fetch()) {
                   children.add(
                     ColorPicker(
@@ -317,7 +288,6 @@ extension _App on _AppSettingsPageState {
         if (isMobile) _buildWakeLock(),
         _buildCollapseUI(),
         _buildCupertinoRoute(),
-        if (isDesktop) _buildHideTitleBar(),
         _buildEditRawSettings(),
       ],
     );

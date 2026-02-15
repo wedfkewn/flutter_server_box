@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:fl_lib/fl_lib.dart';
 import 'package:flutter/foundation.dart' show kReleaseMode;
 import 'package:flutter/material.dart';
@@ -89,8 +87,6 @@ class _HomePageState extends ConsumerState<HomePage>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
-    if (isDesktop) return;
-
     switch (state) {
       case AppLifecycleState.resumed:
         if (_shouldAuth) {
@@ -161,14 +157,6 @@ class _HomePageState extends ConsumerState<HomePage>
       bottomNavigationBar: isMobile ? _buildBottomBar() : null,
     );
 
-    if (Platform.isMacOS) {
-      return PlatformMenuBar(
-        menus: MacOSMenuBarManager.buildMenuBar(context, (int index) {
-          _onDestinationSelected(index);
-        }),
-        child: mainContent,
-      );
-    }
     return mainContent;
   }
 

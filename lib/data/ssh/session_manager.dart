@@ -139,24 +139,18 @@ abstract final class TermSessionManager {
       }
     }
 
-    // iOS: manage Live Activity timer
-    if (isIOS) {
-      if (_entries.isEmpty) {
-        _updateTimer?.cancel();
-        _updateTimer = null;
-        await MethodChans.stopLiveActivity();
-      } else {
-        // Start timer if not already running
-        _updateTimer ??= Timer.periodic(_updateInterval, (_) => _updateLiveActivity());
-        // Immediately update for immediate feedback
-        await _updateLiveActivity();
-      }
+    if (_entries.isEmpty) {
+      _updateTimer?.cancel();
+      _updateTimer = null;
+      await MethodChans.stopLiveActivity();
+    } else {
+      _updateTimer ??= Timer.periodic(_updateInterval, (_) => _updateLiveActivity());
+      await _updateLiveActivity();
     }
   }
 
   static Future<void> _updateLiveActivity() async {
-    if (!isIOS || _entries.isEmpty) return;
-
+    if (_entries.isEmpty) return;
     final connectionCount = _entries.length;
 
     if (connectionCount == 1) {
@@ -188,7 +182,7 @@ abstract final class TermSessionManager {
     }
   }
 
-  /// Mark which session is actively displayed in UI (for iOS Live Activity).
+  /// Mark which session is actively displayed in UI.
   static void setActive(String id, {bool hasTerminal = true}) {
     _activeId = id;
     final old = _entries[id];
@@ -198,15 +192,10 @@ abstract final class TermSessionManager {
     }
   }
 
-  /// Stop Live Activity when app is closed/terminated (iOS only).
+  /// Stop Live Activity when app is closed/terminated.
   static Future<void> stopLiveActivityOnAppClose() async {
-    if (!isIOS) return;
-
-    // Cancel any running timers
     _updateTimer?.cancel();
     _updateTimer = null;
-
-    // Stop the Live Activity
     await MethodChans.stopLiveActivity();
   }
 }

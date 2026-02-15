@@ -110,10 +110,8 @@ class _SSHVirtKeySettingPageState extends State<SSHVirtKeySettingPage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               _buildCheckBox(key, isEnabled),
-              if (!isDesktop) ...[
-                const SizedBox(width: 7),
-                ReorderableDragStartListener(index: idx, child: const Icon(Icons.drag_handle)),
-              ],
+              const SizedBox(width: 7),
+              ReorderableDragStartListener(index: idx, child: const Icon(Icons.drag_handle)),
             ],
           ),
         ),

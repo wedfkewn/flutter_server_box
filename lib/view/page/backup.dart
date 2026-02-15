@@ -52,7 +52,6 @@ final class _BackupPageState extends ConsumerState<BackupPage> with AutomaticKee
           CenterGreyTitle(libL10n.sync),
           _buildTip,
           _buildBakPwd,
-          if (isMacOS || isIOS) _buildIcloud,
           _buildWebdav,
           _buildGist,
           _buildFile,

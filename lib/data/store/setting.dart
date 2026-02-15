@@ -122,8 +122,7 @@ class SettingStore extends HiveStore {
     toObj: (type) => type?.name,
   );
 
-  // Only valid on iOS
-  late final autoUpdateHomeWidget = propertyDefault('autoUpdateHomeWidget', isIOS);
+  late final autoUpdateHomeWidget = propertyDefault('autoUpdateHomeWidget', false);
 
   late final autoCheckAppUpdate = propertyDefault('autoCheckAppUpdate', true);
 
@@ -204,17 +203,17 @@ class SettingStore extends HiveStore {
   late final lastVer = propertyDefault('lastVer', 0);
 
   /// Use CupertinoPageRoute for all routes
-  late final cupertinoRoute = propertyDefault('cupertinoRoute', isIOS);
+  late final cupertinoRoute = propertyDefault('cupertinoRoute', false);
 
   /// Hide title bar on desktop
-  late final hideTitleBar = propertyDefault('hideTitleBar', isDesktop);
+  late final hideTitleBar = propertyDefault('hideTitleBar', false);
 
   /// Display CPU view as progress, also called as old CPU view
   late final cpuViewAsProgress = propertyDefault('cpuViewAsProgress', false);
 
   late final displayCpuIndex = propertyDefault('displayCpuIndex', true);
 
-  late final editorSoftWrap = propertyDefault('editorSoftWrap', isIOS);
+  late final editorSoftWrap = propertyDefault('editorSoftWrap', false);
 
   late final sshTermHelpShown = propertyDefault('sshTermHelpShown', false);
 

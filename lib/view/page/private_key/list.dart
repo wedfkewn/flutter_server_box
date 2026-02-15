@@ -60,8 +60,7 @@ class _PrivateKeyListState extends ConsumerState<PrivateKeysListPage> with After
 
 extension on _PrivateKeyListState {
   void _autoAddSystemPriavteKey() async {
-    // Only trigger on desktop platform and no private key saved
-    if (isDesktop && Stores.snippet.box.keys.isEmpty) {
+    if (Stores.snippet.box.keys.isEmpty) {
       final home = Pfs.homeDir;
       if (home == null) return;
       final idRsaFile = File(home.joinPath('.ssh/id_rsa'));

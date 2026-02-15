@@ -69,7 +69,7 @@ class _SftpPageState extends ConsumerState<SftpPage> with AfterLayoutMixin {
       _buildSortMenu(),
       _buildSearchBtn(),
     ];
-    if (isDesktop) children.add(_buildRefreshBtn());
+    children.add(_buildRefreshBtn());
 
     return Scaffold(
       appBar: CustomAppBar(title: Text(widget.args.spi.name), actions: children),

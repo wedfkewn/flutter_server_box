@@ -193,16 +193,9 @@ class SSHPageState extends ConsumerState<SSHPage>
             : null,
         backgroundColor: hasBg ? Colors.transparent : _terminalTheme.background,
         body: _buildBody(),
-        bottomNavigationBar: isDesktop ? null : _buildBottom(),
+        bottomNavigationBar: _buildBottom(),
       ),
     );
-
-    if (isIOS) {
-      child = AnnotatedRegion(
-        value: _isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
-        child: child,
-      );
-    }
     return child;
   }
 

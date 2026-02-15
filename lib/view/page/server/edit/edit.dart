@@ -134,7 +134,7 @@ class _ServerEditPageState extends ConsumerState<ServerEditPage> with AfterLayou
     final topItems = [
       _buildWriteScriptTip(),
       if (isMobile) _buildQrScan(),
-      if (isDesktop) _buildSSHImport(),
+      _buildSSHImport(),
       _buildSSHDiscovery(),
     ];
     final children = [
