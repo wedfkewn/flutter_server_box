@@ -4,12 +4,8 @@ extension _Server on _AppSettingsPageState {
   Widget _buildServer() {
     return Column(
       children: [
-        _buildServerFuncBtns(),
         _buildNetViewType(),
-        _buildServerSeq(),
-        _buildServerDetailCardSeq(),
         _buildConnectionStats(),
-        _buildDeleteServers(),
         _buildCpuView(),
         _buildServerMore(),
       ].map((e) => CardX(child: e)).toList(),
@@ -58,7 +54,9 @@ extension _Server on _AppSettingsPageState {
       onTap: () async {
         final keys = Stores.server.keys();
         final names = Map.fromEntries(
-          keys.map((e) => MapEntry(e, ref.read(serversProvider).servers[e]?.name ?? e)),
+          keys.map(
+            (e) => MapEntry(e, ref.read(serversProvider).servers[e]?.name ?? e),
+          ),
         );
         final deleteKeys = await context.showPickDialog<String>(
           clearable: true,
@@ -103,7 +101,9 @@ extension _Server on _AppSettingsPageState {
           onSubmitted: _onSaveTextScaler,
           suggestion: false,
         ),
-        actions: Btn.ok(onTap: () => _onSaveTextScaler(_textScalerCtrl.text)).toList,
+        actions: Btn.ok(
+          onTap: () => _onSaveTextScaler(_textScalerCtrl.text),
+        ).toList,
       ),
     );
   }
@@ -117,49 +117,6 @@ extension _Server on _AppSettingsPageState {
     _setting.textFactor.put(val);
     RNodes.app.notify();
     context.pop();
-  }
-
-  Widget _buildServerFuncBtns() {
-    return ExpandTile(
-      leading: const Icon(BoxIcons.bxs_joystick_button, size: _kIconSize),
-      title: Text(l10n.serverFuncBtns),
-      children: [_buildServerFuncBtnsSwitch(), _buildServerFuncBtnsOrder()],
-    );
-  }
-
-  Widget _buildServerFuncBtnsSwitch() {
-    return ListTile(
-      // title: Text(l10n.location),
-      // subtitle: Text(l10n.moveOutServerFuncBtnsHelp, style: UIs.text13Grey),
-      title: TipText(l10n.location, l10n.moveOutServerFuncBtnsHelp),
-      trailing: StoreSwitch(prop: _setting.moveServerFuncs),
-    );
-  }
-
-  Widget _buildServerFuncBtnsOrder() {
-    return ListTile(
-      title: Text(l10n.sequence),
-      trailing: const Icon(Icons.keyboard_arrow_right),
-      onTap: () => ServerFuncBtnsOrderPage.route.go(context),
-    );
-  }
-
-  Widget _buildServerSeq() {
-    return ListTile(
-      leading: const Icon(OctIcons.sort_desc, size: _kIconSize),
-      title: Text(l10n.serverOrder),
-      trailing: const Icon(Icons.keyboard_arrow_right),
-      onTap: () => ServerOrderPage.route.go(context),
-    );
-  }
-
-  Widget _buildServerDetailCardSeq() {
-    return ListTile(
-      leading: const Icon(OctIcons.sort_desc, size: _kIconSize),
-      title: Text(l10n.serverDetailOrder),
-      trailing: const Icon(Icons.keyboard_arrow_right),
-      onTap: () => ServerDetailOrderPage.route.go(context),
-    );
   }
 
   Widget _buildDoubleColumnServersPage() {
@@ -223,7 +180,6 @@ extension _Server on _AppSettingsPageState {
       ],
     );
   }
-
 
   Widget _buildServerTabPreferDiskAmount() {
     return ListTile(
