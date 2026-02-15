@@ -24,10 +24,6 @@ class ServerCardModern extends StatelessWidget {
         _buildStats(context),
         const SizedBox(height: 12),
         _buildNetwork(context),
-        const SizedBox(height: 12),
-        const Divider(),
-        const SizedBox(height: 8),
-        _buildFooter(context),
       ],
     );
   }
@@ -59,7 +55,8 @@ class ServerCardModern extends StatelessWidget {
   Widget _buildLatencyTag(BuildContext context) {
     if (srv.conn != ServerConn.finished) {
       return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width - 50),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(4),
@@ -73,6 +70,7 @@ class ServerCardModern extends StatelessWidget {
 
     // Using TCP connections count as a proxy for activity since latency is not directly available
     return Container(
+      constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width - 50),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: Colors.green.withOpacity(0.1),
@@ -119,6 +117,7 @@ class ServerCardModern extends StatelessWidget {
   Widget _buildTagItem(BuildContext context, String text, IconData icon, {Color? color}) {
     final effectiveColor = color ?? Theme.of(context).colorScheme.onSurfaceVariant;
     return Container(
+      constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width - 50),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: effectiveColor.withOpacity(0.1),
@@ -190,10 +189,14 @@ class ServerCardModern extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 8),
-        Text(
-          detail ?? '${(value * 100).toStringAsFixed(1)}%',
-          style: Theme.of(context).textTheme.bodySmall,
-          textAlign: TextAlign.end,
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 80),
+          child: Text(
+            detail ?? '${(value * 100).toStringAsFixed(1)}%',
+            style: Theme.of(context).textTheme.bodySmall,
+            textAlign: TextAlign.end,
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
       ],
     );
@@ -240,36 +243,38 @@ class ServerCardModern extends StatelessWidget {
           child: Icon(icon, size: 16, color: color),
         ),
         const SizedBox(width: 8),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: Theme.of(context).textTheme.labelSmall),
-            Text.rich(
-              TextSpan(
-                children: [
-                  TextSpan(
-                    text: speed,
-                    style: Theme.of(context).textTheme.bodyMedium
-                        ?.copyWith(fontWeight: FontWeight.bold),
-                  ),
-                  TextSpan(
-                    text: ' ($total)',
-                    style: Theme.of(context).textTheme.bodySmall
-                        ?.copyWith(color: Theme.of(context).hintColor, fontSize: 10),
-                  ),
-                ],
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: Theme.of(context).textTheme.labelSmall,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-            ),
-          ],
+              Text.rich(
+                TextSpan(
+                  children: [
+                    TextSpan(
+                      text: speed,
+                      style: Theme.of(context).textTheme.bodyMedium
+                          ?.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                    TextSpan(
+                      text: ' ($total)',
+                      style: Theme.of(context).textTheme.bodySmall
+                          ?.copyWith(color: Theme.of(context).hintColor, fontSize: 10),
+                    ),
+                  ],
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
         ),
       ],
-    );
-  }
-
-  Widget _buildFooter(BuildContext context) {
-    return SizedBox(
-      height: 36,
-      child: ServerFuncBtns(spi: spi),
     );
   }
 }

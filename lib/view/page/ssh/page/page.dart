@@ -254,10 +254,7 @@ class SSHPageState extends ConsumerState<SSHPage>
       ),
     );
 
-    return SizedBox(
-      height: _media.size.height - _virtKeysHeight - _media.padding.bottom - _media.padding.top,
-      child: Stack(children: children),
-    );
+    return Stack(children: children);
   }
 
   Widget _buildBottom() {

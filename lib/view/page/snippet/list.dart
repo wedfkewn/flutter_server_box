@@ -107,7 +107,7 @@ class _SnippetListPageState extends ConsumerState<SnippetListPage> with Automati
       subtitle: Text(
         snippet.note ?? snippet.script,
         overflow: TextOverflow.ellipsis,
-        maxLines: 3,
+        maxLines: 2,
         style: UIs.textGrey,
       ),
       trailing: const Icon(Icons.keyboard_arrow_right),

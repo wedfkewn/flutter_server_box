@@ -212,8 +212,14 @@ class _ContainerPageState extends ConsumerState<ContainerPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(item.name ?? l10n.unknown, style: UIs.text15),
-              const SizedBox(height: 3),
+              Expanded(
+                child: Text(
+                  item.name ?? l10n.unknown,
+                  style: UIs.text15,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 8),
               _buildMoreBtn(item),
             ],
           ),
