@@ -26,7 +26,6 @@ import 'package:server_box/view/page/setting/seq/srv_func_seq.dart';
 import 'package:server_box/view/page/setting/seq/srv_seq.dart';
 import 'package:server_box/view/page/setting/seq/virt_key.dart';
 
-part 'about.dart';
 part 'entries/ai.dart';
 part 'entries/app.dart';
 part 'entries/container.dart';
@@ -136,21 +135,18 @@ final class _AppSettingsPageState extends ConsumerState<AppSettingsPage> {
 enum SettingsTabs {
   app,
   privateKey,
-  backup,
-  about;
+  backup;
 
   String get i18n => switch (this) {
     SettingsTabs.app => libL10n.app,
     SettingsTabs.privateKey => l10n.privateKey,
     SettingsTabs.backup => libL10n.backup,
-    SettingsTabs.about => libL10n.about,
   };
 
   Widget get page => switch (this) {
     SettingsTabs.app => const AppSettingsPage(),
     SettingsTabs.privateKey => const PrivateKeysListPage(),
     SettingsTabs.backup => const BackupPage(),
-    SettingsTabs.about => const _AppAboutPage(),
   };
 
   static final List<Widget> pages = SettingsTabs.values.map((e) => e.page).toList();
