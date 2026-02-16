@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:server_box/data/model/app/ip_info.dart';
+import 'package:server_box/data/res/store.dart';
 
 part 'ip_info.g.dart';
 
@@ -19,9 +20,14 @@ final class _IpInfoRepo {
   DateTime? _lastRequestAt;
   Future<void> _tail = Future.value();
 
-  static const _token = '6f434b09039258';
+  static const _defaultToken = '6f434b09039258';
   static const _ttl = Duration(minutes: 5);
   static const _minInterval = Duration(seconds: 1);
+
+  String get _token {
+    final customToken = Stores.setting.ipinfoToken.fetch();
+    return customToken.isEmpty ? _defaultToken : customToken;
+  }
 
   Future<IpInfo> get(String ip, {required bool force}) {
     final key = ip.trim();

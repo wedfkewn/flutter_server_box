@@ -6,10 +6,59 @@ extension _App on _AppSettingsPageState {
     final children = [
       _buildLocale(),
       _buildThemeMode(),
+      _buildIpinfoToken(),
       ?specific,
     ];
 
     return Column(children: children.map((e) => e.cardx).toList());
+  }
+
+  Widget _buildIpinfoToken() {
+    return _setting.ipinfoToken.listenable().listenVal((val) {
+      final hasToken = val.isNotEmpty;
+      return ListTile(
+        leading: const Icon(Icons.location_on),
+        title: Text(context.l10n.ipinfoToken),
+        subtitle: Text(hasToken ? '••••••••' : libL10n.empty, style: UIs.textGrey),
+        onTap: () => _showIpinfoTokenDialog(),
+      );
+    });
+  }
+
+  Future<void> _showIpinfoTokenDialog() async {
+    return withTextFieldController((ctrl) async {
+      final fetched = _setting.ipinfoToken.fetch();
+      if (fetched != null && fetched.isNotEmpty) ctrl.text = fetched;
+
+      void onSave() {
+        _setting.ipinfoToken.put(ctrl.text.trim());
+        context.pop();
+      }
+
+      await context.showRoundDialog(
+        title: context.l10n.ipinfoToken,
+        child: Input(
+          controller: ctrl,
+          autoFocus: true,
+          label: context.l10n.ipinfoToken,
+          hint: 'Enter your ipinfo.io token',
+          icon: MingCute.key_2_line,
+          obscureText: false,
+          suggestion: true,
+          onSubmitted: (_) => onSave(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              _setting.ipinfoToken.delete();
+              context.pop();
+            },
+            child: Text(libL10n.clear),
+          ),
+          TextButton(onPressed: onSave, child: Text(libL10n.ok)),
+        ],
+      );
+    });
   }
 
   Widget? _buildPlatformSetting() {

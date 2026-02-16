@@ -308,5 +308,6 @@
   "menuWiki": "Wiki",
   "menuHelp": "帮助",
   "logs": "日志",
+  "ipinfoToken": "ipinfo.io Token",
   "podmanDockerEmulationDetected": "检测到 Podman Docker 仿真。请在设置中切换到 Podman。"
 }

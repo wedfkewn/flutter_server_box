@@ -1,7 +1,7 @@
 import 'dart:ui';
 
 abstract final class Defaults {
-  static const primaryColor = Color.fromARGB(255, 145, 58, 31);
+  static const primaryColor = Color(0xFFFFFFFF);
 
   static const launchPageIdx = 0;
 

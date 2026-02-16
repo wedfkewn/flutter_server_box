@@ -311,5 +311,6 @@
   "menuWiki": "Wiki",
     "menuHelp": "Help",
   "logs": "Logs",
+  "ipinfoToken": "ipinfo.io Token",
   "podmanDockerEmulationDetected": "Podman Docker emulation detected. Please switch to Podman in settings."
 }

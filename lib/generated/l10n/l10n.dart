@@ -5,18 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart' as intl;
 
-import 'l10n_de.dart';
 import 'l10n_en.dart';
-import 'l10n_es.dart';
-import 'l10n_fr.dart';
-import 'l10n_id.dart';
-import 'l10n_it.dart';
-import 'l10n_ja.dart';
-import 'l10n_nl.dart';
-import 'l10n_pt.dart';
-import 'l10n_ru.dart';
-import 'l10n_tr.dart';
-import 'l10n_uk.dart';
 import 'l10n_zh.dart';
 
 // ignore_for_file: type=lint
@@ -105,18 +94,7 @@ abstract class AppLocalizations {
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
-    Locale('de'),
     Locale('en'),
-    Locale('es'),
-    Locale('fr'),
-    Locale('id'),
-    Locale('it'),
-    Locale('ja'),
-    Locale('nl'),
-    Locale('pt'),
-    Locale('ru'),
-    Locale('tr'),
-    Locale('uk'),
     Locale('zh'),
     Locale('zh', 'TW'),
   ];
@@ -1972,6 +1950,12 @@ abstract class AppLocalizations {
   /// **'Logs'**
   String get logs;
 
+  /// No description provided for @ipinfoToken.
+  ///
+  /// In en, this message translates to:
+  /// **'ipinfo.io Token'**
+  String get ipinfoToken;
+
   /// No description provided for @podmanDockerEmulationDetected.
   ///
   /// In en, this message translates to:
@@ -1989,21 +1973,8 @@ class _AppLocalizationsDelegate
   }
 
   @override
-  bool isSupported(Locale locale) => <String>[
-    'de',
-    'en',
-    'es',
-    'fr',
-    'id',
-    'it',
-    'ja',
-    'nl',
-    'pt',
-    'ru',
-    'tr',
-    'uk',
-    'zh',
-  ].contains(locale.languageCode);
+  bool isSupported(Locale locale) =>
+      <String>['en', 'zh'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -2024,30 +1995,8 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
 
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'de':
-      return AppLocalizationsDe();
     case 'en':
       return AppLocalizationsEn();
-    case 'es':
-      return AppLocalizationsEs();
-    case 'fr':
-      return AppLocalizationsFr();
-    case 'id':
-      return AppLocalizationsId();
-    case 'it':
-      return AppLocalizationsIt();
-    case 'ja':
-      return AppLocalizationsJa();
-    case 'nl':
-      return AppLocalizationsNl();
-    case 'pt':
-      return AppLocalizationsPt();
-    case 'ru':
-      return AppLocalizationsRu();
-    case 'tr':
-      return AppLocalizationsTr();
-    case 'uk':
-      return AppLocalizationsUk();
     case 'zh':
       return AppLocalizationsZh();
   }

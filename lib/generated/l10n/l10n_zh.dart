@@ -999,6 +999,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get logs => '日志';
 
   @override
+  String get ipinfoToken => 'ipinfo.io Token';
+
+  @override
   String get podmanDockerEmulationDetected =>
       '检测到 Podman Docker 仿真。请在设置中切换到 Podman。';
 }

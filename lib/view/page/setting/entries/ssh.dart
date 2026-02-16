@@ -9,7 +9,6 @@ extension _SSH on _AppSettingsPageState {
         _buildTermTheme(),
         _buildFont(),
         _buildTermFontSize(),
-        _buildSshBg(),
         _buildSSHVirtualKeyAutoOff(),
         if (isMobile) _buildSSHVirtKeys(),
       ].map((e) => CardX(child: e)).toList(),
@@ -46,7 +45,10 @@ extension _SSH on _AppSettingsPageState {
         context.showRoundDialog(
           title: libL10n.font,
           actions: [
-            TextButton(onPressed: () async => await _pickFontFile(), child: Text(libL10n.file)),
+            TextButton(
+              onPressed: () async => await _pickFontFile(),
+              child: Text(libL10n.file),
+            ),
             TextButton(
               onPressed: () {
                 _setting.fontPath.delete();
@@ -159,7 +161,10 @@ extension _SSH on _AppSettingsPageState {
       //   '${l10n.letterCacheTip}\n${l10n.needRestart}',
       //   style: UIs.textGrey,
       // ),
-      title: TipText(l10n.letterCache, '${l10n.letterCacheTip}\n${l10n.needRestart}'),
+      title: TipText(
+        l10n.letterCache,
+        '${l10n.letterCacheTip}\n${l10n.needRestart}',
+      ),
       trailing: StoreSwitch(prop: _setting.letterCache),
     );
   }
@@ -168,7 +173,11 @@ extension _SSH on _AppSettingsPageState {
     return ExpandTile(
       leading: const Icon(MingCute.background_fill),
       title: Text(libL10n.background),
-      children: [_buildSshBgImage(), _buildSshBgOpacity(), _buildSshBlurRadius()],
+      children: [
+        _buildSshBgImage(),
+        _buildSshBgOpacity(),
+        _buildSshBlurRadius(),
+      ],
     );
   }
 
@@ -184,7 +193,10 @@ extension _SSH on _AppSettingsPageState {
         context.showRoundDialog(
           title: libL10n.image,
           actions: [
-            TextButton(onPressed: () async => await _pickBgImage(), child: Text(libL10n.file)),
+            TextButton(
+              onPressed: () async => await _pickBgImage(),
+              child: Text(libL10n.file),
+            ),
             TextButton(
               onPressed: () {
                 _setting.sshBgImage.delete();

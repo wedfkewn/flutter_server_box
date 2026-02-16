@@ -1047,6 +1047,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get logs => 'Logs';
 
   @override
+  String get ipinfoToken => 'ipinfo.io Token';
+
+  @override
   String get podmanDockerEmulationDetected =>
       'Podman Docker emulation detected. Please switch to Podman in settings.';
 }
