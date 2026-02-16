@@ -1052,4 +1052,23 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get podmanDockerEmulationDetected =>
       'Podman Docker emulation detected. Please switch to Podman in settings.';
+
+  @override
+  String get openSourceLicense => 'Open Source License';
+
+  @override
+  String get openSourceLicenseSubtitle => 'Based on ServerBox (AGPL-3.0)';
+
+  @override
+  String get aboutAndLicense => 'About & License';
+
+  @override
+  String get licenseContent =>
+      'This program is a derivative of ServerBox.\n\nUnder the terms of the GNU AGPL v3.0 license:\n\n• Copyright: © 2024 lollipopkit & all contributors\n• Project Nature: Free Software\n• Distribution Terms: Source code must be made available under the same license\n• Disclaimer: This program comes with no warranty, including but not limited to merchantability or fitness for a particular purpose.';
+
+  @override
+  String get viewSourceCode => 'View Source Code';
+
+  @override
+  String get fullLicenseText => 'Full License Text';
 }

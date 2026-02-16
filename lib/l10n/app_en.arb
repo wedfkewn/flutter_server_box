@@ -312,5 +312,11 @@
     "menuHelp": "Help",
   "logs": "Logs",
   "ipinfoToken": "ipinfo.io Token",
-  "podmanDockerEmulationDetected": "Podman Docker emulation detected. Please switch to Podman in settings."
+  "podmanDockerEmulationDetected": "Podman Docker emulation detected. Please switch to Podman in settings.",
+  "openSourceLicense": "Open Source License",
+  "openSourceLicenseSubtitle": "Based on ServerBox (AGPL-3.0)",
+  "aboutAndLicense": "About & License",
+  "licenseContent": "This program is a derivative of ServerBox.\n\nUnder the terms of the GNU AGPL v3.0 license:\n\n• Copyright: © 2024 lollipopkit & all contributors\n• Project Nature: Free Software\n• Distribution Terms: Source code must be made available under the same license\n• Disclaimer: This program comes with no warranty, including but not limited to merchantability or fitness for a particular purpose.",
+  "viewSourceCode": "View Source Code",
+  "fullLicenseText": "Full License Text"
 }

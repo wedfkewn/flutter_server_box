@@ -1961,6 +1961,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Podman Docker emulation detected. Please switch to Podman in settings.'**
   String get podmanDockerEmulationDetected;
+
+  /// No description provided for @openSourceLicense.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Source License'**
+  String get openSourceLicense;
+
+  /// No description provided for @openSourceLicenseSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Based on ServerBox (AGPL-3.0)'**
+  String get openSourceLicenseSubtitle;
+
+  /// No description provided for @aboutAndLicense.
+  ///
+  /// In en, this message translates to:
+  /// **'About & License'**
+  String get aboutAndLicense;
+
+  /// No description provided for @licenseContent.
+  ///
+  /// In en, this message translates to:
+  /// **'This program is a derivative of ServerBox.\n\nUnder the terms of the GNU AGPL v3.0 license:\n\n• Copyright: © 2024 lollipopkit & all contributors\n• Project Nature: Free Software\n• Distribution Terms: Source code must be made available under the same license\n• Disclaimer: This program comes with no warranty, including but not limited to merchantability or fitness for a particular purpose.'**
+  String get licenseContent;
+
+  /// No description provided for @viewSourceCode.
+  ///
+  /// In en, this message translates to:
+  /// **'View Source Code'**
+  String get viewSourceCode;
+
+  /// No description provided for @fullLicenseText.
+  ///
+  /// In en, this message translates to:
+  /// **'Full License Text'**
+  String get fullLicenseText;
 }
 
 class _AppLocalizationsDelegate

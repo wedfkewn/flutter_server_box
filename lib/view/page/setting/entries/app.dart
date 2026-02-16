@@ -7,10 +7,44 @@ extension _App on _AppSettingsPageState {
       _buildLocale(),
       _buildThemeMode(),
       _buildIpinfoToken(),
+      _buildOpenSourceLicense(),
       ?specific,
     ];
 
     return Column(children: children.map((e) => e.cardx).toList());
+  }
+
+  Widget _buildOpenSourceLicense() {
+    return ListTile(
+      leading: const Icon(Icons.description_outlined),
+      title: Text(context.l10n.openSourceLicense),
+      subtitle: Text(
+        context.l10n.openSourceLicenseSubtitle,
+        style: UIs.textGrey,
+      ),
+      onTap: () => _showLicenseDialog(),
+    );
+  }
+
+  Future<void> _showLicenseDialog() async {
+    await context.showRoundDialog(
+      title: context.l10n.aboutAndLicense,
+      child: SingleChildScrollView(
+        child: Text(context.l10n.licenseContent, style: UIs.text15),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Urls.thisRepo.launchUrl(),
+          child: Text(context.l10n.viewSourceCode),
+        ),
+        TextButton(
+          onPressed: () =>
+              'https://www.gnu.org/licenses/agpl-3.0.html'.launchUrl(),
+          child: Text(context.l10n.fullLicenseText),
+        ),
+        TextButton(onPressed: () => context.pop(), child: Text(libL10n.close)),
+      ],
+    );
   }
 
   Widget _buildIpinfoToken() {
@@ -19,7 +53,10 @@ extension _App on _AppSettingsPageState {
       return ListTile(
         leading: const Icon(Icons.location_on),
         title: Text(context.l10n.ipinfoToken),
-        subtitle: Text(hasToken ? '••••••••' : libL10n.empty, style: UIs.textGrey),
+        subtitle: Text(
+          hasToken ? '••••••••' : libL10n.empty,
+          style: UIs.textGrey,
+        ),
         onTap: () => _showIpinfoTokenDialog(),
       );
     });
@@ -28,7 +65,7 @@ extension _App on _AppSettingsPageState {
   Future<void> _showIpinfoTokenDialog() async {
     return withTextFieldController((ctrl) async {
       final fetched = _setting.ipinfoToken.fetch();
-      if (fetched != null && fetched.isNotEmpty) ctrl.text = fetched;
+      if (fetched.isNotEmpty) ctrl.text = fetched;
 
       void onSave() {
         _setting.ipinfoToken.put(ctrl.text.trim());
@@ -85,7 +122,6 @@ extension _App on _AppSettingsPageState {
       ),
     );
   }
-
 
   Widget _buildMaxRetry() {
     return ValBuilder(
@@ -171,6 +207,4 @@ extension _App on _AppSettingsPageState {
       ),
     );
   }
-
-
 }

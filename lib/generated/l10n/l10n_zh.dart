@@ -1004,6 +1004,25 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String get podmanDockerEmulationDetected =>
       '检测到 Podman Docker 仿真。请在设置中切换到 Podman。';
+
+  @override
+  String get openSourceLicense => '开源许可';
+
+  @override
+  String get openSourceLicenseSubtitle => '基于 ServerBox (AGPL-3.0)';
+
+  @override
+  String get aboutAndLicense => '关于 & 许可';
+
+  @override
+  String get licenseContent =>
+      '本程序为 ServerBox 的派生版本。\n\n依据 GNU AGPL v3.0 许可证条款：\n\n• 版权所有：© 2024 lollipopkit & all contributors\n• 项目性质：自由软件 (Free Software)\n• 分发条件：必须在相同协议下开放源代码\n• 免责声明：本程序不附带任何担保，包括但不限于适销性或特定用途的适用性。';
+
+  @override
+  String get viewSourceCode => '查看源代码';
+
+  @override
+  String get fullLicenseText => '许可证全文';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -1979,4 +1998,23 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   @override
   String get podmanDockerEmulationDetected =>
       '檢測到 Podman Docker 仿真。請在設定中切換到 Podman。';
+
+  @override
+  String get openSourceLicense => '開源許可';
+
+  @override
+  String get openSourceLicenseSubtitle => '基於 ServerBox (AGPL-3.0)';
+
+  @override
+  String get aboutAndLicense => '關於 & 許可';
+
+  @override
+  String get licenseContent =>
+      '本程式為 ServerBox 的派生版本。\n\n依據 GNU AGPL v3.0 許可證條款：\n\n• 版權所有：© 2024 lollipopkit & all contributors\n• 專案性質：自由軟體 (Free Software)\n• 分發條件：必須在相同協議下開放原始碼\n• 免責聲明：本程式不附帶任何擔保，包括但不限於適銷性或特定用途的適用性。';
+
+  @override
+  String get viewSourceCode => '查看原始碼';
+
+  @override
+  String get fullLicenseText => '許可證全文';
 }

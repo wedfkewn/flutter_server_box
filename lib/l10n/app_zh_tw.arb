@@ -300,5 +300,11 @@
   "writeScriptFailTip": "寫入腳本失敗，可能是沒有權限/目錄不存在等。",
   "writeScriptTip": "連線到伺服器後，將會在 `~/.config/server_box` \n | `/tmp/server_box` 中寫入一個腳本來監測系統狀態。你可以審查腳本內容。",
   "logs": "日誌",
-  "podmanDockerEmulationDetected": "檢測到 Podman Docker 仿真。請在設定中切換到 Podman。"
+  "podmanDockerEmulationDetected": "檢測到 Podman Docker 仿真。請在設定中切換到 Podman。",
+  "openSourceLicense": "開源許可",
+  "openSourceLicenseSubtitle": "基於 ServerBox (AGPL-3.0)",
+  "aboutAndLicense": "關於 & 許可",
+  "licenseContent": "本程式為 ServerBox 的派生版本。\n\n依據 GNU AGPL v3.0 許可證條款：\n\n• 版權所有：© 2024 lollipopkit & all contributors\n• 專案性質：自由軟體 (Free Software)\n• 分發條件：必須在相同協議下開放原始碼\n• 免責聲明：本程式不附帶任何擔保，包括但不限於適銷性或特定用途的適用性。",
+  "viewSourceCode": "查看原始碼",
+  "fullLicenseText": "許可證全文"
 }

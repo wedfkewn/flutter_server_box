@@ -309,5 +309,11 @@
   "menuHelp": "帮助",
   "logs": "日志",
   "ipinfoToken": "ipinfo.io Token",
-  "podmanDockerEmulationDetected": "检测到 Podman Docker 仿真。请在设置中切换到 Podman。"
+  "podmanDockerEmulationDetected": "检测到 Podman Docker 仿真。请在设置中切换到 Podman。",
+  "openSourceLicense": "开源许可",
+  "openSourceLicenseSubtitle": "基于 ServerBox (AGPL-3.0)",
+  "aboutAndLicense": "关于 & 许可",
+  "licenseContent": "本程序为 ServerBox 的派生版本。\n\n依据 GNU AGPL v3.0 许可证条款：\n\n• 版权所有：© 2024 lollipopkit & all contributors\n• 项目性质：自由软件 (Free Software)\n• 分发条件：必须在相同协议下开放源代码\n• 免责声明：本程序不附带任何担保，包括但不限于适销性或特定用途的适用性。",
+  "viewSourceCode": "查看源代码",
+  "fullLicenseText": "许可证全文"
 }
