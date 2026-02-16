@@ -1,7 +1,0 @@
-- [x] `FloatingBottomNavBar` renders correctly with capsule style and shadow
-- [x] `ServerDashboard` displays CPU, Memory, Disk, and System info correctly
-- [x] `ServerDetailPage` allows swiping between Dashboard, Terminal, SFTP, Docker, and Snippet tabs
-- [x] Tapping bottom nav items smoothly scrolls to the corresponding tab
-- [x] Bottom nav indicator syncs with swipe gestures
-- [x] No layout overflow errors are present on the Dashboard tab
-- [x] Terminal (SSH) and SFTP pages load and function correctly within the tabs
