@@ -4,32 +4,11 @@ extension _SSH on _AppSettingsPageState {
   Widget _buildSSH() {
     return Column(
       children: [
-        _buildLetterCache(),
         _buildSSHWakeLock(),
         _buildTermTheme(),
         _buildFont(),
         _buildTermFontSize(),
-        _buildSSHVirtualKeyAutoOff(),
-        if (isMobile) _buildSSHVirtKeys(),
       ].map((e) => CardX(child: e)).toList(),
-    );
-  }
-
-  Widget _buildSSHVirtKeys() {
-    return ListTile(
-      leading: const Icon(BoxIcons.bxs_keyboard),
-      title: Text(l10n.editVirtKeys),
-      trailing: const Icon(Icons.keyboard_arrow_right),
-      onTap: () => SSHVirtKeySettingPage.route.go(context),
-    );
-  }
-
-  Widget _buildSSHVirtualKeyAutoOff() {
-    return ListTile(
-      leading: const Icon(MingCute.hotkey_fill),
-      title: Text(l10n.sshVirtualKeyAutoOff),
-      subtitle: const Text('Ctrl & Alt', style: UIs.textGrey),
-      trailing: StoreSwitch(prop: _setting.sshVirtualKeyAutoOff),
     );
   }
 
@@ -84,6 +63,35 @@ extension _SSH on _AppSettingsPageState {
         builder: (val) => Text(val.toString(), style: UIs.text15),
       ),
       onTap: () => _showFontSizeDialog(_setting.termFontSize),
+    );
+  }
+
+  void _showFontSizeDialog(HiveProp<double> property) {
+    final ctrl = TextEditingController(text: property.fetch().toString());
+    void onSave() {
+      context.pop();
+      final fontSize = double.tryParse(ctrl.text);
+      if (fontSize == null) {
+        context.showRoundDialog(
+          title: libL10n.fail,
+          child: Text('Parsed failed: ${ctrl.text}'),
+        );
+        return;
+      }
+      property.set(fontSize);
+    }
+
+    context.showRoundDialog(
+      title: l10n.fontSize,
+      child: Input(
+        controller: ctrl,
+        autoFocus: true,
+        type: TextInputType.number,
+        icon: Icons.font_download,
+        suggestion: false,
+        onSubmitted: (_) => onSave(),
+      ),
+      actions: Btn.ok(onTap: onSave).toList,
     );
   }
 
@@ -150,22 +158,6 @@ extension _SSH on _AppSettingsPageState {
       leading: const Icon(MingCute.lock_fill),
       title: Text(l10n.wakeLock),
       trailing: StoreSwitch(prop: _setting.sshWakeLock),
-    );
-  }
-
-  Widget _buildLetterCache() {
-    return ListTile(
-      leading: const Icon(Bootstrap.alphabet),
-      // title: Text(l10n.letterCache),
-      // subtitle: Text(
-      //   '${l10n.letterCacheTip}\n${l10n.needRestart}',
-      //   style: UIs.textGrey,
-      // ),
-      title: TipText(
-        l10n.letterCache,
-        '${l10n.letterCacheTip}\n${l10n.needRestart}',
-      ),
-      trailing: StoreSwitch(prop: _setting.letterCache),
     );
   }
 

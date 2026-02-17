@@ -190,7 +190,7 @@ class ServerCardModern extends ConsumerWidget {
 
     final diskUsed = srv.status.diskUsage?.used ?? BigInt.zero;
     final diskTotal = srv.status.diskUsage?.size ?? BigInt.one;
-    final diskDetail = '${diskUsed.bytes2Str}/${diskTotal.bytes2Str}';
+    final diskDetail = '${diskUsed.kb2Str}/${diskTotal.kb2Str}';
 
     final cpuCores = srv.status.cpu.coresCount;
 
@@ -239,9 +239,9 @@ class ServerCardModern extends ConsumerWidget {
               width: 40,
               child: Text(
                 label,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  fontWeight: FontWeight.w500,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w500),
               ),
             ),
             const SizedBox(width: 8),
@@ -272,9 +272,7 @@ class ServerCardModern extends ConsumerWidget {
           padding: const EdgeInsets.only(left: 48),
           child: Text(
             detail ?? '',
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
               fontSize: 10,
               color: Theme.of(context).hintColor,
             ),

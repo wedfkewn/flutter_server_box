@@ -2,11 +2,9 @@ import 'dart:io';
 
 import 'package:fl_lib/fl_lib.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_highlight/theme_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:icons_plus/icons_plus.dart';
 import 'package:server_box/core/extension/context/locale.dart';
-import 'package:server_box/data/model/app/net_view.dart';
 import 'package:server_box/data/provider/server/all.dart';
 import 'package:server_box/data/res/build_data.dart';
 import 'package:server_box/data/res/store.dart';
@@ -16,15 +14,12 @@ import 'package:server_box/generated/l10n/l10n.dart';
 import 'package:server_box/view/page/backup.dart';
 import 'package:server_box/view/page/private_key/list.dart';
 import 'package:server_box/view/page/server/connection_stats.dart';
-import 'package:server_box/view/page/setting/seq/virt_key.dart';
 
 part 'entries/ai.dart';
 part 'entries/app.dart';
 part 'entries/container.dart';
-part 'entries/editor.dart';
 part 'entries/full_screen.dart';
 part 'entries/server.dart';
-part 'entries/sftp.dart';
 part 'entries/ssh.dart';
 
 const _kIconSize = 23.0;
@@ -135,14 +130,10 @@ final class _AppSettingsPageState extends ConsumerState<AppSettingsPage> {
         [
           const CenterGreyTitle('SSH'),
           _buildSSH(),
-          const CenterGreyTitle('SFTP'),
-          _buildSFTP(),
         ],
         [
           CenterGreyTitle(l10n.container),
           _buildContainer(),
-          CenterGreyTitle(libL10n.editor),
-          _buildEditor(),
         ],
       ],
     );

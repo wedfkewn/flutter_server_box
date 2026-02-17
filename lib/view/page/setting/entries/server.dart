@@ -4,33 +4,9 @@ extension _Server on _AppSettingsPageState {
   Widget _buildServer() {
     return Column(
       children: [
-        _buildNetViewType(),
         _buildConnectionStats(),
-        _buildCpuView(),
         _buildServerMore(),
       ].map((e) => CardX(child: e)).toList(),
-    );
-  }
-
-  Widget _buildNetViewType() {
-    return ListTile(
-      leading: const Icon(ZondIcons.network, size: _kIconSize),
-      title: Text(l10n.netViewType),
-      trailing: ValBuilder(
-        listenable: _setting.netViewType.listenable(),
-        builder: (val) => Text(val.toStr, style: UIs.text15),
-      ),
-      onTap: () async {
-        final selected = await context.showPickSingleDialog(
-          title: l10n.netViewType,
-          items: NetViewType.values,
-          display: (p0) => p0.toStr,
-          initial: _setting.netViewType.fetch(),
-        );
-        if (selected != null) {
-          _setting.netViewType.put(selected);
-        }
-      },
     );
   }
 
@@ -163,23 +139,6 @@ extension _Server on _AppSettingsPageState {
     );
   }
 
-  Widget _buildCpuView() {
-    return ExpandTile(
-      leading: const Icon(OctIcons.cpu, size: _kIconSize),
-      title: Text('CPU ${l10n.view}'),
-      children: [
-        ListTile(
-          title: Text(l10n.noLineChart),
-          subtitle: Text(l10n.cpuViewAsProgressTip, style: UIs.textGrey),
-          trailing: StoreSwitch(prop: _setting.cpuViewAsProgress),
-        ),
-        ListTile(
-          title: Text(l10n.displayCpuIndex),
-          trailing: StoreSwitch(prop: _setting.displayCpuIndex),
-        ),
-      ],
-    );
-  }
 
   Widget _buildServerTabPreferDiskAmount() {
     return ListTile(

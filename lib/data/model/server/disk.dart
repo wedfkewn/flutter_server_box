@@ -398,15 +398,29 @@ class DiskUsage {
     final devs = <String>{};
     var used = BigInt.zero;
     var size = BigInt.zero;
-    for (var disk in disks) {
-      if (!_shouldCalc(disk.path, disk.mount)) continue;
-      // Use a combination of path and kernel name to uniquely identify disks
-      // This helps distinguish between multiple physical disks in BTRFS RAID setups
-      final uniqueId = '${disk.path}:${disk.kname ?? "unknown"}';
-      if (devs.contains(uniqueId)) continue;
-      devs.add(uniqueId);
-      used += disk.used;
-      size += disk.size;
+    void collect(Disk disk) {
+      if (disk.mount.isNotEmpty && _shouldCalc(disk.path, disk.mount)) {
+        final path = disk.path;
+        final kname = disk.kname ?? '';
+        if (!path.startsWith('/dev/loop') &&
+            !kname.startsWith('loop') &&
+            path != '/dev/sr0' &&
+            kname != 'sr0') {
+          final uniqueId = '${disk.path}:${disk.kname ?? "unknown"}';
+          if (!devs.contains(uniqueId)) {
+            devs.add(uniqueId);
+            used += disk.used;
+            size += disk.size;
+          }
+        }
+      }
+      for (final child in disk.children) {
+        collect(child);
+      }
+    }
+
+    for (final disk in disks) {
+      collect(disk);
     }
     return DiskUsage(used: used, size: size);
   }
