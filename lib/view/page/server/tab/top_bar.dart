@@ -15,10 +15,7 @@ final class _TopBar extends ConsumerWidget implements PreferredSizeWidget {
 
     final Widget leading;
     if (isMobile) {
-      leading = const Padding(
-        padding: EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-        child: Text(BuildData.name, style: TextStyle(fontSize: 19)),
-      );
+      leading = const SizedBox.shrink();
     } else {
       final servers = ref.watch(serversProvider);
       final order = servers.serverOrder;

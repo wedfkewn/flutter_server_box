@@ -1,23 +1,21 @@
 part of 'tab.dart';
 
-class ServerCardModern extends StatelessWidget {
+class ServerCardModern extends ConsumerWidget {
   final ServerState srv;
   final Spi spi;
 
-  const ServerCardModern({
-    super.key,
-    required this.srv,
-    required this.spi,
-  });
+  const ServerCardModern({super.key, required this.srv, required this.spi});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildHeader(context),
         const SizedBox(height: 12),
         _buildTags(context),
+        const SizedBox(height: 12),
+        _buildUnlockStatus(context, ref),
         const SizedBox(height: 12),
         IpLocationQuery(ip: spi.ip),
         const SizedBox(height: 12),
@@ -42,7 +40,9 @@ class ServerCardModern extends StatelessWidget {
         Expanded(
           child: Text(
             spi.name,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -55,8 +55,10 @@ class ServerCardModern extends StatelessWidget {
   Widget _buildLatencyTag(BuildContext context) {
     if (srv.conn != ServerConn.finished) {
       return Container(
-        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width - 50),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width - 50,
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(4),
@@ -70,7 +72,9 @@ class ServerCardModern extends StatelessWidget {
 
     // Using TCP connections count as a proxy for activity since latency is not directly available
     return Container(
-      constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width - 50),
+      constraints: BoxConstraints(
+        maxWidth: MediaQuery.of(context).size.width - 50,
+      ),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: Colors.green.withOpacity(0.1),
@@ -84,7 +88,9 @@ class ServerCardModern extends StatelessWidget {
           const SizedBox(width: 4),
           Text(
             '${srv.status.tcp.active}',
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.green),
+            style: Theme.of(
+              context,
+            ).textTheme.labelSmall?.copyWith(color: Colors.green),
           ),
         ],
       ),
@@ -114,10 +120,43 @@ class ServerCardModern extends StatelessWidget {
     );
   }
 
-  Widget _buildTagItem(BuildContext context, String text, IconData icon, {Color? color}) {
-    final effectiveColor = color ?? Theme.of(context).colorScheme.onSurfaceVariant;
+  Widget _buildUnlockStatus(BuildContext context, WidgetRef ref) {
+    if (srv.conn != ServerConn.finished) return const SizedBox.shrink();
+    final notifier = ref.read(serverProvider(spi.id).notifier);
+    return FutureBuilder<StreamingUnlockStatus>(
+      future: notifier.checkStreamingUnlockCached(),
+      builder: (context, snapshot) {
+        final data = snapshot.data;
+        if (data == null) return const SizedBox.shrink();
+        final children = <Widget>[
+          if (data.netflixUnlocked)
+            _buildTagItem(context, 'Netflix', Icons.movie, color: Colors.green),
+          if (data.chatgptUnlocked)
+            _buildTagItem(
+              context,
+              'ChatGPT',
+              Icons.smart_toy,
+              color: Colors.green,
+            ),
+        ];
+        if (children.isEmpty) return const SizedBox.shrink();
+        return Wrap(spacing: 8, runSpacing: 4, children: children);
+      },
+    );
+  }
+
+  Widget _buildTagItem(
+    BuildContext context,
+    String text,
+    IconData icon, {
+    Color? color,
+  }) {
+    final effectiveColor =
+        color ?? Theme.of(context).colorScheme.onSurfaceVariant;
     return Container(
-      constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width - 50),
+      constraints: BoxConstraints(
+        maxWidth: MediaQuery.of(context).size.width - 50,
+      ),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: effectiveColor.withOpacity(0.1),
@@ -132,9 +171,9 @@ class ServerCardModern extends StatelessWidget {
           Flexible(
             child: Text(
               text,
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: effectiveColor,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.labelSmall?.copyWith(color: effectiveColor),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -153,48 +192,92 @@ class ServerCardModern extends StatelessWidget {
     final diskTotal = srv.status.diskUsage?.size ?? BigInt.one;
     final diskDetail = '${diskUsed.bytes2Str}/${diskTotal.bytes2Str}';
 
+    final cpuCores = srv.status.cpu.coresCount;
+
     return Column(
       children: [
         _buildProgress(
-            context, 'CPU', srv.status.cpu.usedPercent() / 100, Colors.blue),
-        const SizedBox(height: 8),
-        _buildProgress(context, 'Mem', srv.status.mem.usedPercent,
-            Colors.purple,
-            detail: memDetail),
-        const SizedBox(height: 8),
-        _buildProgress(context, context.l10n.disk,
-            (srv.status.diskUsage?.usedPercent ?? 0) / 100, Colors.orange,
-            detail: diskDetail),
+          context,
+          'CPU',
+          srv.status.cpu.usedPercent() / 100,
+          Colors.blue,
+          detail: '$cpuCores 核心',
+        ),
+        const SizedBox(height: 12),
+        _buildProgress(
+          context,
+          '内存',
+          srv.status.mem.usedPercent,
+          Colors.purple,
+          detail: memDetail,
+        ),
+        const SizedBox(height: 12),
+        _buildProgress(
+          context,
+          '磁盘',
+          (srv.status.diskUsage?.usedPercent ?? 0) / 100,
+          Colors.orange,
+          detail: diskDetail,
+        ),
       ],
     );
   }
 
-  Widget _buildProgress(BuildContext context, String label, double value,
-      Color color,
-      {String? detail}) {
-    return Row(
+  Widget _buildProgress(
+    BuildContext context,
+    String label,
+    double value,
+    Color color, {
+    String? detail,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SizedBox(
-          width: 40,
-          child: Text(label, style: Theme.of(context).textTheme.bodySmall),
+        Row(
+          children: [
+            SizedBox(
+              width: 40,
+              child: Text(
+                label,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: LinearProgressIndicator(
+                value: value.clamp(0.0, 1.0),
+                backgroundColor: color.withOpacity(0.1),
+                color: color,
+                borderRadius: BorderRadius.circular(4),
+                minHeight: 6,
+              ),
+            ),
+            const SizedBox(width: 8),
+            SizedBox(
+              width: 42,
+              child: Text(
+                '${(value * 100).toStringAsFixed(0)}%',
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(fontSize: 10),
+                textAlign: TextAlign.end,
+              ),
+            ),
+          ],
         ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: LinearProgressIndicator(
-            value: value.clamp(0.0, 1.0),
-            backgroundColor: color.withOpacity(0.1),
-            color: color,
-            borderRadius: BorderRadius.circular(4),
-            minHeight: 6,
-          ),
-        ),
-        const SizedBox(width: 8),
-        ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 80),
+        const SizedBox(height: 4),
+        Padding(
+          padding: const EdgeInsets.only(left: 48),
           child: Text(
-            detail ?? '${(value * 100).toStringAsFixed(1)}%',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 10),
-            textAlign: TextAlign.end,
+            detail ?? '',
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(
+              fontSize: 10,
+              color: Theme.of(context).hintColor,
+            ),
             overflow: TextOverflow.ellipsis,
           ),
         ),
@@ -230,8 +313,14 @@ class ServerCardModern extends StatelessWidget {
     );
   }
 
-  Widget _buildNetItem(BuildContext context, String label, String speed,
-      String total, IconData icon, Color color) {
+  Widget _buildNetItem(
+    BuildContext context,
+    String label,
+    String speed,
+    String total,
+    IconData icon,
+    Color color,
+  ) {
     return Row(
       children: [
         Container(
@@ -258,13 +347,17 @@ class ServerCardModern extends StatelessWidget {
                   children: [
                     TextSpan(
                       text: speed,
-                      style: Theme.of(context).textTheme.bodyMedium
-                          ?.copyWith(fontWeight: FontWeight.bold, fontSize: 12),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
                     ),
                     TextSpan(
                       text: ' ($total)',
-                      style: Theme.of(context).textTheme.bodySmall
-                          ?.copyWith(color: Theme.of(context).hintColor, fontSize: 10),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).hintColor,
+                        fontSize: 10,
+                      ),
                     ),
                   ],
                 ),

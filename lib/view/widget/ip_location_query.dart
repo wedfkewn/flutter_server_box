@@ -84,9 +84,6 @@ class _IpLocationQueryState extends ConsumerState<IpLocationQuery> {
 
     final parts = [
       if (cc != null) cc,
-      info.region,
-      info.city,
-      info.org
     ].where((e) => e != null && e.isNotEmpty).join(' • ');
 
     return InkWell(

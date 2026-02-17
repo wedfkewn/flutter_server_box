@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:computer/computer.dart';
 import 'package:dartssh2/dartssh2.dart';
@@ -11,6 +12,7 @@ import 'package:server_box/core/utils/ssh_auth.dart';
 import 'package:server_box/data/helper/ssh_decoder.dart';
 import 'package:server_box/data/helper/system_detector.dart';
 import 'package:server_box/data/model/app/error.dart';
+import 'package:server_box/data/model/app/streaming_unlock.dart';
 import 'package:server_box/data/model/app/scripts/script_consts.dart';
 import 'package:server_box/data/model/app/scripts/shell_func.dart';
 import 'package:server_box/data/model/server/connection_stat.dart';
@@ -81,6 +83,8 @@ class ServerNotifier extends _$ServerNotifier {
 
   // Refresh server status
   bool _isRefreshing = false;
+  StreamingUnlockStatus? _streamingUnlockCache;
+  DateTime? _streamingUnlockCacheTime;
 
   Future<void> refresh() async {
     if (_isRefreshing) return;
@@ -91,6 +95,51 @@ class ServerNotifier extends _$ServerNotifier {
     } finally {
       _isRefreshing = false;
     }
+  }
+
+  Future<StreamingUnlockStatus> checkStreamingUnlock() async {
+    if (state.client == null || state.client!.isClosed) {
+      await refresh();
+    }
+    final client = state.client;
+    if (client == null || client.isClosed) {
+      throw const SSHErr(
+        type: SSHErrType.connect,
+        message: 'SSH client is not available',
+      );
+    }
+    final output = await client.execForOutput(_streamingUnlockScript);
+    final data = _parseStreamingUnlockJson(output);
+    final nfCode = data['netflix']?.toString();
+    final gptCode = data['chatgpt']?.toString();
+    if (nfCode == null || gptCode == null) {
+      throw SSHErr(
+        type: SSHErrType.getStatus,
+        message: 'Invalid response: $output',
+      );
+    }
+    return StreamingUnlockStatus(
+      netflixUnlocked: nfCode == '200',
+      netflixRegion: null,
+      chatgptUnlocked: gptCode == '200',
+      chatgptRegion: null,
+      lastCheckTime: DateTime.now(),
+    );
+  }
+
+  Future<StreamingUnlockStatus> checkStreamingUnlockCached({
+    Duration ttl = const Duration(minutes: 5),
+  }) async {
+    final now = DateTime.now();
+    final cache = _streamingUnlockCache;
+    final cacheTime = _streamingUnlockCacheTime;
+    if (cache != null && cacheTime != null && now.difference(cacheTime) < ttl) {
+      return cache;
+    }
+    final res = await checkStreamingUnlock();
+    _streamingUnlockCache = res;
+    _streamingUnlockCacheTime = res.lastCheckTime ?? now;
+    return res;
   }
 
   Future<void> _updateServer() async {
@@ -111,7 +160,8 @@ class ServerNotifier extends _$ServerNotifier {
     final newStatus = state.status..err = null; // Clear previous error
     updateStatus(newStatus);
 
-    if (state.conn < ServerConn.connecting || (state.client?.isClosed ?? true)) {
+    if (state.conn < ServerConn.connecting ||
+        (state.client?.isClosed ?? true)) {
       updateConnection(ServerConn.connecting);
 
       // Wake on LAN
@@ -142,49 +192,58 @@ class ServerNotifier extends _$ServerNotifier {
         }
 
         // Record successful connection
-        Stores.connectionStats.recordConnection(ConnectionStat(
-          serverId: spi.id,
-          serverName: spi.name,
-          timestamp: time1,
-          result: ConnectionResult.success,
-          durationMs: spentTime,
-        ));
+        Stores.connectionStats.recordConnection(
+          ConnectionStat(
+            serverId: spi.id,
+            serverName: spi.name,
+            timestamp: time1,
+            result: ConnectionResult.success,
+            durationMs: spentTime,
+          ),
+        );
 
         final sessionId = 'ssh_${spi.id}';
         TermSessionManager.add(
           id: sessionId,
           spi: spi,
           startTimeMs: time1.millisecondsSinceEpoch,
-          disconnect: () => ref.read(serversProvider.notifier).closeOneServer(spi.id),
+          disconnect: () =>
+              ref.read(serversProvider.notifier).closeOneServer(spi.id),
           status: TermSessionStatus.connecting,
         );
         TermSessionManager.setActive(sessionId, hasTerminal: false);
       } catch (e) {
         TryLimiter.inc(sid);
-        
+
         // Determine connection failure type
         ConnectionResult failureResult;
-        if (e.toString().contains('timeout') || e.toString().contains('Timeout')) {
+        if (e.toString().contains('timeout') ||
+            e.toString().contains('Timeout')) {
           failureResult = ConnectionResult.timeout;
-        } else if (e.toString().contains('auth') || e.toString().contains('Authentication')) {
+        } else if (e.toString().contains('auth') ||
+            e.toString().contains('Authentication')) {
           failureResult = ConnectionResult.authFailed;
-        } else if (e.toString().contains('network') || e.toString().contains('Network')) {
+        } else if (e.toString().contains('network') ||
+            e.toString().contains('Network')) {
           failureResult = ConnectionResult.networkError;
         } else {
           failureResult = ConnectionResult.unknownError;
         }
-        
+
         // Record failed connection
-        Stores.connectionStats.recordConnection(ConnectionStat(
-          serverId: spi.id,
-          serverName: spi.name,
-          timestamp: DateTime.now(),
-          result: failureResult,
-          errorMessage: e.toString(),
-          durationMs: 0,
-        ));
-        
-        final newStatus = state.status..err = SSHErr(type: SSHErrType.connect, message: e.toString());
+        Stores.connectionStats.recordConnection(
+          ConnectionStat(
+            serverId: spi.id,
+            serverName: spi.name,
+            timestamp: DateTime.now(),
+            result: failureResult,
+            errorMessage: e.toString(),
+            durationMs: 0,
+          ),
+        );
+
+        final newStatus = state.status
+          ..err = SSHErr(type: SSHErrType.connect, message: e.toString());
         updateStatus(newStatus);
         updateConnection(ServerConn.failed);
 
@@ -204,12 +263,17 @@ class ServerNotifier extends _$ServerNotifier {
 
       try {
         // Detect system type
-        final detectedSystemType = await SystemDetector.detect(state.client!, spi);
+        final detectedSystemType = await SystemDetector.detect(
+          state.client!,
+          spi,
+        );
         final newStatus = state.status..system = detectedSystemType;
         updateStatus(newStatus);
 
-        Loggers.app.info('Writing script for ${spi.name} (${detectedSystemType.name})');
-        
+        Loggers.app.info(
+          'Writing script for ${spi.name} (${detectedSystemType.name})',
+        );
+
         final (stdoutResult, writeScriptResult) = await state.client!.execSafe(
           (session) async {
             final scriptRaw = ShellFuncManager.allScript(
@@ -228,15 +292,22 @@ class ServerNotifier extends _$ServerNotifier {
           systemType: detectedSystemType,
           context: 'WriteScript<${spi.name}>',
         );
-        
+
         if (stdoutResult.isNotEmpty) {
-          Loggers.app.info('Script write stdout for ${spi.name}: $stdoutResult');
+          Loggers.app.info(
+            'Script write stdout for ${spi.name}: $stdoutResult',
+          );
         }
-        
+
         if (writeScriptResult.isNotEmpty) {
-          Loggers.app.warning('Script write stderr for ${spi.name}: $writeScriptResult');
+          Loggers.app.warning(
+            'Script write stderr for ${spi.name}: $writeScriptResult',
+          );
           if (detectedSystemType != SystemType.windows) {
-            ShellFuncManager.switchScriptDir(spi.id, systemType: detectedSystemType);
+            ShellFuncManager.switchScriptDir(
+              spi.id,
+              systemType: detectedSystemType,
+            );
             throw writeScriptResult;
           }
         } else {
@@ -251,7 +322,10 @@ class ServerNotifier extends _$ServerNotifier {
         updateConnection(ServerConn.failed);
 
         final sessionId = 'ssh_${spi.id}';
-        TermSessionManager.updateStatus(sessionId, TermSessionStatus.disconnected);
+        TermSessionManager.updateStatus(
+          sessionId,
+          TermSessionStatus.disconnected,
+        );
         return;
       } on SSHAuthFailError catch (e) {
         TryLimiter.inc(sid);
@@ -262,7 +336,10 @@ class ServerNotifier extends _$ServerNotifier {
         updateConnection(ServerConn.failed);
 
         final sessionId = 'ssh_${spi.id}';
-        TermSessionManager.updateStatus(sessionId, TermSessionStatus.disconnected);
+        TermSessionManager.updateStatus(
+          sessionId,
+          TermSessionStatus.disconnected,
+        );
         return;
       } catch (e) {
         final err = SSHErr(type: SSHErrType.writeScript, message: e.toString());
@@ -272,7 +349,10 @@ class ServerNotifier extends _$ServerNotifier {
         updateConnection(ServerConn.failed);
 
         final sessionId = 'ssh_${spi.id}';
-        TermSessionManager.updateStatus(sessionId, TermSessionStatus.disconnected);
+        TermSessionManager.updateStatus(
+          sessionId,
+          TermSessionStatus.disconnected,
+        );
       }
     }
 
@@ -287,7 +367,11 @@ class ServerNotifier extends _$ServerNotifier {
     String? raw;
 
     try {
-      final statusCmd = ShellFunc.status.exec(spi.id, systemType: state.status.system, customDir: spi.custom?.scriptDir);
+      final statusCmd = ShellFunc.status.exec(
+        spi.id,
+        systemType: state.status.system,
+        customDir: spi.custom?.scriptDir,
+      );
       // Loggers.app.info('Running status command for ${spi.name} (${state.status.system.name}): $statusCmd');
       final execResult = await state.client?.run(statusCmd);
       if (execResult != null) {
@@ -305,16 +389,25 @@ class ServerNotifier extends _$ServerNotifier {
       if (raw.isEmpty) {
         TryLimiter.inc(sid);
         final newStatus = state.status
-          ..err = SSHErr(type: SSHErrType.segements, message: 'Empty response from server');
+          ..err = SSHErr(
+            type: SSHErrType.segements,
+            message: 'Empty response from server',
+          );
         updateStatus(newStatus);
         updateConnection(ServerConn.failed);
 
         final sessionId = 'ssh_${spi.id}';
-        TermSessionManager.updateStatus(sessionId, TermSessionStatus.disconnected);
+        TermSessionManager.updateStatus(
+          sessionId,
+          TermSessionStatus.disconnected,
+        );
         return;
       }
 
-      segments = raw.split(ScriptConstants.separator).map((e) => e.trim()).toList();
+      segments = raw
+          .split(ScriptConstants.separator)
+          .map((e) => e.trim())
+          .toList();
       if (segments.isEmpty) {
         if (Stores.setting.keepStatusWhenErr.fetch()) {
           // Keep previous server status when error occurs
@@ -324,23 +417,33 @@ class ServerNotifier extends _$ServerNotifier {
         }
         TryLimiter.inc(sid);
         final newStatus = state.status
-          ..err = SSHErr(type: SSHErrType.segements, message: 'Separate segments failed, raw:\n$raw');
+          ..err = SSHErr(
+            type: SSHErrType.segements,
+            message: 'Separate segments failed, raw:\n$raw',
+          );
         updateStatus(newStatus);
         updateConnection(ServerConn.failed);
 
         final sessionId = 'ssh_${spi.id}';
-        TermSessionManager.updateStatus(sessionId, TermSessionStatus.disconnected);
+        TermSessionManager.updateStatus(
+          sessionId,
+          TermSessionStatus.disconnected,
+        );
         return;
       }
     } catch (e) {
       TryLimiter.inc(sid);
-      final newStatus = state.status..err = SSHErr(type: SSHErrType.getStatus, message: e.toString());
+      final newStatus = state.status
+        ..err = SSHErr(type: SSHErrType.getStatus, message: e.toString());
       updateStatus(newStatus);
       updateConnection(ServerConn.failed);
       Loggers.app.warning('Get status from ${spi.name} failed', e);
 
       final sessionId = 'ssh_${spi.id}';
-      TermSessionManager.updateStatus(sessionId, TermSessionStatus.disconnected);
+      TermSessionManager.updateStatus(
+        sessionId,
+        TermSessionStatus.disconnected,
+      );
       return;
     }
 
@@ -354,18 +457,28 @@ class ServerNotifier extends _$ServerNotifier {
         system: state.status.system,
         customCmds: spi.custom?.cmds ?? {},
       );
-      final newStatus = await Computer.shared.start(getStatus, req, taskName: 'StatusUpdateReq<${spi.id}>');
+      final newStatus = await Computer.shared.start(
+        getStatus,
+        req,
+        taskName: 'StatusUpdateReq<${spi.id}>',
+      );
       updateStatus(newStatus);
     } catch (e, trace) {
       TryLimiter.inc(sid);
       final newStatus = state.status
-        ..err = SSHErr(type: SSHErrType.getStatus, message: 'Parse failed: $e\n\n$raw');
+        ..err = SSHErr(
+          type: SSHErrType.getStatus,
+          message: 'Parse failed: $e\n\n$raw',
+        );
       updateStatus(newStatus);
       updateConnection(ServerConn.failed);
       Loggers.app.warning('Server status', e, trace);
 
       final sessionId = 'ssh_${spi.id}';
-      TermSessionManager.updateStatus(sessionId, TermSessionStatus.disconnected);
+      TermSessionManager.updateStatus(
+        sessionId,
+        TermSessionStatus.disconnected,
+      );
       return;
     }
 
@@ -374,6 +487,39 @@ class ServerNotifier extends _$ServerNotifier {
     // Reset retry count only after successful preparation
     TryLimiter.reset(sid);
   }
+}
+
+const _streamingUnlockScript = r'''
+nf_code=$(curl -o /dev/null -s -w "%{http_code}" --connect-timeout 5 --max-time 10 `https://www.netflix.com/title/70143836` );
+gpt_code=$(curl -o /dev/null -s -w "%{http_code}" --connect-timeout 5 --max-time 10 `https://chatgpt.com` );
+echo "{\"netflix\": \"$nf_code\", \"chatgpt\": \"$gpt_code\"}"
+''';
+
+Map<String, dynamic> _parseStreamingUnlockJson(String raw) {
+  final trimmed = raw.trim();
+  if (trimmed.isEmpty) {
+    throw const SSHErr(
+      type: SSHErrType.getStatus,
+      message: 'Empty response from server',
+    );
+  }
+  final start = trimmed.indexOf('{');
+  final end = trimmed.lastIndexOf('}');
+  if (start < 0 || end < start) {
+    throw SSHErr(
+      type: SSHErrType.getStatus,
+      message: 'Invalid JSON response: $raw',
+    );
+  }
+  final jsonStr = trimmed.substring(start, end + 1);
+  final decoded = jsonDecode(jsonStr);
+  if (decoded is! Map<String, dynamic>) {
+    throw SSHErr(
+      type: SSHErrType.getStatus,
+      message: 'Unexpected JSON shape: $raw',
+    );
+  }
+  return decoded;
 }
 
 extension IndividualServerStateExtension on ServerState {
