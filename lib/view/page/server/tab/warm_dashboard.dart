@@ -148,7 +148,7 @@ extension _WarmDashboard on _ServerPageState {
           ),
         ),
         IconButton.filledTonal(
-          tooltip: libL10n.add,
+          tooltip: context.libL10n.add,
           onPressed: _onTapAddServer,
           style: IconButton.styleFrom(
             backgroundColor: WarmTheme.peach,
@@ -211,7 +211,7 @@ extension _WarmDashboard on _ServerPageState {
             FilledButton.icon(
               onPressed: _onTapAddServer,
               icon: const Icon(Icons.add),
-              label: Text(libL10n.add),
+              label: Text(context.libL10n.add),
             ),
           ],
         ],
@@ -259,12 +259,12 @@ extension _WarmDashboard on _ServerPageState {
                     ),
                   ),
                   IconButton(
-                    tooltip: libL10n.terminal,
+                    tooltip: context.libL10n.terminal,
                     onPressed: () => _openWarmTerminal(srv.spi),
                     icon: const Icon(Icons.terminal, color: WarmTheme.copper),
                   ),
                   IconButton(
-                    tooltip: libL10n.refresh,
+                    tooltip: context.libL10n.refresh,
                     onPressed: () {
                       Stores.ipLookupCache.forgetServer(srv.spi.id);
                       _ipLookupRevision.value++;
@@ -428,7 +428,7 @@ extension _WarmDashboard on _ServerPageState {
                   const Spacer(),
                   _WarmAction(
                     icon: Icons.edit,
-                    label: libL10n.edit,
+                    label: context.libL10n.edit,
                     background: WarmTheme.peach,
                     foreground: WarmTheme.ink,
                     onTap: () => ServerEditPage.route.go(
@@ -439,7 +439,7 @@ extension _WarmDashboard on _ServerPageState {
                   const SizedBox(width: 8),
                   _WarmAction(
                     icon: Icons.delete,
-                    label: libL10n.delete,
+                    label: context.libL10n.delete,
                     background: const Color(0xfff7dfe1),
                     foreground: WarmTheme.danger,
                     onTap: () => _deleteWarmServer(srv),
@@ -462,17 +462,17 @@ extension _WarmDashboard on _ServerPageState {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('${libL10n.delete} ${srv.spi.name}?'),
-        content: Text(libL10n.askContinue(libL10n.delete)),
+        title: Text('${ctx.libL10n.delete} ${srv.spi.name}?'),
+        content: Text(ctx.libL10n.askContinue(ctx.libL10n.delete)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text(libL10n.cancel),
+            child: Text(ctx.libL10n.cancel),
           ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: WarmTheme.danger),
             onPressed: () => Navigator.pop(ctx, true),
-            child: Text(libL10n.delete),
+            child: Text(ctx.libL10n.delete),
           ),
         ],
       ),

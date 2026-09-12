@@ -98,6 +98,14 @@ void main() {
               primaryTextTheme: warmTheme.primaryTextTheme.apply(
                 fontFamily: 'WarmSans',
               ),
+              chipTheme: warmTheme.chipTheme.copyWith(
+                labelStyle: warmTheme.textTheme.labelLarge?.copyWith(
+                  fontFamily: 'WarmSans',
+                ),
+                secondaryLabelStyle: warmTheme.textTheme.labelLarge?.copyWith(
+                  fontFamily: 'WarmSans',
+                ),
+              ),
             ),
             localizationsDelegates: const [
               LibLocalizations.delegate,
@@ -138,6 +146,8 @@ void main() {
     expect(find.text('我的服务器'), findsOneWidget);
     expect(find.text('STD20'), findsOneWidget);
     expect(find.text('告警'), findsOneWidget);
+    expect(find.text('编辑'), findsOneWidget);
+    expect(find.text('删除'), findsOneWidget);
     expect(find.byIcon(Icons.public), findsNothing);
     expect(find.byIcon(Icons.travel_explore), findsOneWidget);
     await capture(tester, 'implementation-dashboard.png');
