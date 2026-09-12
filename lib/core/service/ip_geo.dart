@@ -51,12 +51,19 @@ abstract final class IpGeo {
   /// string it could not notice a name resolving somewhere new, and it answered
   /// from itself rather than from the installed month, so a coordinate never
   /// changed after a data update.
-  static Future<ResolvedGeo?> resolve(Spi spi) async =>
-      (await locate(spi)).geo;
+  static Future<ResolvedGeo?> resolve(Spi spi) async => (await locate(spi)).geo;
 
   /// [resolve] for a bare host, which is what the tests use.
   static Future<ResolvedGeo?> resolveHost(String host) async =>
       (await locateHost(host)).geo;
+
+  /// Reads an already resolved public address from installed GeoData without
+  /// enabling the globe UI or performing any network request.
+  ///
+  /// IP lookup uses this only as a degraded result when the online provider is
+  /// unavailable. It intentionally returns coordinates alone: an offline city
+  /// database cannot reliably supply ISP, organization, ASN, or network domain.
+  static GeoCoord? offlineCoordOf(InternetAddress address) => _cityOf(address);
 
   /// [resolve], and why there is no coordinate when there is none.
   ///
@@ -147,10 +154,7 @@ abstract final class IpGeo {
 
     final city = _cityOf(addr);
     if (city == null) return (geo: null, miss: GeoMiss.noData);
-    return (
-      geo: ResolvedGeo(coord: city, source: GeoSource.city),
-      miss: null,
-    );
+    return (geo: ResolvedGeo(coord: city, source: GeoSource.city), miss: null);
   }
 
   /// The city-level answer for [addr], from whichever family covers it.

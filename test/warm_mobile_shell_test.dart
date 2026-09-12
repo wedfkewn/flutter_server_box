@@ -33,9 +33,9 @@ void main() {
       final font = File(path);
       if (!font.existsSync()) return;
       final bytes = await font.readAsBytes();
-      await (FontLoader(family)
-            ..addFont(Future.value(ByteData.sublistView(bytes))))
-          .load();
+      await (FontLoader(
+        family,
+      )..addFont(Future.value(ByteData.sublistView(bytes)))).load();
     }
 
     await loadFont(
@@ -103,6 +103,7 @@ void main() {
               LibLocalizations.delegate,
               ...AppLocalizations.localizationsDelegates,
             ],
+            locale: const Locale('zh'),
             supportedLocales: AppLocalizations.supportedLocales,
             builder: ResponsivePoints.builder,
             home: child,
@@ -128,49 +129,54 @@ void main() {
     });
   }
 
-  testWidgets('renders the warm dashboard and opens alert settings', (tester) async {
+  testWidgets('renders the warm dashboard and opens alert settings', (
+    tester,
+  ) async {
     await pump(tester);
 
-    expect(find.text('Overview'), findsOneWidget);
-    expect(find.text('My Servers'), findsOneWidget);
+    expect(find.text('总览'), findsOneWidget);
+    expect(find.text('我的服务器'), findsOneWidget);
     expect(find.text('STD20'), findsOneWidget);
-    expect(find.text('Alert'), findsOneWidget);
+    expect(find.text('告警'), findsOneWidget);
+    expect(find.byIcon(Icons.public), findsNothing);
+    expect(find.byIcon(Icons.travel_explore), findsOneWidget);
     await capture(tester, 'implementation-dashboard.png');
 
-    await tester.tap(find.text('Alert'));
+    await tester.tap(find.text('告警'));
     for (var i = 0; i < 8; i++) {
       await tester.pump(const Duration(milliseconds: 50));
     }
-    expect(find.text('Alert Settings'), findsOneWidget);
-    expect(find.text('CPU Usage Alert'), findsOneWidget);
-    expect(find.text('Save'), findsOneWidget);
+    expect(find.text('告警设置'), findsOneWidget);
+    expect(find.text('CPU 使用率告警'), findsOneWidget);
+    expect(find.text('保存'), findsOneWidget);
     await capture(tester, 'implementation-alert.png');
 
-    await tester.tap(find.text('Cancel'));
+    await tester.tap(find.text('取消'));
     for (var i = 0; i < 8; i++) {
       await tester.pump(const Duration(milliseconds: 50));
     }
     await pump(tester, child: const SettingsPage());
 
-    expect(find.text('Appearance Settings'), findsOneWidget);
-    expect(find.text('Security Settings'), findsOneWidget);
-    expect(find.text('Privacy Mode'), findsOneWidget);
+    expect(find.text('外观设置'), findsOneWidget);
+    expect(find.text('安全设置'), findsOneWidget);
+    expect(find.text('隐私模式'), findsOneWidget);
     await capture(tester, 'implementation-settings.png');
 
     await tester.scrollUntilVisible(
-      find.text('Terminal Font'),
+      find.text('终端字体'),
       240,
       scrollable: find.byType(Scrollable),
     );
-    expect(find.text('App Settings'), findsOneWidget);
-    expect(find.text('Terminal Font'), findsOneWidget);
+    expect(find.text('应用设置'), findsOneWidget);
+    expect(find.text('终端字体'), findsOneWidget);
 
     await pump(
       tester,
       child: const Scaffold(
         body: BenchmarkLogView(
           height: 852,
-          log: '\x1b[36m/* tiny hex dumper */\x1b[0m\n'
+          log:
+              '\x1b[36m/* tiny hex dumper */\x1b[0m\n'
               '#include <stdio.h>\n\n'
               '\x1b[34m#define\x1b[0m N 16\n\n'
               '\x1b[32mint\x1b[0m main(int argc, char **argv) {\n'

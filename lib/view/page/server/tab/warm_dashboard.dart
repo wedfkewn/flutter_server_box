@@ -9,11 +9,15 @@ extension _WarmDashboard on _ServerPageState {
 
     return Scaffold(
       body: ListenableBuilder(
-        listenable: Listenable.merge([_tag, _tags, _search]),
+        listenable: Listenable.merge([_tag, _tags, _search, _ipLookupRevision]),
         builder: (context, _) {
           final allowed = _filterServers(state.serverOrder).toSet();
-          final filtered = live.where((e) => allowed.contains(e.spi.id)).toList();
-          final online = live.where((e) => e.conn == ServerConn.finished).length;
+          final filtered = live
+              .where((e) => allowed.contains(e.spi.id))
+              .toList();
+          final online = live
+              .where((e) => e.conn == ServerConn.finished)
+              .length;
           final offline = live.length - online;
 
           return RefreshIndicator(
@@ -50,6 +54,7 @@ extension _WarmDashboard on _ServerPageState {
   }
 
   Widget _warmOverview({required int online, required int offline}) {
+    final l10n = context.l10n;
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 22),
       decoration: BoxDecoration(
@@ -61,28 +66,50 @@ extension _WarmDashboard on _ServerPageState {
         children: [
           Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Overview',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                      l10n.warmOverview,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
-                    Text('Data Monitoring', style: TextStyle(color: WarmTheme.muted)),
+                    Text(
+                      l10n.warmDataMonitoring,
+                      style: const TextStyle(color: WarmTheme.muted),
+                    ),
                   ],
                 ),
               ),
-              const _WarmPill(
+              IconButton(
+                tooltip: l10n.ipLookupTitle,
+                onPressed: () async {
+                  await Navigator.of(context).push<void>(
+                    MaterialPageRoute(builder: (_) => const IpLookupPage()),
+                  );
+                  _ipLookupRevision.value++;
+                },
+                icon: const Icon(
+                  Icons.travel_explore,
+                  color: Color(0xff367cff),
+                ),
+              ),
+              _WarmPill(
                 icon: Icons.circle,
-                label: 'Monitoring',
+                label: l10n.warmMonitoring,
                 color: WarmTheme.lemon,
                 foreground: WarmTheme.olive,
               ),
             ],
           ),
           const SizedBox(height: 18),
-          const Text('Server Status', style: TextStyle(fontWeight: FontWeight.w600)),
+          Text(
+            l10n.warmServerStatus,
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
           const SizedBox(height: 14),
           Row(
             children: [
@@ -90,7 +117,7 @@ extension _WarmDashboard on _ServerPageState {
                 child: _WarmStatusTile(
                   icon: Icons.check_circle,
                   value: online,
-                  label: 'Online',
+                  label: l10n.warmOnline,
                   color: WarmTheme.olive,
                 ),
               ),
@@ -99,7 +126,7 @@ extension _WarmDashboard on _ServerPageState {
                 child: _WarmStatusTile(
                   icon: Icons.cloud_off_outlined,
                   value: offline,
-                  label: 'Offline',
+                  label: l10n.warmOffline,
                   color: WarmTheme.muted,
                 ),
               ),
@@ -111,12 +138,13 @@ extension _WarmDashboard on _ServerPageState {
   }
 
   Widget _warmServerHeader() {
+    final l10n = context.l10n;
     return Row(
       children: [
-        const Expanded(
+        Expanded(
           child: Text(
-            'My Servers',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+            l10n.warmMyServers,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
           ),
         ),
         IconButton.filledTonal(
@@ -146,7 +174,7 @@ extension _WarmDashboard on _ServerPageState {
           return ChoiceChip(
             selected: selected,
             showCheckmark: selected,
-            label: Text(tag.isEmpty ? 'All' : tag),
+            label: Text(tag.isEmpty ? context.l10n.warmAll : tag),
             onSelected: (_) => _tag.value = tag,
             selectedColor: const Color(0xffffb97f),
             backgroundColor: WarmTheme.canvas,
@@ -157,6 +185,7 @@ extension _WarmDashboard on _ServerPageState {
   }
 
   Widget _warmEmpty(bool hasNoServers) {
+    final l10n = context.l10n;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 42),
       decoration: BoxDecoration(
@@ -168,14 +197,12 @@ extension _WarmDashboard on _ServerPageState {
           const Icon(Icons.dns_outlined, size: 38, color: WarmTheme.copper),
           const SizedBox(height: 12),
           Text(
-            hasNoServers ? 'No servers yet' : 'No servers in this filter',
+            hasNoServers ? l10n.warmNoServers : l10n.warmNoServersInFilter,
             style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 6),
           Text(
-            hasNoServers
-                ? 'Add a server to begin monitoring and open an SSH terminal.'
-                : 'Choose another tag to see your servers.',
+            hasNoServers ? l10n.warmAddServerTip : l10n.warmChooseAnotherTag,
             textAlign: TextAlign.center,
             style: const TextStyle(color: WarmTheme.muted),
           ),
@@ -193,6 +220,7 @@ extension _WarmDashboard on _ServerPageState {
   }
 
   Widget _warmServerCard(ServerState srv) {
+    final l10n = context.l10n;
     final ss = srv.status;
     final connected = srv.conn == ServerConn.finished;
     final cpu = (ss.cpu.usedPercent() ?? 0).clamp(0, 100).toDouble();
@@ -224,7 +252,10 @@ extension _WarmDashboard on _ServerPageState {
                       srv.spi.name,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                   IconButton(
@@ -234,16 +265,25 @@ extension _WarmDashboard on _ServerPageState {
                   ),
                   IconButton(
                     tooltip: libL10n.refresh,
-                    onPressed: () => ref.read(serversProvider.notifier).refresh(spi: srv.spi),
-                    icon: const Icon(Icons.monitor_heart_outlined, color: WarmTheme.copper),
+                    onPressed: () {
+                      Stores.ipLookupCache.forgetServer(srv.spi.id);
+                      _ipLookupRevision.value++;
+                      ref.read(serversProvider.notifier).refresh(spi: srv.spi);
+                    },
+                    icon: const Icon(
+                      Icons.monitor_heart_outlined,
+                      color: WarmTheme.copper,
+                    ),
                   ),
                   _WarmPill(
                     icon: Icons.circle,
-                    label: connected ? 'Online' : 'Offline',
+                    label: connected ? l10n.warmOnline : l10n.warmOffline,
                     color: connected
                         ? const Color(0xffe6ead8)
                         : const Color(0xfff4dddd),
-                    foreground: connected ? const Color(0xff276b31) : WarmTheme.danger,
+                    foreground: connected
+                        ? const Color(0xff276b31)
+                        : WarmTheme.danger,
                   ),
                 ],
               ),
@@ -258,28 +298,77 @@ extension _WarmDashboard on _ServerPageState {
                   ],
                 ),
               ],
+              _WarmNetworkBadges(
+                key: ValueKey('${srv.spi.id}:${_ipLookupRevision.value}'),
+                server: srv,
+              ),
               const SizedBox(height: 18),
               Row(
                 children: [
-                  Expanded(child: _WarmMetric(label: 'CPU', value: cpu, color: const Color(0xff168bd2))),
+                  Expanded(
+                    child: _WarmMetric(
+                      label: l10n.warmCpu,
+                      value: cpu,
+                      color: const Color(0xff168bd2),
+                    ),
+                  ),
                   const SizedBox(width: 12),
-                  Expanded(child: _WarmMetric(label: 'Memory', value: memory, color: const Color(0xff9223b0))),
+                  Expanded(
+                    child: _WarmMetric(
+                      label: l10n.warmMemory,
+                      value: memory,
+                      color: const Color(0xff9223b0),
+                    ),
+                  ),
                   const SizedBox(width: 12),
-                  Expanded(child: _WarmMetric(label: 'Disk', value: disk, color: const Color(0xffdc3d1e))),
+                  Expanded(
+                    child: _WarmMetric(
+                      label: l10n.warmDisk,
+                      value: disk,
+                      color: const Color(0xffdc3d1e),
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 7),
               Row(
                 children: [
-                  Expanded(child: Text('${ss.cpu.coresCount} core', style: const TextStyle(fontSize: 10, color: WarmTheme.muted))),
-                  Expanded(child: Text('${_warmGb(memoryUsed)}/${_warmGb(ss.mem.total)} GB', style: const TextStyle(fontSize: 10, color: WarmTheme.muted))),
-                  Expanded(child: Text(_warmDisk(ss.diskUsage), style: const TextStyle(fontSize: 10, color: WarmTheme.muted))),
+                  Expanded(
+                    child: Text(
+                      l10n.warmCoreCount(ss.cpu.coresCount),
+                      style: const TextStyle(
+                        fontSize: 10,
+                        color: WarmTheme.muted,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      '${_warmGb(memoryUsed)}/${_warmGb(ss.mem.total)} GB',
+                      style: const TextStyle(
+                        fontSize: 10,
+                        color: WarmTheme.muted,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      _warmDisk(ss.diskUsage),
+                      style: const TextStyle(
+                        fontSize: 10,
+                        color: WarmTheme.muted,
+                      ),
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 16),
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: WarmTheme.surfaceStrong,
                   borderRadius: BorderRadius.circular(14),
@@ -293,7 +382,10 @@ extension _WarmDashboard on _ServerPageState {
                         ss.cpu.brand.keys.firstOrNull ?? srv.spi.displayAddr,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontSize: 11, color: WarmTheme.muted),
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: WarmTheme.muted,
+                        ),
                       ),
                     ),
                   ],
@@ -305,7 +397,7 @@ extension _WarmDashboard on _ServerPageState {
                   Expanded(
                     child: _WarmTransfer(
                       icon: Icons.upload,
-                      title: 'Upload',
+                      title: l10n.warmUpload,
                       speed: net.speedOut,
                       total: net.sizeOut,
                     ),
@@ -314,7 +406,7 @@ extension _WarmDashboard on _ServerPageState {
                   Expanded(
                     child: _WarmTransfer(
                       icon: Icons.download,
-                      title: 'Download',
+                      title: l10n.warmDownload,
                       speed: net.speedIn,
                       total: net.sizeIn,
                     ),
@@ -328,7 +420,7 @@ extension _WarmDashboard on _ServerPageState {
                 children: [
                   _WarmAction(
                     icon: Icons.notifications,
-                    label: 'Alert',
+                    label: l10n.warmAlert,
                     background: WarmTheme.lemon,
                     foreground: WarmTheme.olive,
                     onTap: () => _showWarmAlert(srv),
@@ -373,7 +465,10 @@ extension _WarmDashboard on _ServerPageState {
         title: Text('${libL10n.delete} ${srv.spi.name}?'),
         content: Text(libL10n.askContinue(libL10n.delete)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(libL10n.cancel)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(libL10n.cancel),
+          ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: WarmTheme.danger),
             onPressed: () => Navigator.pop(ctx, true),
@@ -388,6 +483,7 @@ extension _WarmDashboard on _ServerPageState {
   }
 
   Future<void> _showWarmAlert(ServerState srv) async {
+    final l10n = context.l10n;
     var enabled = true;
     var cpu = 90.0;
     var memory = 90.0;
@@ -400,11 +496,21 @@ extension _WarmDashboard on _ServerPageState {
           titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
           contentPadding: const EdgeInsets.symmetric(horizontal: 16),
           actionsPadding: const EdgeInsets.fromLTRB(16, 4, 16, 14),
-          title: const Column(
+          title: Column(
             children: [
-              Icon(Icons.notifications, color: WarmTheme.copper, size: 23),
-              SizedBox(height: 6),
-              Text('Alert Settings', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
+              const Icon(
+                Icons.notifications,
+                color: WarmTheme.copper,
+                size: 23,
+              ),
+              const SizedBox(height: 6),
+              Text(
+                l10n.warmAlertSettings,
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
             ],
           ),
           content: SizedBox(
@@ -415,7 +521,10 @@ extension _WarmDashboard on _ServerPageState {
                 children: [
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 13,
+                    ),
                     decoration: BoxDecoration(
                       color: WarmTheme.peach,
                       borderRadius: BorderRadius.circular(28),
@@ -424,42 +533,84 @@ extension _WarmDashboard on _ServerPageState {
                       children: [
                         const Icon(Icons.computer, color: WarmTheme.copper),
                         const SizedBox(width: 10),
-                        Text(srv.spi.name, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+                        Text(
+                          srv.spi.name,
+                          style: const TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                       ],
                     ),
                   ),
                   const SizedBox(height: 14),
                   Row(
                     children: [
-                      const Expanded(
+                      Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Enable Alerts', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-                            Text('Monitor server status and send notifications', style: TextStyle(color: WarmTheme.muted, fontSize: 12)),
+                            Text(
+                              l10n.warmEnableAlerts,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            Text(
+                              l10n.warmEnableAlertsTip,
+                              style: const TextStyle(
+                                color: WarmTheme.muted,
+                                fontSize: 12,
+                              ),
+                            ),
                           ],
                         ),
                       ),
-                      Switch(value: enabled, onChanged: (v) => update(() => enabled = v)),
+                      Switch(
+                        value: enabled,
+                        onChanged: (v) => update(() => enabled = v),
+                      ),
                     ],
                   ),
                   const Divider(height: 20),
-                  _WarmAlertSlider(icon: Icons.memory, label: 'CPU Usage Alert', value: cpu, enabled: enabled, onChanged: (v) => update(() => cpu = v)),
-                  _WarmAlertSlider(icon: Icons.dns, label: 'Memory Usage Alert', value: memory, enabled: enabled, onChanged: (v) => update(() => memory = v)),
-                  _WarmAlertSlider(icon: Icons.storage, label: 'Disk Usage Alert', value: disk, enabled: enabled, onChanged: (v) => update(() => disk = v)),
+                  _WarmAlertSlider(
+                    icon: Icons.memory,
+                    label: l10n.warmCpuAlert,
+                    value: cpu,
+                    enabled: enabled,
+                    onChanged: (v) => update(() => cpu = v),
+                  ),
+                  _WarmAlertSlider(
+                    icon: Icons.dns,
+                    label: l10n.warmMemoryAlert,
+                    value: memory,
+                    enabled: enabled,
+                    onChanged: (v) => update(() => memory = v),
+                  ),
+                  _WarmAlertSlider(
+                    icon: Icons.storage,
+                    label: l10n.warmDiskAlert,
+                    value: disk,
+                    enabled: enabled,
+                    onChanged: (v) => update(() => disk = v),
+                  ),
                 ],
               ),
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(ctx.libL10n.cancel),
+            ),
             FilledButton.icon(
               onPressed: () {
                 Navigator.pop(ctx);
-                Toast.success('Alert settings saved');
+                Toast.success(l10n.warmAlertSaved);
               },
               icon: const Icon(Icons.save),
-              label: const Text('Save'),
+              label: Text(ctx.libL10n.save),
             ),
           ],
         ),
@@ -477,8 +628,98 @@ extension _WarmDashboard on _ServerPageState {
   }
 }
 
+class _WarmNetworkBadges extends StatefulWidget {
+  const _WarmNetworkBadges({super.key, required this.server});
+
+  final ServerState server;
+
+  @override
+  State<_WarmNetworkBadges> createState() => _WarmNetworkBadgesState();
+}
+
+class _WarmNetworkBadgesState extends State<_WarmNetworkBadges> {
+  IpLookupResult? _result;
+
+  @override
+  void initState() {
+    super.initState();
+    if (Stores.setting.ipLookupConsent.fetch()) unawaited(_load());
+  }
+
+  Future<void> _load() async {
+    final server = widget.server;
+    InternetAddress? address = SelfAddr.pick(server.status.ips);
+    if (address == null) {
+      final host = IpGeo.geoHostOf(server.spi);
+      if (host == null) return;
+      try {
+        address = (await IpLookupService().resolveInput(host)).firstOrNull;
+      } on IpLookupFailure {
+        return;
+      }
+    }
+    if (address == null) return;
+
+    Stores.ipLookupCache.forgetServerExcept(server.spi.id, address.address);
+    final cached = Stores.ipLookupCache.fresh(server.spi.id, address.address);
+    if (cached != null) {
+      if (mounted) setState(() => _result = cached);
+      return;
+    }
+
+    try {
+      final result = await IpLookupService().lookup(
+        address,
+        languageCode: Localizations.localeOf(context).languageCode,
+      );
+      Stores.ipLookupCache.putResult(server.spi.id, result);
+      if (mounted) setState(() => _result = result);
+    } on IpLookupFailure {
+      // Enrichment is optional. A failed third-party lookup must never make
+      // the server card or its primary monitoring data look failed.
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final result = _result;
+    if (result == null) return const SizedBox.shrink();
+    final country = [
+      result.flagEmoji,
+      result.countryCode,
+    ].whereType<String>().join(' ');
+    final labels = [
+      country,
+      result.organization,
+      result.networkDomain,
+      result.asnLabel,
+      if (result.isp != result.organization) result.isp,
+    ].whereType<String>().where((value) => value.trim().isNotEmpty).toList();
+    if (labels.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(top: 6),
+      child: Wrap(
+        spacing: 6,
+        runSpacing: 6,
+        children: [
+          for (final label in labels)
+            Tooltip(
+              message: label,
+              child: _WarmOutlineChip(label: label),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
 class _WarmStatusTile extends StatelessWidget {
-  const _WarmStatusTile({required this.icon, required this.value, required this.label, required this.color});
+  const _WarmStatusTile({
+    required this.icon,
+    required this.value,
+    required this.label,
+    required this.color,
+  });
   final IconData icon;
   final int value;
   final String label;
@@ -487,21 +728,39 @@ class _WarmStatusTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
     height: 104,
-    decoration: BoxDecoration(color: const Color(0xfff6e6da), borderRadius: BorderRadius.circular(24)),
+    decoration: BoxDecoration(
+      color: const Color(0xfff6e6da),
+      borderRadius: BorderRadius.circular(24),
+    ),
     child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Icon(icon, color: color, size: 23),
         const SizedBox(height: 5),
-        Text('$value', style: TextStyle(color: color, fontSize: 27, fontWeight: FontWeight.w800)),
-        Text(label, style: const TextStyle(fontSize: 11, color: WarmTheme.muted)),
+        Text(
+          '$value',
+          style: TextStyle(
+            color: color,
+            fontSize: 27,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 11, color: WarmTheme.muted),
+        ),
       ],
     ),
   );
 }
 
 class _WarmPill extends StatelessWidget {
-  const _WarmPill({required this.icon, required this.label, required this.color, required this.foreground});
+  const _WarmPill({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.foreground,
+  });
   final IconData icon;
   final String label;
   final Color color;
@@ -510,13 +769,23 @@ class _WarmPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-    decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(22)),
+    decoration: BoxDecoration(
+      color: color,
+      borderRadius: BorderRadius.circular(22),
+    ),
     child: Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         Icon(icon, size: 9, color: foreground),
         const SizedBox(width: 7),
-        Text(label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: foreground)),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.w700,
+            color: foreground,
+          ),
+        ),
       ],
     ),
   );
@@ -535,12 +804,21 @@ class _WarmOutlineChip extends StatelessWidget {
       border: Border.all(color: const Color(0xffd3bdad)),
       borderRadius: BorderRadius.circular(18),
     ),
-    child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 10, color: WarmTheme.ink)),
+    child: Text(
+      label,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: const TextStyle(fontSize: 10, color: WarmTheme.ink),
+    ),
   );
 }
 
 class _WarmMetric extends StatelessWidget {
-  const _WarmMetric({required this.label, required this.value, required this.color});
+  const _WarmMetric({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
   final String label;
   final double value;
   final Color color;
@@ -551,8 +829,20 @@ class _WarmMetric extends StatelessWidget {
     children: [
       Row(
         children: [
-          Expanded(child: Text(label, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700))),
-          Text('${value.round()}%', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: color)),
+          Expanded(
+            child: Text(
+              label,
+              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700),
+            ),
+          ),
+          Text(
+            '${value.round()}%',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: color,
+            ),
+          ),
         ],
       ),
       const SizedBox(height: 5),
@@ -570,7 +860,12 @@ class _WarmMetric extends StatelessWidget {
 }
 
 class _WarmTransfer extends StatelessWidget {
-  const _WarmTransfer({required this.icon, required this.title, required this.speed, required this.total});
+  const _WarmTransfer({
+    required this.icon,
+    required this.title,
+    required this.speed,
+    required this.total,
+  });
   final IconData icon;
   final String title;
   final String speed;
@@ -591,19 +886,43 @@ class _WarmTransfer extends StatelessWidget {
           children: [
             Icon(icon, size: 16, color: WarmTheme.copper),
             const SizedBox(width: 6),
-            Expanded(child: Text(title, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700))),
-            Text(total, style: const TextStyle(fontSize: 9, color: WarmTheme.muted)),
+            Expanded(
+              child: Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            Text(
+              total,
+              style: const TextStyle(fontSize: 9, color: WarmTheme.muted),
+            ),
           ],
         ),
         const SizedBox(height: 7),
-        Text(speed, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: WarmTheme.copper)),
+        Text(
+          speed,
+          style: const TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.w800,
+            color: WarmTheme.copper,
+          ),
+        ),
       ],
     ),
   );
 }
 
 class _WarmAction extends StatelessWidget {
-  const _WarmAction({required this.icon, required this.label, required this.background, required this.foreground, required this.onTap});
+  const _WarmAction({
+    required this.icon,
+    required this.label,
+    required this.background,
+    required this.foreground,
+    required this.onTap,
+  });
   final IconData icon;
   final String label;
   final Color background;
@@ -620,12 +939,21 @@ class _WarmAction extends StatelessWidget {
       visualDensity: VisualDensity.compact,
     ),
     icon: Icon(icon, size: 15),
-    label: Text(label, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
+    label: Text(
+      label,
+      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700),
+    ),
   );
 }
 
 class _WarmAlertSlider extends StatelessWidget {
-  const _WarmAlertSlider({required this.icon, required this.label, required this.value, required this.enabled, required this.onChanged});
+  const _WarmAlertSlider({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.enabled,
+    required this.onChanged,
+  });
   final IconData icon;
   final String label;
   final double value;
@@ -649,10 +977,20 @@ class _WarmAlertSlider extends StatelessWidget {
           height: 34,
           child: SliderTheme(
             data: SliderTheme.of(context).copyWith(trackHeight: 7),
-            child: Slider(value: value, min: 10, max: 100, divisions: 18, label: '${value.round()}%', onChanged: enabled ? onChanged : null),
+            child: Slider(
+              value: value,
+              min: 10,
+              max: 100,
+              divisions: 18,
+              label: '${value.round()}%',
+              onChanged: enabled ? onChanged : null,
+            ),
           ),
         ),
-        Text('Alert when above ${value.round()}%', style: const TextStyle(color: WarmTheme.muted, fontSize: 12)),
+        Text(
+          context.l10n.warmAlertAbove(value.round()),
+          style: const TextStyle(color: WarmTheme.muted, fontSize: 12),
+        ),
       ],
     ),
   );

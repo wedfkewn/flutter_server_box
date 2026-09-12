@@ -2,6 +2,7 @@ part of 'entry.dart';
 
 extension _WarmSettings on _SettingsPageState {
   Widget _buildWarmSettings(List<SettingsNode> nodes) {
+    final l10n = context.l10n;
     SettingsNode byId(String id) => nodes
         .expand((node) => node.flattened)
         .firstWhere((node) => node.id == id);
@@ -9,25 +10,25 @@ extension _WarmSettings on _SettingsPageState {
     return ListView(
       padding: const EdgeInsets.fromLTRB(28, 16, 28, 24),
       children: [
-        const _WarmSettingsSection('Appearance Settings'),
+        _WarmSettingsSection(l10n.warmAppearanceSettings),
         _WarmSettingsRow(
           icon: Icons.palette,
-          title: 'Theme Mode',
-          subtitle: 'Light',
+          title: context.libL10n.themeMode,
+          subtitle: l10n.warmLight,
           onTap: () => _onTab(byId('app.setting')),
         ),
         _WarmSettingsRow(
           icon: Icons.view_agenda,
-          title: 'Card Badges',
-          subtitle: 'Adjust badges displayed on cards',
+          title: l10n.warmCardBadges,
+          subtitle: l10n.warmCardBadgesTip,
           onTap: () => _onTab(byId('server.setting')),
         ),
-        const _WarmSettingsSection('Security Settings'),
+        _WarmSettingsSection(l10n.warmSecuritySettings),
         Stores.setting.privacyBlur.listenable().listenVal(
           (enabled) => _WarmSettingsRow(
             icon: Icons.visibility_off,
-            title: 'Privacy Mode',
-            subtitle: 'Hide ServerBox from recent tasks',
+            title: l10n.warmPrivacyMode,
+            subtitle: l10n.warmPrivacyModeTip,
             trailing: Switch(
               value: enabled,
               onChanged: (value) => Stores.setting.privacyBlur.put(value),
@@ -37,54 +38,54 @@ extension _WarmSettings on _SettingsPageState {
         ),
         _WarmSettingsRow(
           icon: Icons.cloud_sync,
-          title: 'Cloud Backup',
-          subtitle: 'Back up and restore app data',
+          title: l10n.warmCloudBackup,
+          subtitle: l10n.warmCloudBackupTip,
           onTap: () => _onTab(byId('backup.sync')),
         ),
         _WarmSettingsRow(
           icon: Icons.route,
-          title: 'Bastion Configuration',
-          subtitle: 'Access target servers via bastion',
+          title: l10n.warmBastionConfig,
+          subtitle: l10n.warmBastionConfigTip,
           onTap: () => _onTab(byId('terminal.setting')),
         ),
         _WarmSettingsRow(
           icon: Icons.cable,
-          title: 'Tunnel Configuration',
-          subtitle: 'Configure SSH port forwarding rules',
+          title: l10n.warmTunnelConfig,
+          subtitle: l10n.warmTunnelConfigTip,
           onTap: () => _onTab(byId('terminal.setting')),
         ),
         _WarmSettingsRow(
           icon: Icons.delete,
-          title: 'Clear Secure Data',
-          subtitle: 'Delete encrypted passwords and private keys',
+          title: l10n.warmClearSecureData,
+          subtitle: l10n.warmClearSecureDataTip,
           danger: true,
           onTap: () => _onTab(byId('privateKey')),
         ),
-        const _WarmSettingsSection('App Settings'),
+        _WarmSettingsSection(l10n.warmAppSettings),
         _WarmSettingsRow(
           icon: Icons.timer,
-          title: 'Default Status Update Speed',
+          title: l10n.warmDefaultStatusSpeed,
           subtitle: '${Stores.setting.serverStatusUpdateInterval.fetch()} s',
           onTap: () => _onTab(byId('server.setting')),
         ),
         _WarmSettingsRow(
           icon: Icons.translate,
-          title: 'Language',
+          title: context.libL10n.language,
           subtitle: Stores.setting.locale.fetch().isEmpty
-              ? 'System'
+              ? l10n.warmSystem
               : Stores.setting.locale.fetch(),
           onTap: () => _onTab(byId('app.setting')),
         ),
         _WarmSettingsRow(
           icon: Icons.format_size,
-          title: 'Terminal Font Size',
+          title: l10n.warmTerminalFontSize,
           subtitle: '${Stores.setting.termFontSize.fetch()} pt',
           onTap: () => _onTab(byId('terminal.setting')),
         ),
         _WarmSettingsRow(
           icon: Icons.font_download,
-          title: 'Terminal Font',
-          subtitle: 'System Monospace',
+          title: l10n.warmTerminalFont,
+          subtitle: l10n.warmSystemMonospace,
           onTap: () => _onTab(byId('terminal.setting')),
         ),
       ],
@@ -168,10 +169,7 @@ class _WarmSettingsRow extends StatelessWidget {
               ],
             ),
           ),
-          if (trailing != null) ...[
-            const SizedBox(width: 10),
-            trailing!,
-          ],
+          if (trailing != null) ...[const SizedBox(width: 10), trailing!],
         ],
       ),
     ),

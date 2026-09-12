@@ -6,6 +6,7 @@ import 'package:server_box/data/store/connection_stats.dart';
 import 'package:server_box/data/store/container.dart';
 import 'package:server_box/data/store/entity_store.dart';
 import 'package:server_box/data/store/history.dart';
+import 'package:server_box/data/store/ip_lookup_cache.dart';
 import 'package:server_box/data/store/migrations/m003_hive_to_sqlite.dart';
 import 'package:server_box/data/store/port_forward.dart';
 import 'package:server_box/data/store/private_key.dart';
@@ -60,6 +61,8 @@ abstract final class Stores {
   /// here can work it out again.
   static SelfAddrStore get selfAddr => getIt<SelfAddrStore>();
 
+  static IpLookupCacheStore get ipLookupCache => getIt<IpLookupCacheStore>();
+
   /// What each server was last seen running. A cache of an observation, not a
   /// record anyone edits — see [ServerDistStore].
   static ServerDistStore get serverDist => getIt<ServerDistStore>();
@@ -110,6 +113,9 @@ abstract final class Stores {
       () => PortForwardStore.instance,
     );
     getIt.registerLazySingleton<SelfAddrStore>(() => SelfAddrStore.instance);
+    getIt.registerLazySingleton<IpLookupCacheStore>(
+      () => IpLookupCacheStore.instance,
+    );
 
     // First and on its own: everything below reaches the database, and a
     // `Future.wait` invokes every element before awaiting any of them — so
@@ -142,6 +148,7 @@ abstract final class Stores {
       // is is not something the user did, so it must not move the clock sync
       // reads.
       selfAddr.init(),
+      ipLookupCache.init(),
     ]);
 
     // Not a table to create — only the per-launch sweep of expired rows, and
@@ -171,6 +178,10 @@ abstract final class Stores {
     await HiveImport.runIfNeeded();
 
     await setting.removeRetiredKeys();
+
+    if (setting.needsInitialChineseLocale) {
+      setting.locale.put('zh_CN');
+    }
   }
 
   static int get lastModTime {

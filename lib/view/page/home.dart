@@ -38,7 +38,6 @@ class HomePage extends ConsumerStatefulWidget {
   static const route = AppRouteNoArg(page: HomePage.new, path: '/');
 }
 
-
 /// What the navigation rail takes from the width a tab gets.
 ///
 /// `NavigationRail`'s own default for an unextended rail, which it does not
@@ -143,6 +142,7 @@ class _HomePageState extends ConsumerState<HomePage>
   int _serverRefreshCycle = 0;
 
   late final _notifier = ref.read(serversProvider.notifier);
+
   /// What the user arranged: the bar, and the rail.
   late List<AppTab> _barTabs = Stores.setting.homeTabs.fetch();
 
@@ -434,10 +434,8 @@ class _HomePageState extends ConsumerState<HomePage>
                         // shape: three of them put a `Scaffold` *inside* a pane
                         // splitter, so the splitter's own divider is above any app
                         // bar that could have spent the inset.
-                        rootBuilder: (_) => SafeArea(
-                          bottom: false,
-                          child: _tabs[index].page,
-                        ),
+                        rootBuilder: (_) =>
+                            SafeArea(bottom: false, child: _tabs[index].page),
                       ),
                       onPageChanged: (value) {
                         FocusScope.of(context).unfocus();
@@ -451,9 +449,7 @@ class _HomePageState extends ConsumerState<HomePage>
                   ),
                 ],
               ),
-        bottomNavigationBar: narrow && !_wantsWindow
-            ? _buildBottomBar()
-            : null,
+        bottomNavigationBar: narrow && !_wantsWindow ? _buildBottomBar() : null,
       ),
     );
 
@@ -555,7 +551,8 @@ class _HomePageState extends ConsumerState<HomePage>
           },
           labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
           destinations: [
-            for (final tab in shown) tab.navDestination(onMenu: _navMenuFor(tab)),
+            for (final tab in shown)
+              tab.navDestination(onMenu: _navMenuFor(tab)),
             // One slot, holding whichever of the two is needed. While
             // anything is behind "more" that is where the settings live, as
             // they always have; with every tab turned on there is nothing left
@@ -607,21 +604,21 @@ class _HomePageState extends ConsumerState<HomePage>
             final page = _tabs.indexOf(tab);
             if (page >= 0) _onDestinationSelected(page);
           },
-          destinations: const [
+          destinations: [
             NavigationDestination(
-              icon: Icon(Icons.dashboard_outlined),
-              selectedIcon: Icon(Icons.dashboard),
-              label: 'Dashboard',
+              icon: const Icon(Icons.dashboard_outlined),
+              selectedIcon: const Icon(Icons.dashboard),
+              label: context.l10n.warmDashboard,
             ),
             NavigationDestination(
-              icon: Icon(Icons.terminal_outlined),
-              selectedIcon: Icon(Icons.terminal),
-              label: 'Terminal',
+              icon: const Icon(Icons.terminal_outlined),
+              selectedIcon: const Icon(Icons.terminal),
+              label: context.l10n.warmTerminal,
             ),
             NavigationDestination(
-              icon: Icon(Icons.settings_outlined),
-              selectedIcon: Icon(Icons.settings),
-              label: 'Settings',
+              icon: const Icon(Icons.settings_outlined),
+              selectedIcon: const Icon(Icons.settings),
+              label: context.l10n.warmSettings,
             ),
           ],
         );
@@ -982,13 +979,19 @@ class _HomePageState extends ConsumerState<HomePage>
   void _onAuthUnavailable() {
     _shouldAuth = false;
     final prop = Stores.setting.useBioAuth;
-    final saved = prop.store.set(prop.key, false, updateLastUpdateTsOnSet: false);
+    final saved = prop.store.set(
+      prop.key,
+      false,
+      updateLastUpdateTsOnSet: false,
+    );
     // `set` answers false rather than throwing. Worth a line and nothing more:
     // the app is already past the lock either way, and the cost of a failed
     // write is being asked once more on the next launch.
     if (saved != true) {
-      Loggers.app.warning('Could not turn ${prop.key} off on a device '
-          'that cannot authenticate');
+      Loggers.app.warning(
+        'Could not turn ${prop.key} off on a device '
+        'that cannot authenticate',
+      );
     }
   }
 
@@ -1036,7 +1039,6 @@ class _HomePageState extends ConsumerState<HomePage>
   }
 }
 
-
 extension _HomePageStateUtils on _HomePageState {
   bool get _canRefreshServers {
     if (isDesktop) return true;
@@ -1047,7 +1049,6 @@ extension _HomePageStateUtils on _HomePageState {
     return isAndroid && Stores.setting.bgRun.fetch();
   }
 }
-
 
 extension _HomePageStateActions on _HomePageState {
   void _handleHomeTabsChanged() {
@@ -1168,7 +1169,8 @@ extension _HomePageNav on _HomePageState {
       _ => null,
     };
     if (menu == null) return null;
-    return (at) => showContextMenu(context, menu.actions, title: menu.title, at: at);
+    return (at) =>
+        showContextMenu(context, menu.actions, title: menu.title, at: at);
   }
 
   /// Asked first, unlike disconnecting servers.
@@ -1180,7 +1182,9 @@ extension _HomePageNav on _HomePageState {
     final ok = await context.showRoundDialog<bool>(
       title: libL10n.attention,
       child: Text(
-        libL10n.askContinue('${libL10n.close} ${libL10n.all} ${libL10n.terminal}'),
+        libL10n.askContinue(
+          '${libL10n.close} ${libL10n.all} ${libL10n.terminal}',
+        ),
       ),
       actions: Btnx.okReds,
     );

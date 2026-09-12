@@ -60,7 +60,9 @@ void main() {
 
   Future<void> pump(
     WidgetTester tester, {
-    Size size = const Size(420, 900),
+    // The warm phone layout deliberately replaces the globe entry with IP
+    // lookup. Globe behavior remains covered here through the classic layout.
+    Size size = const Size(800, 900),
     double bottomInset = 0,
   }) async {
     tester.view.physicalSize = size;

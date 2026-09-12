@@ -121,6 +121,15 @@ class SettingStore extends SqliteStore {
   // Locale
   late final locale = propertyDefault('locale', '');
 
+  /// True only before a first launch has selected a locale or written either
+  /// version marker. An upgraded install with an empty legacy locale must keep
+  /// following the device language.
+  bool get needsInitialChineseLocale =>
+      locale.fetch().isEmpty && lastVer.fetch() == 0 && introVer.fetch() == 0;
+
+  /// Consent to send IP addresses to the public lookup providers.
+  late final ipLookupConsent = propertyDefault('ipLookupConsent', false);
+
   // SSH virtual key (ctrl | alt) auto turn off
   late final sshVirtualKeyAutoOff = propertyDefault(
     'sshVirtualKeyAutoOff',
@@ -363,7 +372,10 @@ class SettingStore extends SqliteStore {
   /// permanently below it for anyone who has ever seen one, and a newly added
   /// page could never appear. Bumping `kDiagnosticsConsentVer` shows this again,
   /// which is what a change to what is collected would need.
-  late final diagnosticsConsentVer = propertyDefault('diagnosticsConsentVer', 0);
+  late final diagnosticsConsentVer = propertyDefault(
+    'diagnosticsConsentVer',
+    0,
+  );
 
   late final autoCheckAppUpdate = propertyDefault('autoCheckAppUpdate', true);
 
