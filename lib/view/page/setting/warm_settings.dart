@@ -2,113 +2,134 @@ part of 'entry.dart';
 
 extension _WarmSettings on _SettingsPageState {
   Widget _buildWarmSettings(List<SettingsNode> nodes) {
-    final l10n = context.l10n;
-    SettingsNode byId(String id) => nodes
-        .expand((node) => node.flattened)
-        .firstWhere((node) => node.id == id);
+    return _buildWarmSettingEntries(nodes);
+  }
 
+  Widget _buildWarmSettingEntries(List<SettingsNode> nodes) {
     return ListView(
       padding: const EdgeInsets.fromLTRB(28, 16, 28, 24),
       children: [
-        _WarmSettingsSection(l10n.warmAppearanceSettings),
-        _WarmSettingsRow(
-          icon: Icons.palette,
-          title: context.libL10n.themeMode,
-          subtitle: l10n.warmLight,
-          onTap: () => _onTab(byId('app.setting')),
-        ),
-        _WarmSettingsRow(
-          icon: Icons.view_agenda,
-          title: l10n.warmCardBadges,
-          subtitle: l10n.warmCardBadgesTip,
-          onTap: () => _onTab(byId('server.setting')),
-        ),
-        _WarmSettingsSection(l10n.warmSecuritySettings),
-        Stores.setting.privacyBlur.listenable().listenVal(
-          (enabled) => _WarmSettingsRow(
-            icon: Icons.visibility_off,
-            title: l10n.warmPrivacyMode,
-            subtitle: l10n.warmPrivacyModeTip,
-            trailing: Switch(
-              value: enabled,
-              onChanged: (value) => Stores.setting.privacyBlur.put(value),
-            ),
-            onTap: () => Stores.setting.privacyBlur.put(!enabled),
+        for (final node in nodes)
+          _WarmSettingsRow(
+            icon: node.icon,
+            title: node.title,
+            subtitle: node.isLeaf ? '' : context.l10n.settingsOpenCategory,
+            onTap: () => _onTab(node),
           ),
-        ),
-        _WarmSettingsRow(
-          icon: Icons.cloud_sync,
-          title: l10n.warmCloudBackup,
-          subtitle: l10n.warmCloudBackupTip,
-          onTap: () => _onTab(byId('backup.sync')),
-        ),
-        _WarmSettingsRow(
-          icon: Icons.route,
-          title: l10n.warmBastionConfig,
-          subtitle: l10n.warmBastionConfigTip,
-          onTap: () => _onTab(byId('terminal.setting')),
-        ),
-        _WarmSettingsRow(
-          icon: Icons.cable,
-          title: l10n.warmTunnelConfig,
-          subtitle: l10n.warmTunnelConfigTip,
-          onTap: () => _onTab(byId('terminal.setting')),
-        ),
-        _WarmSettingsRow(
-          icon: Icons.delete,
-          title: l10n.warmClearSecureData,
-          subtitle: l10n.warmClearSecureDataTip,
-          danger: true,
-          onTap: () => _onTab(byId('privateKey')),
-        ),
-        _WarmSettingsSection(l10n.warmAppSettings),
-        _WarmSettingsRow(
-          icon: Icons.timer,
-          title: l10n.warmDefaultStatusSpeed,
-          subtitle: '${Stores.setting.serverStatusUpdateInterval.fetch()} s',
-          onTap: () => _onTab(byId('server.setting')),
-        ),
-        _WarmSettingsRow(
-          icon: Icons.translate,
-          title: context.libL10n.language,
-          subtitle: Stores.setting.locale.fetch().isEmpty
-              ? l10n.warmSystem
-              : Stores.setting.locale.fetch(),
-          onTap: () => _onTab(byId('app.setting')),
-        ),
-        _WarmSettingsRow(
-          icon: Icons.format_size,
-          title: l10n.warmTerminalFontSize,
-          subtitle: '${Stores.setting.termFontSize.fetch()} pt',
-          onTap: () => _onTab(byId('terminal.setting')),
-        ),
-        _WarmSettingsRow(
-          icon: Icons.font_download,
-          title: l10n.warmTerminalFont,
-          subtitle: l10n.warmSystemMonospace,
-          onTap: () => _onTab(byId('terminal.setting')),
-        ),
       ],
     );
   }
 }
 
-class _WarmSettingsSection extends StatelessWidget {
-  const _WarmSettingsSection(this.label);
-  final String label;
+class _WarmServerInfoSheet extends StatefulWidget {
+  const _WarmServerInfoSheet();
 
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(top: 6, bottom: 8),
-    child: Text(
-      label,
-      style: const TextStyle(
-        color: WarmTheme.copper,
-        fontSize: 15,
-        fontWeight: FontWeight.w800,
+  State<_WarmServerInfoSheet> createState() => _WarmServerInfoSheetState();
+}
+
+class _WarmServerInfoSheetState extends State<_WarmServerInfoSheet> {
+  Future<bool> _confirm(String title, String body) async =>
+      await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(title),
+          content: Text(body),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(ctx.libL10n.cancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(ctx.l10n.ipLookupAgree),
+            ),
+          ],
+        ),
+      ) ??
+      false;
+
+  Future<void> _network(bool value) async {
+    if (value && !Stores.setting.ipLookupConsent.fetch()) {
+      final ok = await _confirm(
+        context.l10n.ipLookupPrivacyTitle,
+        context.l10n.ipLookupPrivacyBody,
+      );
+      if (!ok) return;
+      Stores.setting.ipLookupConsent.put(true);
+    }
+    Stores.setting.showServerNetworkInfo.put(value);
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _probe(void Function(bool) put, bool value) async {
+    final noneEnabled =
+        !Stores.setting.probeChatGpt.fetch() &&
+        !Stores.setting.probeNetflix.fetch() &&
+        !Stores.setting.probeGemini.fetch();
+    if (value && noneEnabled) {
+      final ok = await _confirm(
+        context.l10n.serviceProbePrivacyTitle,
+        context.l10n.serviceProbePrivacyBody,
+      );
+      if (!ok) return;
+    }
+    put(value);
+    if (mounted) setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return SafeArea(
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
+        children: [
+          Text(
+            l10n.warmCardBadges,
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          const SizedBox(height: 12),
+          SwitchListTile(
+            title: Text(l10n.serverInfoNetwork),
+            subtitle: Text(l10n.serverInfoNetworkTip),
+            value: Stores.setting.showServerNetworkInfo.fetch(),
+            onChanged: _network,
+          ),
+          for (final entry in [
+            (
+              'ChatGPT',
+              Stores.setting.probeChatGpt.fetch(),
+              Stores.setting.probeChatGpt.put,
+            ),
+            (
+              'Netflix',
+              Stores.setting.probeNetflix.fetch(),
+              Stores.setting.probeNetflix.put,
+            ),
+            (
+              'Gemini',
+              Stores.setting.probeGemini.fetch(),
+              Stores.setting.probeGemini.put,
+            ),
+          ])
+            SwitchListTile(
+              title: Text(entry.$1),
+              subtitle: Text(l10n.serviceProbeTip),
+              value: entry.$2,
+              onChanged: (value) => _probe(entry.$3, value),
+            ),
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Text(
+              l10n.serviceProbeDisclaimer,
+              style: const TextStyle(color: WarmTheme.muted, fontSize: 12),
+            ),
+          ),
+        ],
       ),
-    ),
-  );
+    );
+  }
 }
 
 class _WarmSettingsRow extends StatelessWidget {
@@ -117,16 +138,12 @@ class _WarmSettingsRow extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.onTap,
-    this.trailing,
-    this.danger = false,
   });
 
   final IconData icon;
   final String title;
   final String subtitle;
   final VoidCallback onTap;
-  final Widget? trailing;
-  final bool danger;
 
   @override
   Widget build(BuildContext context) => InkWell(
@@ -138,11 +155,7 @@ class _WarmSettingsRow extends StatelessWidget {
         children: [
           SizedBox(
             width: 46,
-            child: Icon(
-              icon,
-              size: 23,
-              color: danger ? WarmTheme.danger : WarmTheme.ink,
-            ),
+            child: Icon(icon, size: 23, color: WarmTheme.ink),
           ),
           const SizedBox(width: 8),
           Expanded(
@@ -154,7 +167,7 @@ class _WarmSettingsRow extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
-                    color: danger ? WarmTheme.danger : WarmTheme.ink,
+                    color: WarmTheme.ink,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -169,7 +182,7 @@ class _WarmSettingsRow extends StatelessWidget {
               ],
             ),
           ),
-          if (trailing != null) ...[const SizedBox(width: 10), trailing!],
+          const Icon(Icons.chevron_right, color: WarmTheme.muted),
         ],
       ),
     ),

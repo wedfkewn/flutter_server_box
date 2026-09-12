@@ -1,4 +1,5 @@
 import 'package:server_box/core/utils/monitor_exec.dart';
+import 'package:server_box/data/model/app/service_reachability.dart';
 import 'package:server_box/data/model/server/connect_credential.dart';
 import 'package:server_box/data/model/server/monitor_capabilities.dart';
 import 'package:server_box/data/model/server/monitor_metrics_mapper.dart';
@@ -37,6 +38,10 @@ class MonitorHttpDataSource implements ServerDataSource {
   /// agent's config changes.
   Future<MonitorCapabilities> fetchCapabilities() =>
       _client.fetchCapabilities();
+
+  Future<Map<ServiceKind, ServiceReachabilityResult>> serviceReachability(
+    Set<ServiceKind> services,
+  ) => _client.serviceReachability(services);
 
   @override
   Future<ServerStatus> fetchStatus(ServerStatus into) async {

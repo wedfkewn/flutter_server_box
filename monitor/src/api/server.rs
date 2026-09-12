@@ -12,8 +12,8 @@ use crate::{
     core::config::Config,
     core::config_file,
     core::remote_access::RemoteAccess,
-    monitoring::{self, LiveSettings, SystemMetrics},
     monitoring::velocity::{NetworkSpeedInfo, VelocityAnalysisResponse, VelocityManager},
+    monitoring::{self, LiveSettings, SystemMetrics},
     utils::error::{MonitorError, Result},
 };
 use ntex::http::header::RETRY_AFTER;
@@ -23,11 +23,34 @@ use sbm_parser::{SystemType, capabilities::Capabilities};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use sqlx::SqlitePool;
+use std::collections::HashMap;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, OnceLock};
-use std::time::Duration;
+use std::time::{Duration, Instant};
 use tokio::sync::{Mutex, RwLock, Semaphore};
 use tracing::info;
+
+const SERVICE_PROBE_TIMEOUT: Duration = Duration::from_secs(8);
+const SERVICE_PROBE_INTERVAL: Duration = Duration::from_secs(60);
+
+fn service_probe_times() -> &'static Mutex<HashMap<String, Instant>> {
+    static TIMES: OnceLock<Mutex<HashMap<String, Instant>>> = OnceLock::new();
+    TIMES.get_or_init(|| Mutex::new(HashMap::new()))
+}
+
+fn service_probe_client() -> &'static reqwest::Client {
+    static CLIENT: OnceLock<reqwest::Client> = OnceLock::new();
+    CLIENT.get_or_init(|| {
+        let _ = rustls::crypto::ring::default_provider().install_default();
+        reqwest::Client::builder()
+            .connect_timeout(Duration::from_secs(5))
+            .timeout(SERVICE_PROBE_TIMEOUT)
+            .redirect(reqwest::redirect::Policy::limited(5))
+            .user_agent("ServerBox reachability check")
+            .build()
+            .expect("valid service probe HTTP client")
+    })
+}
 
 const MAX_CONCURRENT_PASSWORD_CHECKS: usize = 4;
 const WATCH_TOKEN_LIFETIME: chrono::Duration = chrono::Duration::days(90);
@@ -105,7 +128,9 @@ pub struct AppState {
 impl AppState {
     pub fn new(config: Arc<Config>, db: SqlitePool) -> Arc<Self> {
         let velocity_manager = Arc::new(RwLock::new(VelocityManager::new()));
-        let live_settings = Arc::new(RwLock::new(LiveSettings::from_config(&config.get_monitoring())));
+        let live_settings = Arc::new(RwLock::new(LiveSettings::from_config(
+            &config.get_monitoring(),
+        )));
         let tls_active = config.get_server().tls.is_some();
         let remote_access = config
             .get_remote_access()
@@ -241,6 +266,10 @@ fn configure_api_inner(cfg: &mut web::ServiceConfig, exec_max_request: usize) {
             .route("/status", web::get().to(get_status))
             .route("/metrics", web::get().to(get_metrics))
             .route("/capabilities", web::get().to(get_capabilities))
+            .route(
+                "/service-reachability",
+                web::post().to(service_reachability),
+            )
             .route("/ws-ticket", web::post().to(issue_ws_ticket))
             .route("/terminal/ws", web::get().to(terminal_ws))
             .service(
@@ -298,6 +327,82 @@ fn configure_api_inner(cfg: &mut web::ServiceConfig, exec_max_request: usize) {
     );
 }
 
+#[derive(Deserialize)]
+struct ServiceReachabilityRequest {
+    services: Vec<String>,
+}
+
+#[derive(Serialize)]
+struct ServiceReachabilityResponse {
+    checked_at: String,
+    results: HashMap<String, &'static str>,
+}
+
+async fn service_reachability(
+    req: HttpRequest,
+    app_state: web::types::State<Arc<AppState>>,
+    payload: web::types::Json<ServiceReachabilityRequest>,
+) -> Result<HttpResponse> {
+    let claims = require_jwt!(&req, &app_state);
+    {
+        let mut times = service_probe_times().lock().await;
+        if times
+            .get(&claims.sub)
+            .is_some_and(|last| last.elapsed() < SERVICE_PROBE_INTERVAL)
+        {
+            return Ok(HttpResponse::TooManyRequests()
+                .header(RETRY_AFTER, "60")
+                .json(&ErrorResponse {
+                    error: "Service reachability checks are limited to once per minute".to_string(),
+                }));
+        }
+        times.insert(claims.sub, Instant::now());
+    }
+    let mut probes = Vec::new();
+    for service in payload.into_inner().services {
+        let url = match service.as_str() {
+            "chatGpt" => "https://chatgpt.com/",
+            "netflix" => "https://www.netflix.com/",
+            "gemini" => "https://gemini.google.com/",
+            _ => {
+                return Ok(HttpResponse::BadRequest().json(&ErrorResponse {
+                    error: format!("Unknown service: {service}"),
+                }));
+            }
+        };
+        if probes.iter().any(|(name, _)| name == &service) {
+            continue;
+        }
+        probes.push((service, url));
+    }
+    if probes.len() > 3 {
+        return Ok(HttpResponse::BadRequest().json(&ErrorResponse {
+            error: "At most three services may be checked".to_string(),
+        }));
+    }
+
+    let checks = probes.into_iter().map(|(name, url)| async move {
+        let state = match service_probe_client().get(url).send().await {
+            Ok(response)
+                if response.status().is_success() || response.status().is_redirection() =>
+            {
+                "reachable"
+            }
+            Ok(_) => "unreachable",
+            Err(_) => "unknown",
+        };
+        (name, state)
+    });
+    let results = futures::future::join_all(checks)
+        .await
+        .into_iter()
+        .collect();
+    Ok(HttpResponse::Ok().json(&ServiceReachabilityResponse {
+        checked_at: chrono::Utc::now().to_rfc3339(),
+        results,
+    }))
+}
+
 pub async fn start_server(app_state: Arc<AppState>) -> Result<()> {
     let server_config = app_state.config.get_server();
     let bind_addr = format!("{}:{}", server_config.host, server_config.port);
@@ -307,8 +412,7 @@ pub async fn start_server(app_state: Arc<AppState>) -> Result<()> {
         // isn't held much past its deadline, rare enough to be invisible
         start_reaper(
             app_state.sessions.clone(),
-            (app_state.remote_access.terminal.detached_timeout / 4)
-                .max(Duration::from_secs(10)),
+            (app_state.remote_access.terminal.detached_timeout / 4).max(Duration::from_secs(10)),
         );
     }
 
@@ -642,7 +746,10 @@ fn add_exact_counters(
     iface_metrics: &[monitoring::IfaceMetrics],
     diskio_metrics: &[sbm_parser::types::DiskIoPiece],
 ) {
-    if let Some(network) = value.get_mut("network").and_then(serde_json::Value::as_object_mut) {
+    if let Some(network) = value
+        .get_mut("network")
+        .and_then(serde_json::Value::as_object_mut)
+    {
         network.insert(
             "rx_bytes_exact".to_string(),
             serde_json::Value::String(network_metrics.rx_bytes.to_string()),
@@ -653,7 +760,10 @@ fn add_exact_counters(
         );
     }
 
-    if let Some(ifaces) = value.get_mut("ifaces").and_then(serde_json::Value::as_array_mut) {
+    if let Some(ifaces) = value
+        .get_mut("ifaces")
+        .and_then(serde_json::Value::as_array_mut)
+    {
         for (wire, source) in ifaces.iter_mut().zip(iface_metrics) {
             if let Some(wire) = wire.as_object_mut() {
                 wire.insert(
@@ -668,7 +778,10 @@ fn add_exact_counters(
         }
     }
 
-    if let Some(diskio) = value.get_mut("diskio").and_then(serde_json::Value::as_array_mut) {
+    if let Some(diskio) = value
+        .get_mut("diskio")
+        .and_then(serde_json::Value::as_array_mut)
+    {
         for (wire, source) in diskio.iter_mut().zip(diskio_metrics) {
             if let Some(wire) = wire.as_object_mut() {
                 wire.insert(
@@ -718,7 +831,10 @@ struct RemoteAccessView {
     files: bool,
 }
 
-async fn get_capabilities(req: HttpRequest, app_state: web::types::State<Arc<AppState>>) -> Result<HttpResponse> {
+async fn get_capabilities(
+    req: HttpRequest,
+    app_state: web::types::State<Arc<AppState>>,
+) -> Result<HttpResponse> {
     require_jwt!(&req, &app_state);
     let platform = monitoring::system_type();
     let capabilities = monitoring::effective_capabilities(platform);
@@ -778,8 +894,7 @@ async fn issue_ws_ticket(
                 .detail("terminal")
                 .record(&app_state.db)
                 .await;
-            Ok(HttpResponse::Ok()
-                .json(&TicketResponse::new(ticket)))
+            Ok(HttpResponse::Ok().json(&TicketResponse::new(ticket)))
         }
         Err(e) => {
             Event::new(Kind::Ticket, Action::Denied, Outcome::Error)
@@ -832,16 +947,24 @@ struct SettingsView {
     live_fields: &'static [&'static str],
 }
 
-const SETTINGS_LIVE_FIELDS: &[&str] = &["extended_interval_secs", "idle_pause_enabled", "idle_pause_threshold_secs"];
+const SETTINGS_LIVE_FIELDS: &[&str] = &[
+    "extended_interval_secs",
+    "idle_pause_enabled",
+    "idle_pause_threshold_secs",
+];
 
-async fn get_settings(req: HttpRequest, app_state: web::types::State<Arc<AppState>>) -> Result<HttpResponse> {
+async fn get_settings(
+    req: HttpRequest,
+    app_state: web::types::State<Arc<AppState>>,
+) -> Result<HttpResponse> {
     require_jwt!(&req, &app_state);
 
     let file_config = match config_file::read() {
         Ok(c) => c,
         Err(e) => {
-            return Ok(HttpResponse::InternalServerError()
-                .json(&ErrorResponse { error: e.to_string() }));
+            return Ok(HttpResponse::InternalServerError().json(&ErrorResponse {
+                error: e.to_string(),
+            }));
         }
     };
     let monitoring = file_config.get_monitoring();
@@ -880,8 +1003,9 @@ async fn update_settings(
     let payload = payload.into_inner();
 
     if payload.interval_seconds < 1 {
-        return Ok(HttpResponse::BadRequest()
-            .json(&ErrorResponse { error: "interval_seconds must be at least 1".to_string() }));
+        return Ok(HttpResponse::BadRequest().json(&ErrorResponse {
+            error: "interval_seconds must be at least 1".to_string(),
+        }));
     }
     if let Some(retention) = &payload.data_retention
         && let Err(error) = retention.validate()
@@ -903,8 +1027,9 @@ async fn update_settings(
     let mut config = match config_file::read() {
         Ok(c) => c,
         Err(e) => {
-            return Ok(HttpResponse::InternalServerError()
-                .json(&ErrorResponse { error: e.to_string() }));
+            return Ok(HttpResponse::InternalServerError().json(&ErrorResponse {
+                error: e.to_string(),
+            }));
         }
     };
 
@@ -924,8 +1049,9 @@ async fn update_settings(
     // Writes atomically and keeps a bounded set of timestamped backups as a
     // manual undo path — see `config_file`
     if let Err(e) = config_file::write(&config) {
-        return Ok(HttpResponse::InternalServerError()
-            .json(&ErrorResponse { error: e.to_string() }));
+        return Ok(HttpResponse::InternalServerError().json(&ErrorResponse {
+            error: e.to_string(),
+        }));
     }
 
     // The live-reloadable subset takes effect immediately; everything else
@@ -959,16 +1085,18 @@ async fn disable_full_access(
     let mut config = match config_file::read() {
         Ok(c) => c,
         Err(e) => {
-            return Ok(HttpResponse::InternalServerError()
-                .json(&ErrorResponse { error: e.to_string() }));
+            return Ok(HttpResponse::InternalServerError().json(&ErrorResponse {
+                error: e.to_string(),
+            }));
         }
     };
     let mut remote = config.get_remote_access();
     remote.full_access = Some(false);
     config.remote_access = Some(remote);
     if let Err(e) = config_file::write(&config) {
-        return Ok(HttpResponse::InternalServerError()
-            .json(&ErrorResponse { error: e.to_string() }));
+        return Ok(HttpResponse::InternalServerError().json(&ErrorResponse {
+            error: e.to_string(),
+        }));
     }
 
     app_state.full_access_off.store(true, Ordering::Release);
@@ -991,16 +1119,22 @@ struct CardOrderPayload {
     card_order: Vec<String>,
 }
 
-async fn get_card_order(req: HttpRequest, app_state: web::types::State<Arc<AppState>>) -> Result<HttpResponse> {
+async fn get_card_order(
+    req: HttpRequest,
+    app_state: web::types::State<Arc<AppState>>,
+) -> Result<HttpResponse> {
     require_jwt!(&req, &app_state);
     let file_config = match config_file::read() {
         Ok(c) => c,
         Err(e) => {
-            return Ok(HttpResponse::InternalServerError()
-                .json(&ErrorResponse { error: e.to_string() }));
+            return Ok(HttpResponse::InternalServerError().json(&ErrorResponse {
+                error: e.to_string(),
+            }));
         }
     };
-    Ok(HttpResponse::Ok().json(&CardOrderPayload { card_order: file_config.get_server().card_order }))
+    Ok(HttpResponse::Ok().json(&CardOrderPayload {
+        card_order: file_config.get_server().card_order,
+    }))
 }
 
 async fn update_card_order(
@@ -1014,8 +1148,9 @@ async fn update_card_order(
     let mut config = match config_file::read() {
         Ok(c) => c,
         Err(e) => {
-            return Ok(HttpResponse::InternalServerError()
-                .json(&ErrorResponse { error: e.to_string() }));
+            return Ok(HttpResponse::InternalServerError().json(&ErrorResponse {
+                error: e.to_string(),
+            }));
         }
     };
     let mut server_config = config.get_server();
@@ -1023,8 +1158,9 @@ async fn update_card_order(
     config.server = Some(server_config);
 
     if let Err(e) = config_file::write(&config) {
-        return Ok(HttpResponse::InternalServerError()
-            .json(&ErrorResponse { error: e.to_string() }));
+        return Ok(HttpResponse::InternalServerError().json(&ErrorResponse {
+            error: e.to_string(),
+        }));
     }
     Ok(HttpResponse::Ok().json(&serde_json::json!({ "status": "ok" })))
 }
@@ -1228,10 +1364,8 @@ async fn get_velocity_history(
     let limit = query
         .get("limit")
         .and_then(|v| {
-            v.as_u64().or_else(|| {
-                v.as_str()
-                    .and_then(|s| s.parse::<u64>().ok())
-            })
+            v.as_u64()
+                .or_else(|| v.as_str().and_then(|s| s.parse::<u64>().ok()))
         })
         .map(|l| l as usize);
 
@@ -1268,13 +1402,9 @@ fn bearer_token(req: &HttpRequest) -> Result<&str> {
     let auth_header = req
         .headers()
         .get("Authorization")
-        .ok_or_else(|| {
-            MonitorError::Auth("Missing Authorization header".to_string())
-        })?
+        .ok_or_else(|| MonitorError::Auth("Missing Authorization header".to_string()))?
         .to_str()
-        .map_err(|_| {
-            MonitorError::Auth("Invalid Authorization header".to_string())
-        })?;
+        .map_err(|_| MonitorError::Auth("Invalid Authorization header".to_string()))?;
 
     if !auth_header.starts_with("Bearer ") {
         return Err(MonitorError::Auth(
@@ -1356,8 +1486,7 @@ mod watch_token_tests {
     /// encoding became, and an agent's `watch_tokens` rows outlive the build
     /// that wrote them: a change there invalidates every paired watch, silently.
     const TOKEN: &str = "abc";
-    const TOKEN_HASH: &str =
-        "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad";
+    const TOKEN_HASH: &str = "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad";
 
     #[tokio::test]
     async fn watch_tokens_are_hashed_expiring_and_revocable() {

@@ -2155,10 +2155,95 @@ class AppLocalizationsZh extends AppLocalizations {
   String get warmLight => '浅色';
 
   @override
-  String get warmCardBadges => '卡片标签';
+  String get warmCardBadges => '服务器信息显示';
 
   @override
-  String get warmCardBadgesTip => '调整服务器卡片显示的标签';
+  String get warmCardBadgesTip => '选择网络归属和服务可访问性标签';
+
+  @override
+  String get serverInfoNetwork => '网络归属信息';
+
+  @override
+  String get serverInfoNetworkTip => '显示国家、ISP、组织、域名和 ASN';
+
+  @override
+  String get serviceProbePrivacyTitle => '服务可访问性说明';
+
+  @override
+  String get serviceProbePrivacyBody =>
+      '开启后，目标服务器会直接访问 ChatGPT、Netflix 或 Gemini 官网以检查网络可访问性。不会发送账号、Cookie 或 SSH 密钥。';
+
+  @override
+  String get serviceProbeTip => '检测成功时在服务器卡片显示';
+
+  @override
+  String get serviceProbeDisclaimer => '仅表示官网可访问，不代表账号、API 或地区内容权限。';
+
+  @override
+  String get settingsAppearanceDisplay => '外观与显示';
+
+  @override
+  String get settingsServerMonitoring => '服务器与监控';
+
+  @override
+  String get settingsConnectionsTerminal => '连接与终端';
+
+  @override
+  String get settingsFilesContainers => '文件与容器';
+
+  @override
+  String get settingsSecurityData => '安全与数据';
+
+  @override
+  String get settingsApplicationAbout => '应用与关于';
+
+  @override
+  String get settingsOpenCategory => '查看此分类的设置';
+
+  @override
+  String get openSourceTitle => '开源项目说明';
+
+  @override
+  String get openSourceIntro =>
+      '本应用基于 lollipopkit 与贡献者的 ServerBox 开源项目修改，采用 GNU Affero General Public License v3.0（AGPLv3）。';
+
+  @override
+  String get openSourceCopyright => '原项目版权归 lollipopkit 与各贡献者所有；修改部分保留各自作者的版权。';
+
+  @override
+  String get openSourceNoWarranty => '本软件按现状提供，不附带任何担保；详情以完整许可证为准。';
+
+  @override
+  String get openSourceRights => '你可以按照 AGPLv3 获取、修改和再分发对应源码。';
+
+  @override
+  String get openSourceModifiedUnknown => '此版本经过修改；本地构建未提供可验证的修改日期。';
+
+  @override
+  String openSourceModifiedOn(String date) {
+    return '此版本经过修改，源码提交日期：$date';
+  }
+
+  @override
+  String get openSourceOriginal => '原项目仓库';
+
+  @override
+  String get openSourceModifiedSource => '本版本对应源码';
+
+  @override
+  String get openSourceUnverified => '本地构建未提供可验证的源码提交';
+
+  @override
+  String get openSourceThirdParty => '第三方依赖许可证';
+
+  @override
+  String get openSourceLicense => 'GNU AGPLv3 完整许可证';
+
+  @override
+  String get openSourceLicenseError => '无法读取随应用提供的许可证。';
+
+  @override
+  String get settingsNoSshServers => '请先添加 SSH 服务器，再配置此功能。';
 
   @override
   String get warmSecuritySettings => '安全设置';

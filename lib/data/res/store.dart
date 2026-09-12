@@ -14,6 +14,7 @@ import 'package:server_box/data/store/schema.dart';
 import 'package:server_box/data/store/self_addr.dart';
 import 'package:server_box/data/store/server.dart';
 import 'package:server_box/data/store/server_dist.dart';
+import 'package:server_box/data/store/service_reachability_cache.dart';
 import 'package:server_box/data/store/setting.dart';
 import 'package:server_box/data/store/snippet.dart';
 import 'package:server_box/data/store/tables.dart';
@@ -62,6 +63,8 @@ abstract final class Stores {
   static SelfAddrStore get selfAddr => getIt<SelfAddrStore>();
 
   static IpLookupCacheStore get ipLookupCache => getIt<IpLookupCacheStore>();
+  static ServiceReachabilityCacheStore get serviceReachabilityCache =>
+      getIt<ServiceReachabilityCacheStore>();
 
   /// What each server was last seen running. A cache of an observation, not a
   /// record anyone edits — see [ServerDistStore].
@@ -116,6 +119,9 @@ abstract final class Stores {
     getIt.registerLazySingleton<IpLookupCacheStore>(
       () => IpLookupCacheStore.instance,
     );
+    getIt.registerLazySingleton<ServiceReachabilityCacheStore>(
+      () => ServiceReachabilityCacheStore.instance,
+    );
 
     // First and on its own: everything below reaches the database, and a
     // `Future.wait` invokes every element before awaiting any of them — so
@@ -149,6 +155,7 @@ abstract final class Stores {
       // reads.
       selfAddr.init(),
       ipLookupCache.init(),
+      serviceReachabilityCache.init(),
     ]);
 
     // Not a table to create — only the per-launch sweep of expired rows, and

@@ -4087,14 +4087,176 @@ abstract class AppLocalizations {
   /// No description provided for @warmCardBadges.
   ///
   /// In en, this message translates to:
-  /// **'Card badges'**
+  /// **'Server information display'**
   String get warmCardBadges;
 
   /// No description provided for @warmCardBadgesTip.
   ///
   /// In en, this message translates to:
-  /// **'Adjust badges displayed on cards'**
+  /// **'Choose network ownership and service reachability badges'**
   String get warmCardBadgesTip;
+
+  /// No description provided for @serverInfoNetwork.
+  ///
+  /// In en, this message translates to:
+  /// **'Network ownership information'**
+  String get serverInfoNetwork;
+
+  /// No description provided for @serverInfoNetworkTip.
+  ///
+  /// In en, this message translates to:
+  /// **'Show country, ISP, organization, domain, and ASN'**
+  String get serverInfoNetworkTip;
+
+  /// No description provided for @serviceProbePrivacyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Service reachability notice'**
+  String get serviceProbePrivacyTitle;
+
+  /// No description provided for @serviceProbePrivacyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'When enabled, the target server directly visits the ChatGPT, Netflix, or Gemini website to check network reachability. No account, cookie, or SSH key is sent.'**
+  String get serviceProbePrivacyBody;
+
+  /// No description provided for @serviceProbeTip.
+  ///
+  /// In en, this message translates to:
+  /// **'Show on the server card when the check succeeds'**
+  String get serviceProbeTip;
+
+  /// No description provided for @serviceProbeDisclaimer.
+  ///
+  /// In en, this message translates to:
+  /// **'Only indicates that the website is reachable; it does not confirm account, API, or regional content access.'**
+  String get serviceProbeDisclaimer;
+
+  /// No description provided for @settingsAppearanceDisplay.
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance & display'**
+  String get settingsAppearanceDisplay;
+
+  /// No description provided for @settingsServerMonitoring.
+  ///
+  /// In en, this message translates to:
+  /// **'Servers & monitoring'**
+  String get settingsServerMonitoring;
+
+  /// No description provided for @settingsConnectionsTerminal.
+  ///
+  /// In en, this message translates to:
+  /// **'Connections & terminal'**
+  String get settingsConnectionsTerminal;
+
+  /// No description provided for @settingsFilesContainers.
+  ///
+  /// In en, this message translates to:
+  /// **'Files & containers'**
+  String get settingsFilesContainers;
+
+  /// No description provided for @settingsSecurityData.
+  ///
+  /// In en, this message translates to:
+  /// **'Security & data'**
+  String get settingsSecurityData;
+
+  /// No description provided for @settingsApplicationAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'App & about'**
+  String get settingsApplicationAbout;
+
+  /// No description provided for @settingsOpenCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'View settings in this category'**
+  String get settingsOpenCategory;
+
+  /// No description provided for @openSourceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Open-source project'**
+  String get openSourceTitle;
+
+  /// No description provided for @openSourceIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'This app is a modified version of the ServerBox open-source project by lollipopkit and contributors, licensed under GNU Affero General Public License v3.0 (AGPLv3).'**
+  String get openSourceIntro;
+
+  /// No description provided for @openSourceCopyright.
+  ///
+  /// In en, this message translates to:
+  /// **'The original project is copyright lollipopkit and contributors; authors retain copyright in their modifications.'**
+  String get openSourceCopyright;
+
+  /// No description provided for @openSourceNoWarranty.
+  ///
+  /// In en, this message translates to:
+  /// **'This software is provided as-is, without warranty. See the full license for details.'**
+  String get openSourceNoWarranty;
+
+  /// No description provided for @openSourceRights.
+  ///
+  /// In en, this message translates to:
+  /// **'You may obtain, modify, and redistribute the corresponding source under AGPLv3.'**
+  String get openSourceRights;
+
+  /// No description provided for @openSourceModifiedUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'This version has been modified; no verifiable modification date was supplied for this local build.'**
+  String get openSourceModifiedUnknown;
+
+  /// No description provided for @openSourceModifiedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'This version was modified; source commit date: {date}'**
+  String openSourceModifiedOn(String date);
+
+  /// No description provided for @openSourceOriginal.
+  ///
+  /// In en, this message translates to:
+  /// **'Original project repository'**
+  String get openSourceOriginal;
+
+  /// No description provided for @openSourceModifiedSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Corresponding source for this build'**
+  String get openSourceModifiedSource;
+
+  /// No description provided for @openSourceUnverified.
+  ///
+  /// In en, this message translates to:
+  /// **'This local build has no verifiable source commit'**
+  String get openSourceUnverified;
+
+  /// No description provided for @openSourceThirdParty.
+  ///
+  /// In en, this message translates to:
+  /// **'Third-party dependency licenses'**
+  String get openSourceThirdParty;
+
+  /// No description provided for @openSourceLicense.
+  ///
+  /// In en, this message translates to:
+  /// **'Full GNU AGPLv3 license'**
+  String get openSourceLicense;
+
+  /// No description provided for @openSourceLicenseError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the bundled license.'**
+  String get openSourceLicenseError;
+
+  /// No description provided for @settingsNoSshServers.
+  ///
+  /// In en, this message translates to:
+  /// **'Add an SSH server to configure this feature.'**
+  String get settingsNoSshServers;
 
   /// No description provided for @warmSecuritySettings.
   ///

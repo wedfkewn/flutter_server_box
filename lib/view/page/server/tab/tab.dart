@@ -21,6 +21,7 @@ import 'package:server_box/data/model/app/ip_lookup.dart';
 import 'package:server_box/data/model/app/net_view.dart';
 import 'package:server_box/data/model/app/scripts/cmd_types.dart';
 import 'package:server_box/data/model/app/server_sort.dart';
+import 'package:server_box/data/model/app/service_reachability.dart';
 import 'package:server_box/data/model/app/tab.dart';
 import 'package:server_box/data/model/server/disk.dart';
 import 'package:server_box/data/model/server/server.dart';

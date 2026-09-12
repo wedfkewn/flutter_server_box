@@ -167,18 +167,49 @@ void main() {
     }
     await pump(tester, child: const SettingsPage());
 
-    expect(find.text('外观设置'), findsOneWidget);
-    expect(find.text('安全设置'), findsOneWidget);
-    expect(find.text('隐私模式'), findsOneWidget);
+    expect(find.text('外观与显示'), findsOneWidget);
+    expect(find.text('安全与数据'), findsOneWidget);
     await capture(tester, 'implementation-settings.png');
 
-    await tester.scrollUntilVisible(
-      find.text('终端字体'),
-      240,
-      scrollable: find.byType(Scrollable),
+    await tester.tap(find.text('外观与显示'));
+    await tester.pumpAndSettle();
+    expect(find.text('服务器信息显示'), findsOneWidget);
+    await tester.tap(find.text('服务器信息显示'));
+    await tester.pumpAndSettle();
+    expect(find.text('ChatGPT'), findsOneWidget);
+    expect(find.text('Netflix'), findsOneWidget);
+    expect(find.text('Gemini'), findsOneWidget);
+
+    await tester.tap(find.byType(BackButton).first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(BackButton).first);
+    await tester.pumpAndSettle();
+    for (final category in [
+      '外观与显示',
+      '服务器与监控',
+      '连接与终端',
+      '文件与容器',
+      '安全与数据',
+      '应用与关于',
+    ]) {
+      expect(find.text(category), findsOneWidget);
+    }
+    await tester.tap(find.text('应用与关于'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('开源项目说明'));
+    await tester.pumpAndSettle();
+    expect(find.text('原项目仓库'), findsOneWidget);
+    expect(find.text('第三方依赖许可证'), findsOneWidget);
+    expect(find.text('GNU AGPLv3 完整许可证'), findsOneWidget);
+    await tester.tap(find.text('GNU AGPLv3 完整许可证'));
+    await tester.pumpAndSettle();
+    expect(
+      find.textContaining('GNU AFFERO GENERAL PUBLIC LICENSE'),
+      findsOneWidget,
     );
-    expect(find.text('应用设置'), findsOneWidget);
-    expect(find.text('终端字体'), findsOneWidget);
+    await tester.tap(find.byType(BackButton).first);
+    await tester.pumpAndSettle();
+    expect(find.text('开源项目说明'), findsOneWidget);
 
     await pump(
       tester,

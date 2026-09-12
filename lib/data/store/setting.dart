@@ -130,6 +130,15 @@ class SettingStore extends SqliteStore {
   /// Consent to send IP addresses to the public lookup providers.
   late final ipLookupConsent = propertyDefault('ipLookupConsent', false);
 
+  /// Optional server-card enrichments. Off means both hidden and no request.
+  late final showServerNetworkInfo = propertyDefault(
+    'showServerNetworkInfo',
+    false,
+  );
+  late final probeChatGpt = propertyDefault('probeChatGpt', false);
+  late final probeNetflix = propertyDefault('probeNetflix', false);
+  late final probeGemini = propertyDefault('probeGemini', false);
+
   // SSH virtual key (ctrl | alt) auto turn off
   late final sshVirtualKeyAutoOff = propertyDefault(
     'sshVirtualKeyAutoOff',

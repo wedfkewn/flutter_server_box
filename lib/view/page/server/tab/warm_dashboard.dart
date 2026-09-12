@@ -267,6 +267,7 @@ extension _WarmDashboard on _ServerPageState {
                     tooltip: context.libL10n.refresh,
                     onPressed: () {
                       Stores.ipLookupCache.forgetServer(srv.spi.id);
+                      Stores.serviceReachabilityCache.forgetServer(srv.spi.id);
                       _ipLookupRevision.value++;
                       ref.read(serversProvider.notifier).refresh(spi: srv.spi);
                     },
@@ -628,22 +629,115 @@ extension _WarmDashboard on _ServerPageState {
   }
 }
 
-class _WarmNetworkBadges extends StatefulWidget {
+class _WarmNetworkBadges extends ConsumerStatefulWidget {
   const _WarmNetworkBadges({super.key, required this.server});
 
   final ServerState server;
 
   @override
-  State<_WarmNetworkBadges> createState() => _WarmNetworkBadgesState();
+  ConsumerState<_WarmNetworkBadges> createState() => _WarmNetworkBadgesState();
 }
 
-class _WarmNetworkBadgesState extends State<_WarmNetworkBadges> {
+class _WarmNetworkBadgesState extends ConsumerState<_WarmNetworkBadges> {
   IpLookupResult? _result;
+  final Map<ServiceKind, ServiceReachabilityResult> _services = {};
+  bool _serviceLoading = false;
+  late final List<Listenable> _settingListenables;
 
   @override
   void initState() {
     super.initState();
-    if (Stores.setting.ipLookupConsent.fetch()) unawaited(_load());
+    _settingListenables = [
+      Stores.setting.showServerNetworkInfo.listenable(),
+      Stores.setting.probeChatGpt.listenable(),
+      Stores.setting.probeNetflix.listenable(),
+      Stores.setting.probeGemini.listenable(),
+    ];
+    for (final listenable in _settingListenables) {
+      listenable.addListener(_settingsChanged);
+    }
+    _settingsChanged();
+  }
+
+  @override
+  void dispose() {
+    for (final listenable in _settingListenables) {
+      listenable.removeListener(_settingsChanged);
+    }
+    super.dispose();
+  }
+
+  Set<ServiceKind> _enabledServices() => {
+    if (Stores.setting.probeChatGpt.fetch()) ServiceKind.chatGpt,
+    if (Stores.setting.probeNetflix.fetch()) ServiceKind.netflix,
+    if (Stores.setting.probeGemini.fetch()) ServiceKind.gemini,
+  };
+
+  void _settingsChanged() {
+    if (!Stores.setting.showServerNetworkInfo.fetch()) {
+      _result = null;
+    } else if (Stores.setting.ipLookupConsent.fetch()) {
+      unawaited(_load());
+    }
+    final enabled = _enabledServices();
+    _services.removeWhere((key, _) => !enabled.contains(key));
+    if (enabled.isNotEmpty) unawaited(_loadServices(enabled));
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _loadServices(Set<ServiceKind> enabled) async {
+    if (_serviceLoading) return;
+    final server = widget.server;
+    final target = server.spi.displayAddr;
+    final missing = <ServiceKind>{};
+    for (final service in enabled) {
+      final cached = Stores.serviceReachabilityCache.fresh(
+        server.spi.id,
+        target,
+        service,
+      );
+      if (cached == null) {
+        missing.add(service);
+      } else {
+        _services[service] = cached;
+      }
+    }
+    if (mounted) setState(() {});
+    if (missing.isEmpty) return;
+    _serviceLoading = true;
+    try {
+      final results = await ref
+          .read(serverProvider(server.spi.id).notifier)
+          .probeServices(missing);
+      final now = DateTime.now();
+      for (final service in missing) {
+        final result =
+            results[service] ??
+            ServiceReachabilityResult(
+              service: service,
+              state: ServiceReachabilityState.unknown,
+              checkedAt: now,
+            );
+        Stores.serviceReachabilityCache.put(server.spi.id, target, result);
+        if (_enabledServices().contains(service)) _services[service] = result;
+      }
+    } catch (_) {
+      final now = DateTime.now();
+      for (final service in missing) {
+        Stores.serviceReachabilityCache.put(
+          server.spi.id,
+          target,
+          ServiceReachabilityResult(
+            service: service,
+            state: ServiceReachabilityState.unknown,
+            checkedAt: now,
+          ),
+        );
+      }
+    } finally {
+      _serviceLoading = false;
+      if (mounted) setState(() {});
+    }
   }
 
   Future<void> _load() async {
@@ -683,18 +777,32 @@ class _WarmNetworkBadgesState extends State<_WarmNetworkBadges> {
   @override
   Widget build(BuildContext context) {
     final result = _result;
-    if (result == null) return const SizedBox.shrink();
-    final country = [
-      result.flagEmoji,
-      result.countryCode,
-    ].whereType<String>().join(' ');
-    final labels = [
-      country,
-      result.organization,
-      result.networkDomain,
-      result.asnLabel,
-      if (result.isp != result.organization) result.isp,
-    ].whereType<String>().where((value) => value.trim().isNotEmpty).toList();
+    final labels = <(String, String)>[];
+    if (Stores.setting.showServerNetworkInfo.fetch() && result != null) {
+      final country = [
+        result.flagEmoji,
+        result.countryCode,
+      ].whereType<String>().join(' ');
+      final network = [
+        country,
+        result.organization,
+        result.networkDomain,
+        result.asnLabel,
+        if (result.isp != result.organization) result.isp,
+      ].whereType<String>().where((value) => value.trim().isNotEmpty);
+      labels.addAll(network.map((value) => (value, value)));
+    }
+    const names = {
+      ServiceKind.chatGpt: 'ChatGPT',
+      ServiceKind.netflix: 'Netflix',
+      ServiceKind.gemini: 'Gemini',
+    };
+    final enabled = _enabledServices();
+    for (final service in ServiceKind.values) {
+      if (enabled.contains(service) && _services[service]?.reachable == true) {
+        labels.add((names[service]!, context.l10n.serviceProbeDisclaimer));
+      }
+    }
     if (labels.isEmpty) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.only(top: 6),
@@ -704,8 +812,8 @@ class _WarmNetworkBadgesState extends State<_WarmNetworkBadges> {
         children: [
           for (final label in labels)
             Tooltip(
-              message: label,
-              child: _WarmOutlineChip(label: label),
+              message: label.$2,
+              child: _WarmOutlineChip(label: label.$1),
             ),
         ],
       ),

@@ -498,6 +498,7 @@ class ServersNotifier extends _$ServersNotifier {
     await Stores.connectionStats.clearServerStats(id);
     Stores.selfAddr.forget(id);
     Stores.ipLookupCache.forgetServer(id);
+    Stores.serviceReachabilityCache.forgetServer(id);
   }
 
   Future<void> updateServerOrder(List<String> order) =>

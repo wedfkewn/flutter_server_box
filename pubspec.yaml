@@ -143,6 +143,7 @@ flutter:
   uses-material-design: true
   # To add assets to your application, add an assets section, like this:
   assets:
+    - LICENSE
     - assets/app_icon.png
     - assets/rootfs_manifest.json
     # Model id to context window, generated from models.dev by

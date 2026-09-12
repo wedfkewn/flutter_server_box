@@ -2345,10 +2345,105 @@ class AppLocalizationsUk extends AppLocalizations {
   String get warmLight => 'Light';
 
   @override
-  String get warmCardBadges => 'Card badges';
+  String get warmCardBadges => 'Server information display';
 
   @override
-  String get warmCardBadgesTip => 'Adjust badges displayed on cards';
+  String get warmCardBadgesTip =>
+      'Choose network ownership and service reachability badges';
+
+  @override
+  String get serverInfoNetwork => 'Network ownership information';
+
+  @override
+  String get serverInfoNetworkTip =>
+      'Show country, ISP, organization, domain, and ASN';
+
+  @override
+  String get serviceProbePrivacyTitle => 'Service reachability notice';
+
+  @override
+  String get serviceProbePrivacyBody =>
+      'When enabled, the target server directly visits the ChatGPT, Netflix, or Gemini website to check network reachability. No account, cookie, or SSH key is sent.';
+
+  @override
+  String get serviceProbeTip =>
+      'Show on the server card when the check succeeds';
+
+  @override
+  String get serviceProbeDisclaimer =>
+      'Only indicates that the website is reachable; it does not confirm account, API, or regional content access.';
+
+  @override
+  String get settingsAppearanceDisplay => 'Appearance & display';
+
+  @override
+  String get settingsServerMonitoring => 'Servers & monitoring';
+
+  @override
+  String get settingsConnectionsTerminal => 'Connections & terminal';
+
+  @override
+  String get settingsFilesContainers => 'Files & containers';
+
+  @override
+  String get settingsSecurityData => 'Security & data';
+
+  @override
+  String get settingsApplicationAbout => 'App & about';
+
+  @override
+  String get settingsOpenCategory => 'View settings in this category';
+
+  @override
+  String get openSourceTitle => 'Open-source project';
+
+  @override
+  String get openSourceIntro =>
+      'This app is a modified version of the ServerBox open-source project by lollipopkit and contributors, licensed under GNU Affero General Public License v3.0 (AGPLv3).';
+
+  @override
+  String get openSourceCopyright =>
+      'The original project is copyright lollipopkit and contributors; authors retain copyright in their modifications.';
+
+  @override
+  String get openSourceNoWarranty =>
+      'This software is provided as-is, without warranty. See the full license for details.';
+
+  @override
+  String get openSourceRights =>
+      'You may obtain, modify, and redistribute the corresponding source under AGPLv3.';
+
+  @override
+  String get openSourceModifiedUnknown =>
+      'This version has been modified; no verifiable modification date was supplied for this local build.';
+
+  @override
+  String openSourceModifiedOn(String date) {
+    return 'This version was modified; source commit date: $date';
+  }
+
+  @override
+  String get openSourceOriginal => 'Original project repository';
+
+  @override
+  String get openSourceModifiedSource => 'Corresponding source for this build';
+
+  @override
+  String get openSourceUnverified =>
+      'This local build has no verifiable source commit';
+
+  @override
+  String get openSourceThirdParty => 'Third-party dependency licenses';
+
+  @override
+  String get openSourceLicense => 'Full GNU AGPLv3 license';
+
+  @override
+  String get openSourceLicenseError => 'Could not load the bundled license.';
+
+  @override
+  String get settingsNoSshServers =>
+      'Add an SSH server to configure this feature.';
 
   @override
   String get warmSecuritySettings => 'Security settings';
