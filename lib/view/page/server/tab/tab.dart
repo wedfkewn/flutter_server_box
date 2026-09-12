@@ -11,11 +11,13 @@ import 'package:server_box/core/diag.dart';
 import 'package:server_box/core/extension/context/locale.dart';
 import 'package:server_box/core/route.dart';
 import 'package:server_box/core/utils/tag_group.dart';
+import 'package:server_box/core/warm_theme.dart';
 import 'package:server_box/data/model/app/error.dart';
 import 'package:server_box/data/model/app/net_view.dart';
 import 'package:server_box/data/model/app/scripts/cmd_types.dart';
 import 'package:server_box/data/model/app/server_sort.dart';
 import 'package:server_box/data/model/app/tab.dart';
+import 'package:server_box/data/model/server/disk.dart';
 import 'package:server_box/data/model/server/server.dart';
 import 'package:server_box/data/model/server/server_private_info.dart';
 import 'package:server_box/data/model/server/try_limiter.dart';
@@ -40,6 +42,7 @@ part 'flight.dart';
 part 'landscape.dart';
 part 'pane_list.dart';
 part 'utils.dart';
+part 'warm_dashboard.dart';
 
 class ServerPage extends ConsumerStatefulWidget {
   const ServerPage({super.key});
@@ -389,6 +392,9 @@ class _ServerPageState extends ConsumerState<ServerPage>
   }
 
   Widget _buildPortrait() {
+    if (MediaQuery.sizeOf(context).width < 600) {
+      return _buildWarmDashboard();
+    }
     final serverOrder = ref.watch(serversProvider.select((s) => s.serverOrder));
     final servers = ref.watch(serversProvider.select((s) => s.servers));
     final selected = ref.watch(serverSelectionProvider);

@@ -26,6 +26,7 @@ import 'package:server_box/core/utils/rootfs.dart';
 import 'package:server_box/core/utils/rootfs_manifest_source.dart';
 import 'package:server_box/core/utils/server_dedup.dart';
 import 'package:server_box/core/utils/ssh_config.dart';
+import 'package:server_box/core/warm_theme.dart';
 import 'package:server_box/data/model/ai/ask_ai_models.dart';
 import 'package:server_box/data/model/ai/model_context.dart';
 import 'package:server_box/data/model/app/geo_manifest.dart';
@@ -76,6 +77,7 @@ part 'entries/linux.dart';
 part 'entries/server.dart';
 part 'entries/sftp.dart';
 part 'entries/ssh.dart';
+part 'warm_settings.dart';
 
 const _kIconSize = 23.0;
 
@@ -429,6 +431,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         // The width `AdaptivePanes` splits at, so that a window wide enough for
         // two columns gets two columns here as well.
         final wide = constraints.maxWidth >= AdaptivePanes.kSplitWidth;
+        if (!wide && _path.isEmpty) {
+          return Scaffold(body: SafeArea(child: _buildWarmSettings(nodes)));
+        }
         return _buildScaffold(
           wide: wide,
           menu: menu,
@@ -949,4 +954,3 @@ final class _AppSettingsPageState extends ConsumerState<AppSettingsPage> {
     );
   }
 }
-

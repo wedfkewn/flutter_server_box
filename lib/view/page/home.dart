@@ -134,6 +134,7 @@ class _HomePageState extends ConsumerState<HomePage>
   late final PageController _pageController;
 
   final _selectIndex = ValueNotifier(0);
+  final _settingsOpen = ValueNotifier(false);
 
   bool _switchingPage = false;
   bool _shouldAuth = false;
@@ -200,6 +201,7 @@ class _HomePageState extends ConsumerState<HomePage>
 
     _selectIndex.removeListener(_publishCurrentTab);
     _selectIndex.dispose();
+    _settingsOpen.dispose();
     super.dispose();
   }
 
@@ -400,51 +402,55 @@ class _HomePageState extends ConsumerState<HomePage>
     // grounds that the bar will spend it. An empty one spends nothing, and the
     // globe ran under the home indicator.
     Widget mainContent(bool narrow) => ListenableBuilder(
-      listenable: _selectIndex,
+      listenable: Listenable.merge([_selectIndex, _settingsOpen]),
       builder: (_, _) => Scaffold(
-        body: Row(
-          children: [
-            // Absent rather than empty, for the inset again: the rail is a
-            // `SafeArea`, so one wrapped round nothing still holds the left
-            // inset open beside a full-bleed page.
-            if (!narrow && !_wantsWindow) _buildRailBar(),
-            Expanded(
-              child: PageView.builder(
-                controller: _pageController,
-                itemCount: _tabs.length,
-                physics: const NeverScrollableScrollPhysics(),
-                // Each tab keeps its own stack, so a page opened inside one —
-                // a server's details, its files — covers the tab and not the
-                // window. The bar or rail that got you here stays put, and
-                // coming back to a tab returns you to where you were in it.
-                itemBuilder: (_, index) => NestedNavigator(
-                  key: ValueKey(_tabs[index]),
-                  // The top inset lands on the tab's own content and not on
-                  // the navigator around it, which is the whole point: a page
-                  // pushed here is a sibling route, outside this `SafeArea`,
-                  // so it reaches the top of the window and animates across
-                  // the status bar. Wrapping the navigator instead would inset
-                  // the pushed page too and put the seam back.
-                  //
-                  // Here rather than in each tab because a tab is not one
-                  // shape: three of them put a `Scaffold` *inside* a pane
-                  // splitter, so the splitter's own divider is above any app
-                  // bar that could have spent the inset.
-                  rootBuilder: (_) =>
-                      SafeArea(bottom: false, child: _tabs[index].page),
-                ),
-                onPageChanged: (value) {
-                  FocusScope.of(context).unfocus();
-                  if (!_switchingPage) {
-                    _selectIndex.value = value;
-                    _rememberTab(value);
-                  }
-                  _syncFullscreenSystemUi();
-                },
+        body: narrow && _settingsOpen.value
+            ? const SettingsPage()
+            : Row(
+                children: [
+                  // Absent rather than empty, for the inset again: the rail is a
+                  // `SafeArea`, so one wrapped round nothing still holds the left
+                  // inset open beside a full-bleed page.
+                  if (!narrow && !_wantsWindow) _buildRailBar(),
+                  Expanded(
+                    child: PageView.builder(
+                      controller: _pageController,
+                      itemCount: _tabs.length,
+                      physics: const NeverScrollableScrollPhysics(),
+                      // Each tab keeps its own stack, so a page opened inside one —
+                      // a server's details, its files — covers the tab and not the
+                      // window. The bar or rail that got you here stays put, and
+                      // coming back to a tab returns you to where you were in it.
+                      itemBuilder: (_, index) => NestedNavigator(
+                        key: ValueKey(_tabs[index]),
+                        // The top inset lands on the tab's own content and not on
+                        // the navigator around it, which is the whole point: a page
+                        // pushed here is a sibling route, outside this `SafeArea`,
+                        // so it reaches the top of the window and animates across
+                        // the status bar. Wrapping the navigator instead would inset
+                        // the pushed page too and put the seam back.
+                        //
+                        // Here rather than in each tab because a tab is not one
+                        // shape: three of them put a `Scaffold` *inside* a pane
+                        // splitter, so the splitter's own divider is above any app
+                        // bar that could have spent the inset.
+                        rootBuilder: (_) => SafeArea(
+                          bottom: false,
+                          child: _tabs[index].page,
+                        ),
+                      ),
+                      onPageChanged: (value) {
+                        FocusScope.of(context).unfocus();
+                        if (!_switchingPage) {
+                          _selectIndex.value = value;
+                          _rememberTab(value);
+                        }
+                        _syncFullscreenSystemUi();
+                      },
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
-        ),
         bottomNavigationBar: narrow && !_wantsWindow
             ? _buildBottomBar()
             : null,
@@ -523,6 +529,7 @@ class _HomePageState extends ConsumerState<HomePage>
   }
 
   Widget _buildBottomBar() {
+    if (isMobile) return _buildWarmBottomBar();
     return ListenableBuilder(
       listenable: _selectIndex,
       builder: (context, child) {
@@ -546,7 +553,7 @@ class _HomePageState extends ConsumerState<HomePage>
             }
             SettingsPage.route.go(context);
           },
-          labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
+          labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
           destinations: [
             for (final tab in shown) tab.navDestination(onMenu: _navMenuFor(tab)),
             // One slot, holding whichever of the two is needed. While
@@ -574,6 +581,57 @@ class _HomePageState extends ConsumerState<HomePage>
         );
       },
     );
+  }
+
+  Widget _buildWarmBottomBar() {
+    return ListenableBuilder(
+      listenable: Listenable.merge([_selectIndex, _settingsOpen]),
+      builder: (context, _) {
+        final current = _tabs.elementAtOrNull(_selectIndex.value);
+        final selected = _settingsOpen.value
+            ? 2
+            : current == AppTab.ssh
+            ? 1
+            : 0;
+        return NavigationBar(
+          key: _navKey,
+          selectedIndex: selected,
+          labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+          onDestinationSelected: (index) {
+            if (index == 2) {
+              _openWarmSettings();
+              return;
+            }
+            final tab = index == 0 ? AppTab.server : AppTab.ssh;
+            _settingsOpen.value = false;
+            final page = _tabs.indexOf(tab);
+            if (page >= 0) _onDestinationSelected(page);
+          },
+          destinations: const [
+            NavigationDestination(
+              icon: Icon(Icons.dashboard_outlined),
+              selectedIcon: Icon(Icons.dashboard),
+              label: 'Dashboard',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.terminal_outlined),
+              selectedIcon: Icon(Icons.terminal),
+              label: 'Terminal',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.settings_outlined),
+              selectedIcon: Icon(Icons.settings),
+              label: 'Settings',
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _openWarmSettings() {
+    if (_settingsOpen.value) return;
+    _settingsOpen.value = true;
   }
 
   /// The tabs that did not fit, and the way to change which ones those are.

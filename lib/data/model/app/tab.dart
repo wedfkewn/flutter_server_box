@@ -34,7 +34,7 @@ enum AppTab {
   /// run against a server, from the server's own page, and the tab is where
   /// they are written and kept. Benchmark is out because a run takes a quarter
   /// of an hour and is started deliberately.
-  static const defaultOrder = [server, ssh, file, agent];
+  static const defaultOrder = [server, ssh];
 
   /// The tabs not in [enabled], in declaration order — what "more" holds.
   ///

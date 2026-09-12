@@ -59,7 +59,7 @@ class SettingStore extends SqliteStore {
   late final maxRetryCount = propertyDefault('maxRetryCount', 2);
 
   // Night mode: 0 -> auto, 1 -> light, 2 -> dark, 3 -> AMOLED, 4 -> AUTO-AMOLED
-  late final themeMode = propertyDefault('themeMode', 0);
+  late final themeMode = propertyDefault('themeMode', 1);
 
   // Font file path
   late final fontPath = propertyDefault('fontPath', '');
@@ -116,7 +116,7 @@ class SettingStore extends SqliteStore {
   );
 
   // SSH term font size
-  late final termFontSize = propertyDefault('termFontSize', 13.0);
+  late final termFontSize = propertyDefault('termFontSize', 12.0);
 
   // Locale
   late final locale = propertyDefault('locale', '');
