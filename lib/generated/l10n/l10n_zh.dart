@@ -2388,6 +2388,44 @@ class AppLocalizationsZh extends AppLocalizations {
   String get ipLookupSource => '数据来源：ipify.org 和 ipwho.is';
 
   @override
+  String get dnsLookupAction => 'DNS 解析';
+
+  @override
+  String get dnsLookupPrivacyTitle => 'DNS 查询隐私说明';
+
+  @override
+  String get dnsLookupPrivacyBody =>
+      '解析时，应用会通过 HTTPS 将你输入的域名发送给 Cloudflare 公共 DNS。不会保存查询记录，也不会上传到 ServerBox 服务器。';
+
+  @override
+  String get dnsLookupInvalid =>
+      '请输入有效的公网域名（仅支持 ASCII/Punycode），不要输入 IP、网址或内网域名。';
+
+  @override
+  String get dnsLookupResults => 'DNS 解析结果';
+
+  @override
+  String get dnsLookupNoRecords => '未找到所选类型的 DNS 记录。';
+
+  @override
+  String get dnsLookupPartial => '部分记录类型查询失败：';
+
+  @override
+  String get dnsLookupSource => '数据来源：Cloudflare 公共 DNS（DoH）；结果来自递归解析，TTL 会变化。';
+
+  @override
+  String get dnsLookupCopied => 'DNS 记录已复制';
+
+  @override
+  String get dnsLookupRateLimited => 'DNS 查询过于频繁，请稍后重试。';
+
+  @override
+  String get dnsLookupServiceError => 'DNS 服务返回异常，请稍后重试。';
+
+  @override
+  String get dnsLookupDnsError => '域名不存在或 DNS 解析失败。';
+
+  @override
   String get ipLookupDisclaimer => '显示的组织是 IP 地址段的登记或运营方，不一定是服务器实际所有者。';
 }
 

@@ -2578,6 +2578,48 @@ class AppLocalizationsId extends AppLocalizations {
   String get ipLookupSource => 'Data sources: ipify.org and ipwho.is';
 
   @override
+  String get dnsLookupAction => 'DNS records';
+
+  @override
+  String get dnsLookupPrivacyTitle => 'DNS lookup privacy';
+
+  @override
+  String get dnsLookupPrivacyBody =>
+      'The domain you enter will be sent to Cloudflare Public DNS over HTTPS. Queries are not saved or uploaded to a ServerBox server.';
+
+  @override
+  String get dnsLookupInvalid =>
+      'Enter a valid public domain (ASCII/Punycode only), not an IP address, URL, or private domain.';
+
+  @override
+  String get dnsLookupResults => 'DNS results';
+
+  @override
+  String get dnsLookupNoRecords =>
+      'No DNS records found for the selected types.';
+
+  @override
+  String get dnsLookupPartial => 'Some record types failed: ';
+
+  @override
+  String get dnsLookupSource =>
+      'Source: Cloudflare Public DNS (DoH). Results come from recursive resolution; TTL values change.';
+
+  @override
+  String get dnsLookupCopied => 'DNS record copied';
+
+  @override
+  String get dnsLookupRateLimited => 'Too many DNS requests. Try again later.';
+
+  @override
+  String get dnsLookupServiceError =>
+      'The DNS service returned an invalid response. Try again later.';
+
+  @override
+  String get dnsLookupDnsError =>
+      'The domain does not exist or DNS resolution failed.';
+
+  @override
   String get ipLookupDisclaimer =>
       'The organization shown is the registrant or operator of the IP range and may not be the server owner.';
 }

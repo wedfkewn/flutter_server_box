@@ -4540,6 +4540,78 @@ abstract class AppLocalizations {
   /// **'Data sources: ipify.org and ipwho.is'**
   String get ipLookupSource;
 
+  /// No description provided for @dnsLookupAction.
+  ///
+  /// In en, this message translates to:
+  /// **'DNS records'**
+  String get dnsLookupAction;
+
+  /// No description provided for @dnsLookupPrivacyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'DNS lookup privacy'**
+  String get dnsLookupPrivacyTitle;
+
+  /// No description provided for @dnsLookupPrivacyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The domain you enter will be sent to Cloudflare Public DNS over HTTPS. Queries are not saved or uploaded to a ServerBox server.'**
+  String get dnsLookupPrivacyBody;
+
+  /// No description provided for @dnsLookupInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid public domain (ASCII/Punycode only), not an IP address, URL, or private domain.'**
+  String get dnsLookupInvalid;
+
+  /// No description provided for @dnsLookupResults.
+  ///
+  /// In en, this message translates to:
+  /// **'DNS results'**
+  String get dnsLookupResults;
+
+  /// No description provided for @dnsLookupNoRecords.
+  ///
+  /// In en, this message translates to:
+  /// **'No DNS records found for the selected types.'**
+  String get dnsLookupNoRecords;
+
+  /// No description provided for @dnsLookupPartial.
+  ///
+  /// In en, this message translates to:
+  /// **'Some record types failed: '**
+  String get dnsLookupPartial;
+
+  /// No description provided for @dnsLookupSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Source: Cloudflare Public DNS (DoH). Results come from recursive resolution; TTL values change.'**
+  String get dnsLookupSource;
+
+  /// No description provided for @dnsLookupCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'DNS record copied'**
+  String get dnsLookupCopied;
+
+  /// No description provided for @dnsLookupRateLimited.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many DNS requests. Try again later.'**
+  String get dnsLookupRateLimited;
+
+  /// No description provided for @dnsLookupServiceError.
+  ///
+  /// In en, this message translates to:
+  /// **'The DNS service returned an invalid response. Try again later.'**
+  String get dnsLookupServiceError;
+
+  /// No description provided for @dnsLookupDnsError.
+  ///
+  /// In en, this message translates to:
+  /// **'The domain does not exist or DNS resolution failed.'**
+  String get dnsLookupDnsError;
+
   /// No description provided for @ipLookupDisclaimer.
   ///
   /// In en, this message translates to:

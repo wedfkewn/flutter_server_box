@@ -981,5 +981,17 @@
   "ipLookupRateLimited": "The lookup service rate limit has been reached.",
   "ipLookupServiceError": "The lookup service returned an invalid response.",
   "ipLookupSource": "Data sources: ipify.org and ipwho.is",
+  "dnsLookupAction": "DNS records",
+  "dnsLookupPrivacyTitle": "DNS lookup privacy",
+  "dnsLookupPrivacyBody": "The domain you enter will be sent to Cloudflare Public DNS over HTTPS. Queries are not saved or uploaded to a ServerBox server.",
+  "dnsLookupInvalid": "Enter a valid public domain (ASCII/Punycode only), not an IP address, URL, or private domain.",
+  "dnsLookupResults": "DNS results",
+  "dnsLookupNoRecords": "No DNS records found for the selected types.",
+  "dnsLookupPartial": "Some record types failed: ",
+  "dnsLookupSource": "Source: Cloudflare Public DNS (DoH). Results come from recursive resolution; TTL values change.",
+  "dnsLookupCopied": "DNS record copied",
+  "dnsLookupRateLimited": "Too many DNS requests. Try again later.",
+  "dnsLookupServiceError": "The DNS service returned an invalid response. Try again later.",
+  "dnsLookupDnsError": "The domain does not exist or DNS resolution failed.",
   "ipLookupDisclaimer": "The organization shown is the registrant or operator of the IP range and may not be the server owner."
 }
