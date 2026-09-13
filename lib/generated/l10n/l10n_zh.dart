@@ -2395,7 +2395,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get dnsLookupPrivacyBody =>
-      '解析时，应用会通过 HTTPS 将你输入的域名发送给 Cloudflare 公共 DNS。不会保存查询记录，也不会上传到 ServerBox 服务器。';
+      '解析时，应用会通过 HTTPS 将你输入的域名发送给阿里公共 DNS；若连接失败或超时，会改用 Cloudflare 公共 DNS。不会保存查询记录，也不会上传到 ServerBox 服务器。';
 
   @override
   String get dnsLookupInvalid =>
@@ -2411,7 +2411,8 @@ class AppLocalizationsZh extends AppLocalizations {
   String get dnsLookupPartial => '部分记录类型查询失败：';
 
   @override
-  String get dnsLookupSource => '数据来源：Cloudflare 公共 DNS（DoH）；结果来自递归解析，TTL 会变化。';
+  String get dnsLookupSource =>
+      '数据来源：阿里公共 DNS（DoH），失败时回退 Cloudflare；结果来自递归解析，TTL 会变化。';
 
   @override
   String get dnsLookupCopied => 'DNS 记录已复制';

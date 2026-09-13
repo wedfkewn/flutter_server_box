@@ -4555,7 +4555,7 @@ abstract class AppLocalizations {
   /// No description provided for @dnsLookupPrivacyBody.
   ///
   /// In en, this message translates to:
-  /// **'The domain you enter will be sent to Cloudflare Public DNS over HTTPS. Queries are not saved or uploaded to a ServerBox server.'**
+  /// **'The domain you enter will be sent to Alibaba Public DNS over HTTPS. If that connection fails or times out, Cloudflare Public DNS will be tried. Queries are not saved or uploaded to a ServerBox server.'**
   String get dnsLookupPrivacyBody;
 
   /// No description provided for @dnsLookupInvalid.
@@ -4585,7 +4585,7 @@ abstract class AppLocalizations {
   /// No description provided for @dnsLookupSource.
   ///
   /// In en, this message translates to:
-  /// **'Source: Cloudflare Public DNS (DoH). Results come from recursive resolution; TTL values change.'**
+  /// **'Source: Alibaba Public DNS (DoH), with Cloudflare fallback. Results come from recursive resolution; TTL values change.'**
   String get dnsLookupSource;
 
   /// No description provided for @dnsLookupCopied.

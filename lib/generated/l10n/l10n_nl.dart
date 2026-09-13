@@ -2597,7 +2597,7 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get dnsLookupPrivacyBody =>
-      'The domain you enter will be sent to Cloudflare Public DNS over HTTPS. Queries are not saved or uploaded to a ServerBox server.';
+      'The domain you enter will be sent to Alibaba Public DNS over HTTPS. If that connection fails or times out, Cloudflare Public DNS will be tried. Queries are not saved or uploaded to a ServerBox server.';
 
   @override
   String get dnsLookupInvalid =>
@@ -2615,7 +2615,7 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get dnsLookupSource =>
-      'Source: Cloudflare Public DNS (DoH). Results come from recursive resolution; TTL values change.';
+      'Source: Alibaba Public DNS (DoH), with Cloudflare fallback. Results come from recursive resolution; TTL values change.';
 
   @override
   String get dnsLookupCopied => 'DNS record copied';

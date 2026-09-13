@@ -6,21 +6,25 @@ import 'package:server_box/core/utils/private_address.dart';
 import 'package:server_box/data/model/app/dns_lookup.dart';
 import 'package:server_box/data/model/app/ip_lookup.dart';
 
-/// Explicit, on-demand DNS queries through Cloudflare's public DoH resolver.
+/// Explicit, on-demand DNS queries through public JSON DoH resolvers.
 class DnsLookupService {
   DnsLookupService({Dio? dio})
     : _dio =
           dio ??
           Dio(
             BaseOptions(
-              connectTimeout: const Duration(seconds: 6),
-              receiveTimeout: const Duration(seconds: 6),
-              sendTimeout: const Duration(seconds: 6),
+              connectTimeout: const Duration(seconds: 4),
+              receiveTimeout: const Duration(seconds: 4),
+              sendTimeout: const Duration(seconds: 4),
               responseType: ResponseType.json,
             ),
           );
 
   final Dio _dio;
+  static const _resolvers = [
+    'https://dns.alidns.com/resolve',
+    'https://cloudflare-dns.com/dns-query',
+  ];
 
   static String normalizeDomain(String raw) {
     final input = raw.trim().toLowerCase();
@@ -106,9 +110,32 @@ class DnsLookupService {
     DnsRecordType type,
     CancelToken? cancelToken,
   ) async {
+    _DnsAnswer? lastFailure;
+    for (final resolver in _resolvers) {
+      if (cancelToken?.isCancelled == true) {
+        return const _DnsAnswer(
+          failure: IpLookupFailure(IpLookupFailureKind.network),
+        );
+      }
+      final answer = await _queryFrom(resolver, domain, type, cancelToken);
+      if (answer.failure == null ||
+          answer.failure?.kind == IpLookupFailureKind.dns) {
+        return answer;
+      }
+      lastFailure = answer;
+    }
+    return lastFailure!;
+  }
+
+  Future<_DnsAnswer> _queryFrom(
+    String resolver,
+    String domain,
+    DnsRecordType type,
+    CancelToken? cancelToken,
+  ) async {
     try {
       final response = await _dio.get<Object?>(
-        'https://cloudflare-dns.com/dns-query',
+        resolver,
         queryParameters: {'name': domain, 'type': type.label},
         options: Options(headers: {'Accept': 'application/dns-json'}),
         cancelToken: cancelToken,
@@ -120,7 +147,7 @@ class DnsLookupService {
       if (body['Status'] == 3) return const _DnsAnswer(nxdomain: true);
       if (body['Status'] != 0) {
         throw IpLookupFailure(
-          IpLookupFailureKind.dns,
+          IpLookupFailureKind.service,
           'DNS status ${body['Status']}',
         );
       }
@@ -157,6 +184,11 @@ class DnsLookupService {
       final failure = switch (error) {
         DioException(response: Response(statusCode: 429)) =>
           const IpLookupFailure(IpLookupFailureKind.rateLimited),
+        DioException(response: Response(statusCode: 504)) =>
+          const IpLookupFailure(IpLookupFailureKind.timeout),
+        DioException(response: Response(statusCode: final status?))
+            when status >= 500 =>
+          const IpLookupFailure(IpLookupFailureKind.service),
         DioException(
           type: DioExceptionType.connectionTimeout ||
               DioExceptionType.receiveTimeout ||

@@ -12,7 +12,7 @@ void main() {
     final requested = <String>[];
     final service = DnsLookupService(
       dio: _dio((options) {
-        expect(options.uri.host, 'cloudflare-dns.com');
+        expect(options.uri.host, 'dns.alidns.com');
         expect(options.uri.queryParameters['name'], 'example.com');
         expect(options.headers['Accept'], 'application/dns-json');
         final type = options.uri.queryParameters['type']!;
@@ -91,6 +91,67 @@ void main() {
     final result = await service.lookup('example.com');
     expect(result.records, isEmpty);
     expect(result.failedTypes, [DnsRecordType.txt]);
+  });
+
+  test('falls back to Cloudflare after Alibaba timeout', () async {
+    final requests = <String>[];
+    final dio = Dio()
+      ..httpClientAdapter = _Adapter((options) {
+        requests.add(
+          '${options.uri.host}:${options.uri.queryParameters['type']}',
+        );
+        if (options.uri.host == 'dns.alidns.com') {
+          throw DioException(
+            requestOptions: options,
+            type: DioExceptionType.receiveTimeout,
+          );
+        }
+        return _json({
+          'Status': 0,
+          'Answer': [
+            {'name': 'example.com.', 'type': 1, 'TTL': 120, 'data': '1.1.1.1'},
+          ],
+        });
+      });
+    final result = await DnsLookupService(dio: dio).lookup('example.com');
+    expect(result.records.single.value, '1.1.1.1');
+    expect(
+      requests.where((value) => value.startsWith('dns.alidns.com:')),
+      hasLength(6),
+    );
+    expect(
+      requests.where((value) => value.startsWith('cloudflare-dns.com:')),
+      hasLength(6),
+    );
+  });
+
+  test('does not send a second request after NXDOMAIN', () async {
+    var requests = 0;
+    final service = DnsLookupService(
+      dio: _dio((_) {
+        requests++;
+        return _json({'Status': 3});
+      }),
+    );
+    await expectLater(
+      service.lookup('example.com'),
+      throwsA(isA<IpLookupFailure>()),
+    );
+    expect(requests, 6);
+  });
+
+  test('falls back after resolver SERVFAIL', () async {
+    var fallbackCalls = 0;
+    final service = DnsLookupService(
+      dio: _dio((options) {
+        if (options.uri.host == 'dns.alidns.com') return _json({'Status': 2});
+        fallbackCalls++;
+        return _json({'Status': 0});
+      }),
+    );
+    final result = await service.lookup('example.com');
+    expect(result.failedTypes, isEmpty);
+    expect(fallbackCalls, 6);
   });
 
   test('maps NXDOMAIN, malformed response and all-rate-limited', () async {
