@@ -3891,6 +3891,660 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'For example: 0 2 * * * or @reboot'**
   String get scheduledTaskScheduleHint;
+
+  /// No description provided for @warmDashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Dashboard'**
+  String get warmDashboard;
+
+  /// No description provided for @warmTerminal.
+  ///
+  /// In en, this message translates to:
+  /// **'Terminal'**
+  String get warmTerminal;
+
+  /// No description provided for @warmSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get warmSettings;
+
+  /// No description provided for @warmOverview.
+  ///
+  /// In en, this message translates to:
+  /// **'Overview'**
+  String get warmOverview;
+
+  /// No description provided for @warmDataMonitoring.
+  ///
+  /// In en, this message translates to:
+  /// **'Data monitoring'**
+  String get warmDataMonitoring;
+
+  /// No description provided for @warmMonitoring.
+  ///
+  /// In en, this message translates to:
+  /// **'Monitoring'**
+  String get warmMonitoring;
+
+  /// No description provided for @warmServerStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Server status'**
+  String get warmServerStatus;
+
+  /// No description provided for @warmOnline.
+  ///
+  /// In en, this message translates to:
+  /// **'Online'**
+  String get warmOnline;
+
+  /// No description provided for @warmOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline'**
+  String get warmOffline;
+
+  /// No description provided for @warmMyServers.
+  ///
+  /// In en, this message translates to:
+  /// **'My servers'**
+  String get warmMyServers;
+
+  /// No description provided for @warmAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get warmAll;
+
+  /// No description provided for @warmNoServers.
+  ///
+  /// In en, this message translates to:
+  /// **'No servers yet'**
+  String get warmNoServers;
+
+  /// No description provided for @warmNoServersInFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'No servers in this filter'**
+  String get warmNoServersInFilter;
+
+  /// No description provided for @warmAddServerTip.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a server to begin monitoring and open an SSH terminal.'**
+  String get warmAddServerTip;
+
+  /// No description provided for @warmChooseAnotherTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose another tag to see your servers.'**
+  String get warmChooseAnotherTag;
+
+  /// No description provided for @warmCpu.
+  ///
+  /// In en, this message translates to:
+  /// **'CPU'**
+  String get warmCpu;
+
+  /// No description provided for @warmMemory.
+  ///
+  /// In en, this message translates to:
+  /// **'Memory'**
+  String get warmMemory;
+
+  /// No description provided for @warmDisk.
+  ///
+  /// In en, this message translates to:
+  /// **'Disk'**
+  String get warmDisk;
+
+  /// No description provided for @warmCoreCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} cores'**
+  String warmCoreCount(int count);
+
+  /// No description provided for @warmUpload.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload'**
+  String get warmUpload;
+
+  /// No description provided for @warmDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Download'**
+  String get warmDownload;
+
+  /// No description provided for @warmAlert.
+  ///
+  /// In en, this message translates to:
+  /// **'Alert'**
+  String get warmAlert;
+
+  /// No description provided for @warmAlertSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Alert settings'**
+  String get warmAlertSettings;
+
+  /// No description provided for @warmEnableAlerts.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable alerts'**
+  String get warmEnableAlerts;
+
+  /// No description provided for @warmEnableAlertsTip.
+  ///
+  /// In en, this message translates to:
+  /// **'Monitor server status and send notifications'**
+  String get warmEnableAlertsTip;
+
+  /// No description provided for @warmCpuAlert.
+  ///
+  /// In en, this message translates to:
+  /// **'CPU usage alert'**
+  String get warmCpuAlert;
+
+  /// No description provided for @warmMemoryAlert.
+  ///
+  /// In en, this message translates to:
+  /// **'Memory usage alert'**
+  String get warmMemoryAlert;
+
+  /// No description provided for @warmDiskAlert.
+  ///
+  /// In en, this message translates to:
+  /// **'Disk usage alert'**
+  String get warmDiskAlert;
+
+  /// No description provided for @warmAlertAbove.
+  ///
+  /// In en, this message translates to:
+  /// **'Alert when above {value}%'**
+  String warmAlertAbove(int value);
+
+  /// No description provided for @warmAlertSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Alert settings saved'**
+  String get warmAlertSaved;
+
+  /// No description provided for @warmAppearanceSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance settings'**
+  String get warmAppearanceSettings;
+
+  /// No description provided for @warmLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get warmLight;
+
+  /// No description provided for @warmCardBadges.
+  ///
+  /// In en, this message translates to:
+  /// **'Server information display'**
+  String get warmCardBadges;
+
+  /// No description provided for @warmCardBadgesTip.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose network ownership and service reachability badges'**
+  String get warmCardBadgesTip;
+
+  /// No description provided for @serverInfoNetwork.
+  ///
+  /// In en, this message translates to:
+  /// **'Network ownership information'**
+  String get serverInfoNetwork;
+
+  /// No description provided for @serverInfoNetworkTip.
+  ///
+  /// In en, this message translates to:
+  /// **'Show country, ISP, organization, domain, and ASN'**
+  String get serverInfoNetworkTip;
+
+  /// No description provided for @serviceProbePrivacyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Service reachability notice'**
+  String get serviceProbePrivacyTitle;
+
+  /// No description provided for @serviceProbePrivacyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'When enabled, the target server directly visits the ChatGPT, Netflix, or Gemini website to check network reachability. No account, cookie, or SSH key is sent.'**
+  String get serviceProbePrivacyBody;
+
+  /// No description provided for @serviceProbeTip.
+  ///
+  /// In en, this message translates to:
+  /// **'Show on the server card when the check succeeds'**
+  String get serviceProbeTip;
+
+  /// No description provided for @serviceProbeDisclaimer.
+  ///
+  /// In en, this message translates to:
+  /// **'Only indicates that the website is reachable; it does not confirm account, API, or regional content access.'**
+  String get serviceProbeDisclaimer;
+
+  /// No description provided for @settingsAppearanceDisplay.
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance & display'**
+  String get settingsAppearanceDisplay;
+
+  /// No description provided for @settingsServerMonitoring.
+  ///
+  /// In en, this message translates to:
+  /// **'Servers & monitoring'**
+  String get settingsServerMonitoring;
+
+  /// No description provided for @settingsConnectionsTerminal.
+  ///
+  /// In en, this message translates to:
+  /// **'Connections & terminal'**
+  String get settingsConnectionsTerminal;
+
+  /// No description provided for @settingsFilesContainers.
+  ///
+  /// In en, this message translates to:
+  /// **'Files & containers'**
+  String get settingsFilesContainers;
+
+  /// No description provided for @settingsSecurityData.
+  ///
+  /// In en, this message translates to:
+  /// **'Security & data'**
+  String get settingsSecurityData;
+
+  /// No description provided for @settingsApplicationAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'App & about'**
+  String get settingsApplicationAbout;
+
+  /// No description provided for @settingsOpenCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'View settings in this category'**
+  String get settingsOpenCategory;
+
+  /// No description provided for @openSourceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Open-source project'**
+  String get openSourceTitle;
+
+  /// No description provided for @openSourceIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'This app is a modified version of the ServerBox open-source project by lollipopkit and contributors, licensed under GNU Affero General Public License v3.0 (AGPLv3).'**
+  String get openSourceIntro;
+
+  /// No description provided for @openSourceCopyright.
+  ///
+  /// In en, this message translates to:
+  /// **'The original project is copyright lollipopkit and contributors; authors retain copyright in their modifications.'**
+  String get openSourceCopyright;
+
+  /// No description provided for @openSourceNoWarranty.
+  ///
+  /// In en, this message translates to:
+  /// **'This software is provided as-is, without warranty. See the full license for details.'**
+  String get openSourceNoWarranty;
+
+  /// No description provided for @openSourceRights.
+  ///
+  /// In en, this message translates to:
+  /// **'You may obtain, modify, and redistribute the corresponding source under AGPLv3.'**
+  String get openSourceRights;
+
+  /// No description provided for @openSourceModifiedUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'This version has been modified; no verifiable modification date was supplied for this local build.'**
+  String get openSourceModifiedUnknown;
+
+  /// No description provided for @openSourceModifiedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'This version was modified; source commit date: {date}'**
+  String openSourceModifiedOn(String date);
+
+  /// No description provided for @openSourceOriginal.
+  ///
+  /// In en, this message translates to:
+  /// **'Original project repository'**
+  String get openSourceOriginal;
+
+  /// No description provided for @openSourceModifiedSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Corresponding source for this build'**
+  String get openSourceModifiedSource;
+
+  /// No description provided for @openSourceUnverified.
+  ///
+  /// In en, this message translates to:
+  /// **'This local build has no verifiable source commit'**
+  String get openSourceUnverified;
+
+  /// No description provided for @openSourceThirdParty.
+  ///
+  /// In en, this message translates to:
+  /// **'Third-party dependency licenses'**
+  String get openSourceThirdParty;
+
+  /// No description provided for @openSourceLicense.
+  ///
+  /// In en, this message translates to:
+  /// **'Full GNU AGPLv3 license'**
+  String get openSourceLicense;
+
+  /// No description provided for @openSourceLicenseError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the bundled license.'**
+  String get openSourceLicenseError;
+
+  /// No description provided for @settingsNoSshServers.
+  ///
+  /// In en, this message translates to:
+  /// **'Add an SSH server to configure this feature.'**
+  String get settingsNoSshServers;
+
+  /// No description provided for @warmSecuritySettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Security settings'**
+  String get warmSecuritySettings;
+
+  /// No description provided for @warmPrivacyMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy mode'**
+  String get warmPrivacyMode;
+
+  /// No description provided for @warmPrivacyModeTip.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide ServerBox from recent tasks'**
+  String get warmPrivacyModeTip;
+
+  /// No description provided for @warmCloudBackup.
+  ///
+  /// In en, this message translates to:
+  /// **'Cloud backup'**
+  String get warmCloudBackup;
+
+  /// No description provided for @warmCloudBackupTip.
+  ///
+  /// In en, this message translates to:
+  /// **'Back up and restore app data'**
+  String get warmCloudBackupTip;
+
+  /// No description provided for @warmBastionConfig.
+  ///
+  /// In en, this message translates to:
+  /// **'Bastion configuration'**
+  String get warmBastionConfig;
+
+  /// No description provided for @warmBastionConfigTip.
+  ///
+  /// In en, this message translates to:
+  /// **'Access target servers via a bastion'**
+  String get warmBastionConfigTip;
+
+  /// No description provided for @warmTunnelConfig.
+  ///
+  /// In en, this message translates to:
+  /// **'Tunnel configuration'**
+  String get warmTunnelConfig;
+
+  /// No description provided for @warmTunnelConfigTip.
+  ///
+  /// In en, this message translates to:
+  /// **'Configure SSH port forwarding rules'**
+  String get warmTunnelConfigTip;
+
+  /// No description provided for @warmClearSecureData.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear secure data'**
+  String get warmClearSecureData;
+
+  /// No description provided for @warmClearSecureDataTip.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete encrypted passwords and private keys'**
+  String get warmClearSecureDataTip;
+
+  /// No description provided for @warmAppSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'App settings'**
+  String get warmAppSettings;
+
+  /// No description provided for @warmDefaultStatusSpeed.
+  ///
+  /// In en, this message translates to:
+  /// **'Default status update speed'**
+  String get warmDefaultStatusSpeed;
+
+  /// No description provided for @warmSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get warmSystem;
+
+  /// No description provided for @warmTerminalFontSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Terminal font size'**
+  String get warmTerminalFontSize;
+
+  /// No description provided for @warmTerminalFont.
+  ///
+  /// In en, this message translates to:
+  /// **'Terminal font'**
+  String get warmTerminalFont;
+
+  /// No description provided for @warmSystemMonospace.
+  ///
+  /// In en, this message translates to:
+  /// **'System monospace'**
+  String get warmSystemMonospace;
+
+  /// No description provided for @ipLookupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'IP check'**
+  String get ipLookupTitle;
+
+  /// No description provided for @ipLookupSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Public address and network ownership'**
+  String get ipLookupSubtitle;
+
+  /// No description provided for @ipLookupPrivacyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'IP lookup privacy'**
+  String get ipLookupPrivacyTitle;
+
+  /// No description provided for @ipLookupPrivacyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'To perform this lookup, the app sends your public IP or the IP you enter to ipify.org and ipwho.is over HTTPS. It does not save manual searches or upload them to a ServerBox server.'**
+  String get ipLookupPrivacyBody;
+
+  /// No description provided for @ipLookupAgree.
+  ///
+  /// In en, this message translates to:
+  /// **'Agree and continue'**
+  String get ipLookupAgree;
+
+  /// No description provided for @ipLookupCurrent.
+  ///
+  /// In en, this message translates to:
+  /// **'Current public addresses'**
+  String get ipLookupCurrent;
+
+  /// No description provided for @ipLookupIpv4.
+  ///
+  /// In en, this message translates to:
+  /// **'Public IPv4'**
+  String get ipLookupIpv4;
+
+  /// No description provided for @ipLookupIpv6.
+  ///
+  /// In en, this message translates to:
+  /// **'Public IPv6'**
+  String get ipLookupIpv6;
+
+  /// No description provided for @ipLookupNotDetected.
+  ///
+  /// In en, this message translates to:
+  /// **'Not detected'**
+  String get ipLookupNotDetected;
+
+  /// No description provided for @ipLookupInputTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Look up an IP or domain'**
+  String get ipLookupInputTitle;
+
+  /// No description provided for @ipLookupInputHint.
+  ///
+  /// In en, this message translates to:
+  /// **'For example: 8.8.8.8 or example.com'**
+  String get ipLookupInputHint;
+
+  /// No description provided for @ipLookupAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Look up'**
+  String get ipLookupAction;
+
+  /// No description provided for @ipLookupResults.
+  ///
+  /// In en, this message translates to:
+  /// **'Results'**
+  String get ipLookupResults;
+
+  /// No description provided for @ipLookupCountry.
+  ///
+  /// In en, this message translates to:
+  /// **'Country/region'**
+  String get ipLookupCountry;
+
+  /// No description provided for @ipLookupCity.
+  ///
+  /// In en, this message translates to:
+  /// **'Region/city'**
+  String get ipLookupCity;
+
+  /// No description provided for @ipLookupCoordinates.
+  ///
+  /// In en, this message translates to:
+  /// **'Coordinates'**
+  String get ipLookupCoordinates;
+
+  /// No description provided for @ipLookupIsp.
+  ///
+  /// In en, this message translates to:
+  /// **'ISP'**
+  String get ipLookupIsp;
+
+  /// No description provided for @ipLookupOrganization.
+  ///
+  /// In en, this message translates to:
+  /// **'Network organization'**
+  String get ipLookupOrganization;
+
+  /// No description provided for @ipLookupAsn.
+  ///
+  /// In en, this message translates to:
+  /// **'ASN'**
+  String get ipLookupAsn;
+
+  /// No description provided for @ipLookupDomain.
+  ///
+  /// In en, this message translates to:
+  /// **'Network domain'**
+  String get ipLookupDomain;
+
+  /// No description provided for @ipLookupTimezone.
+  ///
+  /// In en, this message translates to:
+  /// **'Timezone'**
+  String get ipLookupTimezone;
+
+  /// No description provided for @ipLookupCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'IP address copied'**
+  String get ipLookupCopied;
+
+  /// No description provided for @ipLookupInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid public IP address or domain.'**
+  String get ipLookupInvalid;
+
+  /// No description provided for @ipLookupPrivate.
+  ///
+  /// In en, this message translates to:
+  /// **'Private and reserved addresses cannot be queried.'**
+  String get ipLookupPrivate;
+
+  /// No description provided for @ipLookupDnsError.
+  ///
+  /// In en, this message translates to:
+  /// **'The domain could not be resolved.'**
+  String get ipLookupDnsError;
+
+  /// No description provided for @ipLookupNetworkError.
+  ///
+  /// In en, this message translates to:
+  /// **'The network service is unavailable. Try again later.'**
+  String get ipLookupNetworkError;
+
+  /// No description provided for @ipLookupTimeout.
+  ///
+  /// In en, this message translates to:
+  /// **'The request timed out. Try again.'**
+  String get ipLookupTimeout;
+
+  /// No description provided for @ipLookupRateLimited.
+  ///
+  /// In en, this message translates to:
+  /// **'The lookup service rate limit has been reached.'**
+  String get ipLookupRateLimited;
+
+  /// No description provided for @ipLookupServiceError.
+  ///
+  /// In en, this message translates to:
+  /// **'The lookup service returned an invalid response.'**
+  String get ipLookupServiceError;
+
+  /// No description provided for @ipLookupSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Data sources: ipify.org and ipwho.is'**
+  String get ipLookupSource;
+
+  /// No description provided for @ipLookupDisclaimer.
+  ///
+  /// In en, this message translates to:
+  /// **'The organization shown is the registrant or operator of the IP range and may not be the server owner.'**
+  String get ipLookupDisclaimer;
 }
 
 class _AppLocalizationsDelegate

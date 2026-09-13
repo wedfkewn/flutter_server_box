@@ -59,7 +59,7 @@ class SettingStore extends SqliteStore {
   late final maxRetryCount = propertyDefault('maxRetryCount', 2);
 
   // Night mode: 0 -> auto, 1 -> light, 2 -> dark, 3 -> AMOLED, 4 -> AUTO-AMOLED
-  late final themeMode = propertyDefault('themeMode', 0);
+  late final themeMode = propertyDefault('themeMode', 1);
 
   // Font file path
   late final fontPath = propertyDefault('fontPath', '');
@@ -116,10 +116,28 @@ class SettingStore extends SqliteStore {
   );
 
   // SSH term font size
-  late final termFontSize = propertyDefault('termFontSize', 13.0);
+  late final termFontSize = propertyDefault('termFontSize', 12.0);
 
   // Locale
   late final locale = propertyDefault('locale', '');
+
+  /// True only before a first launch has selected a locale or written either
+  /// version marker. An upgraded install with an empty legacy locale must keep
+  /// following the device language.
+  bool get needsInitialChineseLocale =>
+      locale.fetch().isEmpty && lastVer.fetch() == 0 && introVer.fetch() == 0;
+
+  /// Consent to send IP addresses to the public lookup providers.
+  late final ipLookupConsent = propertyDefault('ipLookupConsent', false);
+
+  /// Optional server-card enrichments. Off means both hidden and no request.
+  late final showServerNetworkInfo = propertyDefault(
+    'showServerNetworkInfo',
+    false,
+  );
+  late final probeChatGpt = propertyDefault('probeChatGpt', false);
+  late final probeNetflix = propertyDefault('probeNetflix', false);
+  late final probeGemini = propertyDefault('probeGemini', false);
 
   // SSH virtual key (ctrl | alt) auto turn off
   late final sshVirtualKeyAutoOff = propertyDefault(
@@ -363,7 +381,10 @@ class SettingStore extends SqliteStore {
   /// permanently below it for anyone who has ever seen one, and a newly added
   /// page could never appear. Bumping `kDiagnosticsConsentVer` shows this again,
   /// which is what a change to what is collected would need.
-  late final diagnosticsConsentVer = propertyDefault('diagnosticsConsentVer', 0);
+  late final diagnosticsConsentVer = propertyDefault(
+    'diagnosticsConsentVer',
+    0,
+  );
 
   late final autoCheckAppUpdate = propertyDefault('autoCheckAppUpdate', true);
 

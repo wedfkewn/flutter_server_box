@@ -1,6 +1,7 @@
 // ignore_for_file: invalid_use_of_protected_member
 
 import 'dart:async';
+import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:fl_lib/fl_lib.dart';
@@ -10,12 +11,19 @@ import 'package:icons_plus/icons_plus.dart';
 import 'package:server_box/core/diag.dart';
 import 'package:server_box/core/extension/context/locale.dart';
 import 'package:server_box/core/route.dart';
+import 'package:server_box/core/service/ip_geo.dart';
+import 'package:server_box/core/service/ip_lookup.dart';
+import 'package:server_box/core/service/self_addr.dart';
 import 'package:server_box/core/utils/tag_group.dart';
+import 'package:server_box/core/warm_theme.dart';
 import 'package:server_box/data/model/app/error.dart';
+import 'package:server_box/data/model/app/ip_lookup.dart';
 import 'package:server_box/data/model/app/net_view.dart';
 import 'package:server_box/data/model/app/scripts/cmd_types.dart';
 import 'package:server_box/data/model/app/server_sort.dart';
+import 'package:server_box/data/model/app/service_reachability.dart';
 import 'package:server_box/data/model/app/tab.dart';
+import 'package:server_box/data/model/server/disk.dart';
 import 'package:server_box/data/model/server/server.dart';
 import 'package:server_box/data/model/server/server_private_info.dart';
 import 'package:server_box/data/model/server/try_limiter.dart';
@@ -24,6 +32,7 @@ import 'package:server_box/data/provider/server/all.dart';
 import 'package:server_box/data/provider/server/selection.dart';
 import 'package:server_box/data/provider/server/single.dart';
 import 'package:server_box/data/res/store.dart';
+import 'package:server_box/view/page/ip_lookup.dart';
 import 'package:server_box/view/page/server/detail/view.dart';
 import 'package:server_box/view/page/server/edit/edit.dart';
 import 'package:server_box/view/page/setting/entry.dart';
@@ -40,6 +49,7 @@ part 'flight.dart';
 part 'landscape.dart';
 part 'pane_list.dart';
 part 'utils.dart';
+part 'warm_dashboard.dart';
 
 class ServerPage extends ConsumerStatefulWidget {
   const ServerPage({super.key});
@@ -128,6 +138,8 @@ class _ServerPageState extends ConsumerState<ServerPage>
 
   /// The bar's search: what is typed, and whether the bar is a field at all.
   final _search = InlineSearchController();
+
+  final _ipLookupRevision = ValueNotifier(0);
 
   /// Whether the list is a globe.
   ///
@@ -221,6 +233,7 @@ class _ServerPageState extends ConsumerState<ServerPage>
     _scrollController.dispose();
     _sortVersion.dispose();
     _search.dispose();
+    _ipLookupRevision.dispose();
     Stores.setting.globeEnabled.listenable().removeListener(
       _globeEnabledListener,
     );
@@ -252,6 +265,7 @@ class _ServerPageState extends ConsumerState<ServerPage>
   /// waiting — the guide has been seen, or the feature is off — so a launch
   /// that fails either never arms a timer at all.
   void _scheduleGlobeGuide() {
+    if (isMobile) return;
     if (Stores.setting.globeGuided.fetch()) return;
     if (!Stores.setting.globeEnabled.fetch()) return;
     // Long enough for the launch notices to be up if there are any, so the
@@ -389,6 +403,9 @@ class _ServerPageState extends ConsumerState<ServerPage>
   }
 
   Widget _buildPortrait() {
+    if (MediaQuery.sizeOf(context).width < 600) {
+      return _buildWarmDashboard();
+    }
     final serverOrder = ref.watch(serversProvider.select((s) => s.serverOrder));
     final servers = ref.watch(serversProvider.select((s) => s.servers));
     final selected = ref.watch(serverSelectionProvider);

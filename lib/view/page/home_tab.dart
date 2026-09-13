@@ -50,7 +50,7 @@ extension AppTabViewX on AppTab {
 
   String get label {
     return switch (this) {
-      AppTab.server => libL10n.server,
+      AppTab.server => 'Dashboard',
       // Not "SSH": a terminal is what this tab holds, and SSH is only where
       // most of them happen to come from. One already comes from a monitor
       // agent's own PTY, and the name had to stop naming the transport before

@@ -12,6 +12,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:server_box/core/extension/context/locale.dart';
 import 'package:server_box/core/utils/sudo_password.dart';
+import 'package:server_box/core/warm_theme.dart';
 import 'package:server_box/data/model/ai/agent_conversation.dart';
 import 'package:server_box/data/model/ai/ask_ai_models.dart';
 import 'package:server_box/data/model/app/tab.dart';
@@ -293,8 +294,7 @@ class SSHPageState extends ConsumerState<SSHPage>
 
   Future<void> pickSnippetFromToolbar() => _pickSnippet();
 
-  Future<void> openAgentFromToolbar() =>
-      _showAskAiPanel(autoStart: false);
+  Future<void> openAgentFromToolbar() => _showAskAiPanel(autoStart: false);
 
   @override
   void dispose() {
@@ -455,9 +455,7 @@ class SSHPageState extends ConsumerState<SSHPage>
     // far side a `SIGWINCH` for every one — so this one stands down rather
     // than drawing a second copy nobody is looking at.
     final floating = ref.watch(
-      terminalShellProvider.select(
-        (shell) => identical(shell?.session, _sess),
-      ),
+      terminalShellProvider.select((shell) => identical(shell?.session, _sess)),
     );
     if (floating) return _buildFloatedAway();
 
@@ -585,7 +583,7 @@ class SSHPageState extends ConsumerState<SSHPage>
     final theme = hasBg
         ? _terminalTheme.copyWith(background: Colors.transparent)
         : _terminalTheme;
-    final terminal = SizedBox(
+    final terminalView = SizedBox(
       height: double.infinity,
       child: Padding(
         padding: EdgeInsets.only(left: _horizonPadding, right: _horizonPadding),
@@ -621,6 +619,11 @@ class SSHPageState extends ConsumerState<SSHPage>
       ),
     );
 
+    // Terminal output repaints frequently; keep those paints inside its own
+    // layer rather than invalidating the surrounding phone controls.
+    final terminal = isMobile
+        ? RepaintBoundary(child: terminalView)
+        : terminalView;
     final step = _introStep;
     final steps = _introSteps;
     if (step == null || steps == null || step >= steps.length) return terminal;
@@ -741,9 +744,7 @@ class SSHPageState extends ConsumerState<SSHPage>
         tags: tags.vn,
         itemsBuilder: (tag) {
           if (tag == TagSwitcher.kDefaultTag) return snippets;
-          return snippets
-              .where((e) => e.tags?.contains(tag) ?? false)
-              .toList();
+          return snippets.where((e) => e.tags?.contains(tag) ?? false).toList();
         },
         display: (snippet) => snippet.name,
       );
@@ -878,11 +879,13 @@ class SSHPageState extends ConsumerState<SSHPage>
       onTapUp: (_) => _virtKeyLongPressTimer?.cancel(),
       child: AnimatedOpacity(
         opacity: lit ? 1 : 0.25,
-        duration: Durations.medium1,
+        duration: isMobile
+            ? WarmMotion.of(context, WarmMotion.quick)
+            : Durations.medium1,
         curve: Curves.easeOut,
         child: SizedBox(
           width: virtKeyWidth,
-          height: _kVirtKeyRowHeight,
+          height: isMobile ? 44 : _kVirtKeyRowHeight,
           child: Center(child: child),
         ),
       ),
@@ -904,15 +907,15 @@ class SSHPageState extends ConsumerState<SSHPage>
           children: [
             for (var i = 0; i < count; i++)
               AnimatedContainer(
-                duration: Durations.short3,
+                duration: isMobile
+                    ? WarmMotion.of(context, WarmMotion.quick)
+                    : Durations.short3,
                 curve: Curves.easeOut,
                 margin: const EdgeInsets.symmetric(horizontal: 2),
                 width: i == current ? 13 : 5,
                 height: 3,
                 decoration: BoxDecoration(
-                  color: i == current
-                      ? scheme.primary
-                      : scheme.outlineVariant,
+                  color: i == current ? scheme.primary : scheme.outlineVariant,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -1137,10 +1140,7 @@ class SSHPageState extends ConsumerState<SSHPage>
     }
     return [
       for (var at = 0; at < _virtKeysList.length; at += perPage)
-        _virtKeysList.sublist(
-          at,
-          math.min(at + perPage, _virtKeysList.length),
-        ),
+        _virtKeysList.sublist(at, math.min(at + perPage, _virtKeysList.length)),
     ];
   }
 
@@ -1154,7 +1154,7 @@ class SSHPageState extends ConsumerState<SSHPage>
     // short, and a strip that changed height as it was swiped would move the
     // terminal above it.
     _virtKeysHeight =
-        _kVirtKeyRowHeight * pages.first.length +
+        (isMobile ? 44 : _kVirtKeyRowHeight) * pages.first.length +
         (pages.length > 1 ? _kVirtKeyDotsHeight : 0);
   }
 

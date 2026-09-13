@@ -9,6 +9,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:fl_lib/fl_lib.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_highlight/theme_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:icons_plus/icons_plus.dart';
@@ -16,6 +17,7 @@ import 'package:server_box/core/chan.dart';
 import 'package:server_box/core/diag.dart';
 import 'package:server_box/core/extension/context/inset.dart';
 import 'package:server_box/core/extension/context/locale.dart';
+import 'package:server_box/core/route.dart';
 import 'package:server_box/core/service/crash_report.dart';
 import 'package:server_box/core/service/diagnostics_upload.dart';
 import 'package:server_box/core/service/geo_data.dart';
@@ -26,6 +28,7 @@ import 'package:server_box/core/utils/rootfs.dart';
 import 'package:server_box/core/utils/rootfs_manifest_source.dart';
 import 'package:server_box/core/utils/server_dedup.dart';
 import 'package:server_box/core/utils/ssh_config.dart';
+import 'package:server_box/core/warm_theme.dart';
 import 'package:server_box/data/model/ai/ask_ai_models.dart';
 import 'package:server_box/data/model/ai/model_context.dart';
 import 'package:server_box/data/model/app/geo_manifest.dart';
@@ -38,14 +41,17 @@ import 'package:server_box/data/provider/server/all.dart';
 import 'package:server_box/data/res/build_data.dart';
 import 'package:server_box/data/res/default.dart';
 import 'package:server_box/data/res/github_id.dart';
+import 'package:server_box/data/res/source_provenance.dart';
 import 'package:server_box/data/res/store.dart';
 import 'package:server_box/data/res/url.dart';
 import 'package:server_box/data/store/setting.dart';
 import 'package:server_box/generated/l10n/l10n.dart';
 import 'package:server_box/view/page/backup.dart';
 import 'package:server_box/view/page/bmc_credential/list.dart';
+import 'package:server_box/view/page/port_forward.dart';
 import 'package:server_box/view/page/private_key/list.dart';
 import 'package:server_box/view/page/server/connection_stats.dart';
+import 'package:server_box/view/page/server/edit/edit.dart';
 import 'package:server_box/view/page/setting/entries/home_tabs.dart';
 import 'package:server_box/view/page/setting/platform/desktop.dart';
 import 'package:server_box/view/page/setting/platform/ios.dart';
@@ -65,6 +71,8 @@ import 'package:server_box/view/widget/progress_line.dart';
 import 'package:server_box/view/widget/rootfs_install.dart';
 
 part 'about.dart';
+part 'open_source.dart';
+part 'connection_targets.dart';
 part 'menu.dart';
 part 'entries/ai.dart';
 part 'entries/app.dart';
@@ -76,6 +84,7 @@ part 'entries/linux.dart';
 part 'entries/server.dart';
 part 'entries/sftp.dart';
 part 'entries/ssh.dart';
+part 'warm_settings.dart';
 
 const _kIconSize = 23.0;
 
@@ -122,10 +131,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   @override
   void initState() {
     super.initState();
-    final first = _buildNodes().firstWhereOrNull((e) => !e.isLeaf);
-    if (first == null) return;
-    _expanded.add(first.id);
-    _selectedId = first.firstLeaf?.id;
+    _expanded.add('appearance');
+    _selectedId = 'app.setting';
   }
 
   Future<void> _clearAllSettings() async {
@@ -145,7 +152,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   /// The menu, built here because every title comes from the l10n of the
   /// moment. A group with settings of its own carries them in a leaf under
   /// itself, so that opening a branch and showing a page stay separate.
-  List<SettingsNode> _buildNodes() {
+  List<SettingsNode> _buildLegacyNodes() {
     return [
       // Grouped by what a setting belongs to, using the same names the app's
       // own tabs do — so "is SFTP under connections or under files" is not a
@@ -341,6 +348,105 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     ];
   }
 
+  /// Reuse the original leaves (and IDs) while giving every surface the same
+  /// task-oriented, two-level taxonomy.
+  List<SettingsNode> _buildNodes() {
+    final legacy = _buildLegacyNodes();
+    final leaves = {
+      for (final node in legacy.expand((node) => node.flattened))
+        if (node.isLeaf) node.id: node,
+    };
+    SettingsNode leaf(String id) => leaves[id]!;
+    return [
+      SettingsNode.branch(
+        id: 'appearance',
+        title: context.l10n.settingsAppearanceDisplay,
+        icon: Icons.palette_outlined,
+        children: [
+          leaf('app.setting'),
+          leaf('app.homeTabs'),
+          if (leaves.containsKey('app.fullScreen')) leaf('app.fullScreen'),
+          SettingsNode.leaf(
+            id: 'server.info',
+            title: context.l10n.warmCardBadges,
+            icon: Icons.view_agenda_outlined,
+            page: () => const _WarmServerInfoSheet(),
+          ),
+        ],
+      ),
+      SettingsNode.branch(
+        id: 'monitoring',
+        title: context.l10n.settingsServerMonitoring,
+        icon: Icons.monitor_heart_outlined,
+        children: [leaf('server.setting'), leaf('server.order')],
+      ),
+      SettingsNode.branch(
+        id: 'connections',
+        title: context.l10n.settingsConnectionsTerminal,
+        icon: Icons.terminal_outlined,
+        children: [
+          leaf('terminal.setting'),
+          SettingsNode.leaf(
+            id: 'connection.bastion',
+            title: context.l10n.warmBastionConfig,
+            icon: Icons.hub_outlined,
+            page: () => const _ConnectionTargetsPage(tunnel: false),
+          ),
+          SettingsNode.leaf(
+            id: 'connection.tunnels',
+            title: context.l10n.warmTunnelConfig,
+            icon: Icons.cable_outlined,
+            page: () => const _ConnectionTargetsPage(tunnel: true),
+          ),
+          leaf('terminal.knownHosts'),
+          leaf('terminal.virtKey'),
+          if (leaves.containsKey('terminal.linux')) leaf('terminal.linux'),
+        ],
+      ),
+      SettingsNode.branch(
+        id: 'files',
+        title: context.l10n.settingsFilesContainers,
+        icon: Icons.folder_outlined,
+        children: [leaf('file.sftp'), leaf('file.editor'), leaf('container')],
+      ),
+      SettingsNode.branch(
+        id: 'security',
+        title: context.l10n.settingsSecurityData,
+        icon: Icons.shield_outlined,
+        children: [
+          leaf('app.privacy'),
+          leaf('privateKey'),
+          leaf('bmcCredential'),
+          leaf('backup.sync'),
+          leaf('backup.import'),
+        ],
+      ),
+      SettingsNode.branch(
+        id: 'application',
+        title: context.l10n.settingsApplicationAbout,
+        icon: Icons.info_outline,
+        children: [
+          leaf('app.ai'),
+          if (leaves.containsKey('app.ios')) leaf('app.ios'),
+          if (leaves.containsKey('app.desktop')) leaf('app.desktop'),
+          SettingsNode.leaf(
+            id: 'application.logs',
+            title: libL10n.logs,
+            icon: Icons.receipt_long_outlined,
+            page: () => const _SettingsLogsPage(),
+          ),
+          leaf('about'),
+          SettingsNode.leaf(
+            id: 'about.openSource',
+            title: context.l10n.openSourceTitle,
+            icon: Icons.code_outlined,
+            page: () => const _OpenSourcePage(),
+          ),
+        ],
+      ),
+    ];
+  }
+
   void _onSelect(SettingsNode node) {
     _dropPushedPages();
     setState(() => _selectedId = node.id);
@@ -378,10 +484,6 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   void _onTab(SettingsNode node) {
     _dropPushedPages();
     setState(() {
-      if (node.isLeaf && _path.isNotEmpty) {
-        _selectedId = node.id;
-        return;
-      }
       _path.add(node);
       // Unfolded in the wide menu too. The two navigations share [_selectedId]
       // but not their shape, and only the menu's own toggle used to write here
@@ -429,6 +531,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         // The width `AdaptivePanes` splits at, so that a window wide enough for
         // two columns gets two columns here as well.
         final wide = constraints.maxWidth >= AdaptivePanes.kSplitWidth;
+        if (!wide && _path.isEmpty) {
+          return Scaffold(body: SafeArea(child: _buildWarmSettings(nodes)));
+        }
         return _buildScaffold(
           wide: wide,
           menu: menu,
@@ -474,7 +579,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       appBar: CustomAppBar(
         // The list names itself; everything else is named by what it shows.
         title: Text(
-          !wide && _path.isEmpty ? libL10n.setting : selected.title,
+          !wide ? (_path.lastOrNull?.title ?? libL10n.setting) : selected.title,
           style: const TextStyle(fontSize: 20),
         ),
         // Out of the level rather than out of the settings, while there is a
@@ -556,9 +661,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             // just above here already cleared.
             surfaceBuilder: (ctx, split) => split
                 ? content
-                : Builder(
-                    builder: (ctx) => _buildNarrow(ctx, nodes, content),
-                  ),
+                : Builder(builder: (ctx) => _buildNarrow(ctx, nodes, content)),
           ),
         ),
       ),
@@ -576,6 +679,10 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     required List<SettingsNode> nodes,
     required SettingsNode selected,
   }) {
+    Page<void> settingsPage({required LocalKey key, required Widget child}) =>
+        isMobile
+        ? WarmPage<void>(key: key, child: child)
+        : MaterialPage<void>(key: key, child: child);
     // A route sliding in has to be opaque, or what it is covering shows
     // through it for the length of the transition. The pages under here are
     // `embedded: true` and drop their own `Scaffold`, so without this nothing
@@ -626,7 +733,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       key: _contentNav,
       pages: [
         if (wide)
-          MaterialPage<void>(
+          settingsPage(
             key: ValueKey(
               _groupOf(nodes, selected.id)?.firstOrNull?.id ?? 'root',
             ),
@@ -634,14 +741,18 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           )
         else ...[
           // What settings there are, which is where a narrow window starts.
-          MaterialPage<void>(
+          settingsPage(
             key: const ValueKey('root'),
             child: opaque(_SettingsList(nodes: nodes, onTap: _onTab)),
           ),
           for (final entered in _path)
-            MaterialPage<void>(
+            settingsPage(
               key: ValueKey(entered.id),
-              child: opaque(pagesOf(_levelOf(entered))),
+              child: opaque(
+                entered.isLeaf
+                    ? pagesOf([entered])
+                    : _buildWarmSettingEntries(entered.children),
+              ),
             ),
         ],
       ],
@@ -683,7 +794,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     // Nothing over the list — a bar of tabs there would be the same names
     // twice — and nothing over a leaf, which has no level under it to show.
     final entered = _path.lastOrNull;
-    final level = entered == null || entered.isLeaf ? null : entered;
+    final SettingsNode? level = _path.length > 2 ? entered : null;
     final space = level == null ? 0.0 : _kTabsHeight + _kTabsMargin * 2;
 
     return Stack(
@@ -728,7 +839,10 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               child: child,
             ),
             child: level == null
-                ? const SizedBox(key: ValueKey('no_tabs'), width: double.infinity)
+                ? const SizedBox(
+                    key: ValueKey('no_tabs'),
+                    width: double.infinity,
+                  )
                 : _SettingsTabs(
                     key: ValueKey(level.id),
                     nodes: _levelOf(level),
@@ -949,4 +1063,3 @@ final class _AppSettingsPageState extends ConsumerState<AppSettingsPage> {
     );
   }
 }
-

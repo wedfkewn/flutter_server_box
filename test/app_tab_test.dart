@@ -9,13 +9,13 @@ void main() {
       expect(AppTab.defaultOrder, [
         AppTab.server,
         AppTab.ssh,
-        AppTab.file,
-        AppTab.agent,
       ]);
-      // Snippets are a library rather than a place, and a benchmark is a
-      // quarter of an hour started deliberately — neither is wanted a tap away.
+      // The screenshot-led mobile shell keeps one destination each for the
+      // dashboard and terminal; the remaining tools stay reachable in More.
       expect(AppTab.overflowOf(AppTab.defaultOrder), [
+        AppTab.file,
         AppTab.snippet,
+        AppTab.agent,
         AppTab.benchmark,
       ]);
     });

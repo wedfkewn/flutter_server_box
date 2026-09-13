@@ -7,6 +7,7 @@ import 'package:meta/meta.dart';
 import 'package:server_box/core/extension/context/locale.dart';
 import 'package:server_box/core/utils/secure_endpoint.dart';
 import 'package:server_box/data/model/app/error.dart';
+import 'package:server_box/data/model/app/service_reachability.dart';
 import 'package:server_box/data/model/server/monitor_capabilities.dart';
 import 'package:server_box/data/model/server/monitor_exec_output.dart';
 import 'package:server_box/data/model/server/monitor_http_credential.dart';
@@ -286,6 +287,35 @@ class MonitorHttpClient {
           message: '$message\n$e',
         );
       }
+    });
+  }
+
+  /// Runs URL-whitelisted probes without granting arbitrary command access.
+  Future<Map<ServiceKind, ServiceReachabilityResult>> serviceReachability(
+    Set<ServiceKind> services,
+  ) {
+    return _authed(() async {
+      final raw = await _object(
+        '/api/v1/service-reachability',
+        post: {'services': services.map((e) => e.name).toList()},
+      );
+      final checkedAt =
+          DateTime.tryParse(raw['checked_at'] as String? ?? '') ??
+          DateTime.now();
+      final states = raw['results'];
+      if (states is! Map) return const {};
+      return {
+        for (final service in services)
+          service: ServiceReachabilityResult(
+            service: service,
+            state: switch (states[service.name]) {
+              'reachable' => ServiceReachabilityState.reachable,
+              'unreachable' => ServiceReachabilityState.unreachable,
+              _ => ServiceReachabilityState.unknown,
+            },
+            checkedAt: checkedAt,
+          ),
+      };
     });
   }
 

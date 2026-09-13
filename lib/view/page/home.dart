@@ -12,6 +12,7 @@ import 'package:server_box/core/extension/context/locale.dart';
 import 'package:server_box/core/service/tray.dart';
 import 'package:server_box/core/sync.dart';
 import 'package:server_box/core/utils/desktop_shortcuts.dart';
+import 'package:server_box/core/warm_theme.dart';
 import 'package:server_box/data/model/app/tab.dart';
 import 'package:server_box/data/provider/app/session_requests.dart';
 import 'package:server_box/data/provider/server/all.dart';
@@ -37,7 +38,6 @@ class HomePage extends ConsumerStatefulWidget {
 
   static const route = AppRouteNoArg(page: HomePage.new, path: '/');
 }
-
 
 /// What the navigation rail takes from the width a tab gets.
 ///
@@ -134,14 +134,17 @@ class _HomePageState extends ConsumerState<HomePage>
   late final PageController _pageController;
 
   final _selectIndex = ValueNotifier(0);
+  final _settingsOpen = ValueNotifier(false);
 
   bool _switchingPage = false;
+  int _pageSwitchGeneration = 0;
   bool _shouldAuth = false;
   bool? _lastFullscreenMode;
   DateTime? _pausedTime;
   int _serverRefreshCycle = 0;
 
   late final _notifier = ref.read(serversProvider.notifier);
+
   /// What the user arranged: the bar, and the rail.
   late List<AppTab> _barTabs = Stores.setting.homeTabs.fetch();
 
@@ -199,7 +202,9 @@ class _HomePageState extends ConsumerState<HomePage>
     WakelockPlus.disable();
 
     _selectIndex.removeListener(_publishCurrentTab);
+    _settingsOpen.removeListener(_publishCurrentTab);
     _selectIndex.dispose();
+    _settingsOpen.dispose();
     super.dispose();
   }
 
@@ -230,6 +235,7 @@ class _HomePageState extends ConsumerState<HomePage>
     // set from the bar, the rail, a request from another page and restoration,
     // and one of those would eventually be forgotten.
     _selectIndex.addListener(_publishCurrentTab);
+    _settingsOpen.addListener(_publishCurrentTab);
   }
 
   /// Re-announces the tab after a hot reload.
@@ -280,7 +286,9 @@ class _HomePageState extends ConsumerState<HomePage>
   void _publishCurrentTab() {
     final index = _selectIndex.value;
     if (index < 0 || index >= _tabs.length) return;
-    ref.read(currentHomeTabProvider.notifier).update(_tabs[index]);
+    ref
+        .read(currentHomeTabProvider.notifier)
+        .update(isMobile && _settingsOpen.value ? null : _tabs[index]);
   }
 
   @override
@@ -366,7 +374,10 @@ class _HomePageState extends ConsumerState<HomePage>
     ref.listen(homeTabRequestProvider, (_, tab) {
       if (tab == null) return;
       final index = _tabs.indexOf(tab);
-      if (index >= 0) _onDestinationSelected(index);
+      if (index >= 0) {
+        if (isMobile) _settingsOpen.value = false;
+        _onDestinationSelected(index);
+      }
       ref.read(homeTabRequestProvider.notifier).done();
     });
     // Watched, and from here, because this page outlives everything else the
@@ -399,55 +410,45 @@ class _HomePageState extends ConsumerState<HomePage>
     // the bottom inset off the body whenever the slot is filled, on the
     // grounds that the bar will spend it. An empty one spends nothing, and the
     // globe ran under the home indicator.
-    Widget mainContent(bool narrow) => ListenableBuilder(
-      listenable: _selectIndex,
-      builder: (_, _) => Scaffold(
-        body: Row(
-          children: [
-            // Absent rather than empty, for the inset again: the rail is a
-            // `SafeArea`, so one wrapped round nothing still holds the left
-            // inset open beside a full-bleed page.
-            if (!narrow && !_wantsWindow) _buildRailBar(),
-            Expanded(
-              child: PageView.builder(
-                controller: _pageController,
-                itemCount: _tabs.length,
-                physics: const NeverScrollableScrollPhysics(),
-                // Each tab keeps its own stack, so a page opened inside one —
-                // a server's details, its files — covers the tab and not the
-                // window. The bar or rail that got you here stays put, and
-                // coming back to a tab returns you to where you were in it.
-                itemBuilder: (_, index) => NestedNavigator(
-                  key: ValueKey(_tabs[index]),
-                  // The top inset lands on the tab's own content and not on
-                  // the navigator around it, which is the whole point: a page
-                  // pushed here is a sibling route, outside this `SafeArea`,
-                  // so it reaches the top of the window and animates across
-                  // the status bar. Wrapping the navigator instead would inset
-                  // the pushed page too and put the seam back.
-                  //
-                  // Here rather than in each tab because a tab is not one
-                  // shape: three of them put a `Scaffold` *inside* a pane
-                  // splitter, so the splitter's own divider is above any app
-                  // bar that could have spent the inset.
-                  rootBuilder: (_) =>
-                      SafeArea(bottom: false, child: _tabs[index].page),
-                ),
-                onPageChanged: (value) {
-                  FocusScope.of(context).unfocus();
-                  if (!_switchingPage) {
-                    _selectIndex.value = value;
-                    _rememberTab(value);
-                  }
-                  _syncFullscreenSystemUi();
-                },
-              ),
+    Widget homePages(bool narrow) => Row(
+      children: [
+        if (!narrow && !_wantsWindow) _buildRailBar(),
+        Expanded(
+          child: PageView.builder(
+            controller: _pageController,
+            itemCount: _tabs.length,
+            physics: const NeverScrollableScrollPhysics(),
+            itemBuilder: (_, index) => NestedNavigator(
+              key: ValueKey(_tabs[index]),
+              rootBuilder: (_) =>
+                  SafeArea(bottom: false, child: _tabs[index].page),
             ),
-          ],
+            onPageChanged: (value) {
+              FocusScope.of(context).unfocus();
+              if (!_switchingPage) {
+                _selectIndex.value = value;
+                _rememberTab(value);
+              }
+              _syncFullscreenSystemUi();
+            },
+          ),
         ),
-        bottomNavigationBar: narrow && !_wantsWindow
-            ? _buildBottomBar()
-            : null,
+      ],
+    );
+
+    Widget mainContent(bool narrow) => ListenableBuilder(
+      listenable: Listenable.merge([_selectIndex, _settingsOpen]),
+      builder: (_, _) => Scaffold(
+        body: narrow && isMobile
+            ? WarmPersistentTabStack(
+                settingsOpen: _settingsOpen.value,
+                home: homePages(narrow),
+                settings: const SettingsPage(),
+              )
+            : narrow && _settingsOpen.value
+            ? const SettingsPage()
+            : homePages(narrow),
+        bottomNavigationBar: narrow && !_wantsWindow ? _buildBottomBar() : null,
       ),
     );
 
@@ -523,6 +524,7 @@ class _HomePageState extends ConsumerState<HomePage>
   }
 
   Widget _buildBottomBar() {
+    if (isMobile) return _buildWarmBottomBar();
     return ListenableBuilder(
       listenable: _selectIndex,
       builder: (context, child) {
@@ -546,9 +548,10 @@ class _HomePageState extends ConsumerState<HomePage>
             }
             SettingsPage.route.go(context);
           },
-          labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
+          labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
           destinations: [
-            for (final tab in shown) tab.navDestination(onMenu: _navMenuFor(tab)),
+            for (final tab in shown)
+              tab.navDestination(onMenu: _navMenuFor(tab)),
             // One slot, holding whichever of the two is needed. While
             // anything is behind "more" that is where the settings live, as
             // they always have; with every tab turned on there is nothing left
@@ -574,6 +577,58 @@ class _HomePageState extends ConsumerState<HomePage>
         );
       },
     );
+  }
+
+  Widget _buildWarmBottomBar() {
+    return ListenableBuilder(
+      listenable: Listenable.merge([_selectIndex, _settingsOpen]),
+      builder: (context, _) {
+        final current = _tabs.elementAtOrNull(_selectIndex.value);
+        final selected = _settingsOpen.value
+            ? 2
+            : current == AppTab.ssh
+            ? 1
+            : 0;
+        return NavigationBar(
+          key: _navKey,
+          selectedIndex: selected,
+          labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+          onDestinationSelected: (index) {
+            if (index == 2) {
+              _openWarmSettings();
+              return;
+            }
+            final tab = index == 0 ? AppTab.server : AppTab.ssh;
+            _settingsOpen.value = false;
+            final page = _tabs.indexOf(tab);
+            if (page >= 0) _onDestinationSelected(page);
+          },
+          destinations: [
+            NavigationDestination(
+              icon: const Icon(Icons.dashboard_outlined),
+              selectedIcon: const Icon(Icons.dashboard),
+              label: context.l10n.warmDashboard,
+            ),
+            NavigationDestination(
+              icon: const Icon(Icons.terminal_outlined),
+              selectedIcon: const Icon(Icons.terminal),
+              label: context.l10n.warmTerminal,
+            ),
+            NavigationDestination(
+              icon: const Icon(Icons.settings_outlined),
+              selectedIcon: const Icon(Icons.settings),
+              label: context.l10n.warmSettings,
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _openWarmSettings() {
+    if (_settingsOpen.value) return;
+    FocusScope.of(context).unfocus();
+    _settingsOpen.value = true;
   }
 
   /// The tabs that did not fit, and the way to change which ones those are.
@@ -924,13 +979,19 @@ class _HomePageState extends ConsumerState<HomePage>
   void _onAuthUnavailable() {
     _shouldAuth = false;
     final prop = Stores.setting.useBioAuth;
-    final saved = prop.store.set(prop.key, false, updateLastUpdateTsOnSet: false);
+    final saved = prop.store.set(
+      prop.key,
+      false,
+      updateLastUpdateTsOnSet: false,
+    );
     // `set` answers false rather than throwing. Worth a line and nothing more:
     // the app is already past the lock either way, and the cost of a failed
     // write is being asked once more on the next launch.
     if (saved != true) {
-      Loggers.app.warning('Could not turn ${prop.key} off on a device '
-          'that cannot authenticate');
+      Loggers.app.warning(
+        'Could not turn ${prop.key} off on a device '
+        'that cannot authenticate',
+      );
     }
   }
 
@@ -945,15 +1006,31 @@ class _HomePageState extends ConsumerState<HomePage>
     if (index < 0 || index >= _tabs.length) return;
     _selectIndex.value = index;
     _rememberTab(index);
+    final generation = ++_pageSwitchGeneration;
     _switchingPage = true;
-    _pageController.animateToPage(
-      index,
-      duration: const Duration(milliseconds: 677),
-      curve: Curves.fastLinearToSlowEaseIn,
-    );
-    Future.delayed(const Duration(milliseconds: 677), () {
+    final duration = isMobile
+        ? WarmMotion.of(context, WarmMotion.page)
+        : const Duration(milliseconds: 677);
+    if (duration == Duration.zero) {
+      _pageController.jumpToPage(index);
       _switchingPage = false;
-    });
+      return;
+    }
+    unawaited(
+      _pageController
+          .animateToPage(
+            index,
+            duration: duration,
+            curve: isMobile
+                ? Curves.easeOutCubic
+                : Curves.fastLinearToSlowEaseIn,
+          )
+          .whenComplete(() {
+            if (mounted && generation == _pageSwitchGeneration) {
+              _switchingPage = false;
+            }
+          }),
+    );
   }
 
   bool get _isServerFullscreenMode {
@@ -978,7 +1055,6 @@ class _HomePageState extends ConsumerState<HomePage>
   }
 }
 
-
 extension _HomePageStateUtils on _HomePageState {
   bool get _canRefreshServers {
     if (isDesktop) return true;
@@ -989,7 +1065,6 @@ extension _HomePageStateUtils on _HomePageState {
     return isAndroid && Stores.setting.bgRun.fetch();
   }
 }
-
 
 extension _HomePageStateActions on _HomePageState {
   void _handleHomeTabsChanged() {
@@ -1110,7 +1185,8 @@ extension _HomePageNav on _HomePageState {
       _ => null,
     };
     if (menu == null) return null;
-    return (at) => showContextMenu(context, menu.actions, title: menu.title, at: at);
+    return (at) =>
+        showContextMenu(context, menu.actions, title: menu.title, at: at);
   }
 
   /// Asked first, unlike disconnecting servers.
@@ -1122,7 +1198,9 @@ extension _HomePageNav on _HomePageState {
     final ok = await context.showRoundDialog<bool>(
       title: libL10n.attention,
       child: Text(
-        libL10n.askContinue('${libL10n.close} ${libL10n.all} ${libL10n.terminal}'),
+        libL10n.askContinue(
+          '${libL10n.close} ${libL10n.all} ${libL10n.terminal}',
+        ),
       ),
       actions: Btnx.okReds,
     );

@@ -714,9 +714,15 @@ jobs:
       - name: Build (unsigned)
         shell: bash
         run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
+          source_date="$(git log -1 --format=%cs "${GITHUB_SHA}")"
           flutter build ios --release --no-codesign \
             --build-number="${BUILD_NUMBER}" \
-            --build-name="1.0.${BUILD_NUMBER}"
+            --build-name="1.0.${BUILD_NUMBER}" \
+            --dart-define="SOURCE_COMMIT=${GITHUB_SHA}" \
+            --dart-define="SOURCE_REPOSITORY=${GITHUB_REPOSITORY}" \
+            --dart-define="SOURCE_MODIFIED_DATE=${source_date}"
       # The step above asked for the engine; this is what says it arrived. It
       # cannot fail at build time — nothing in the app calls those functions, so
       # a linker that dead-strips them produces an IPA that builds, installs and

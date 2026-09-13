@@ -10,6 +10,7 @@ import 'package:server_box/core/app_navigator.dart';
 import 'package:server_box/core/chan.dart';
 import 'package:server_box/core/extension/context/locale.dart';
 import 'package:server_box/core/service/diagnostics_upload.dart';
+import 'package:server_box/core/warm_theme.dart';
 import 'package:server_box/data/res/build_data.dart';
 import 'package:server_box/data/res/store.dart';
 import 'package:server_box/data/res/url.dart';
@@ -64,44 +65,17 @@ class _MyAppState extends State<MyApp> {
   }
 
   Widget _build(BuildContext context) {
-    final colorSeed = Color(Stores.setting.colorSeed.fetch());
+    UIs.colorSeed = WarmTheme.copper;
+    UIs.primaryColor = WarmTheme.copper;
 
-    UIs.colorSeed = colorSeed;
-    UIs.primaryColor = colorSeed;
-
-    return _buildApp(
-      context,
-      light: ThemeData(
-        useMaterial3: true,
-        colorSchemeSeed: UIs.colorSeed,
-        appBarTheme: AppBarTheme(scrolledUnderElevation: 0.0),
-      ),
-      dark: ThemeData(
-        useMaterial3: true,
-        brightness: Brightness.dark,
-        colorSchemeSeed: UIs.colorSeed,
-        appBarTheme: AppBarTheme(scrolledUnderElevation: 0.0),
-      ),
-    );
+    return _buildApp(context, light: WarmTheme.light(), dark: WarmTheme.dark());
   }
 
   Widget _buildDynamicColor(BuildContext context) {
     return DynamicColorBuilder(
       builder: (light, dark) {
-        final lightSeed = light?.primary;
-        final darkSeed = dark?.primary;
-
-        final lightTheme = ThemeData(
-          useMaterial3: true,
-          colorSchemeSeed: lightSeed,
-          appBarTheme: AppBarTheme(scrolledUnderElevation: 0.0),
-        );
-        final darkTheme = ThemeData(
-          useMaterial3: true,
-          brightness: Brightness.dark,
-          colorSchemeSeed: darkSeed,
-          appBarTheme: AppBarTheme(scrolledUnderElevation: 0.0),
-        );
+        final lightTheme = WarmTheme.light();
+        final darkTheme = WarmTheme.dark();
 
         if (context.isDark && dark != null) {
           UIs.primaryColor = dark.primary;
@@ -174,8 +148,12 @@ class _MyAppState extends State<MyApp> {
       navigatorObservers: [AppRouteObserver.instance],
       title: BuildData.name,
       themeMode: themeMode,
-      theme: light.fixWindowsFont,
-      darkTheme: (tMode < 3 ? dark : dark.toAmoled).fixWindowsFont,
+      theme: (isMobile ? WarmTheme.mobilePolish(light) : light).fixWindowsFont,
+      darkTheme:
+          (isMobile
+                  ? WarmTheme.mobilePolish(tMode < 3 ? dark : dark.toAmoled)
+                  : (tMode < 3 ? dark : dark.toAmoled))
+              .fixWindowsFont,
       home: FutureBuilder<List<IntroPageBuilder>>(
         future: _introFuture,
         builder: (context, snapshot) {

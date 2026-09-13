@@ -32,7 +32,7 @@ class CurrentHomeTab extends _$CurrentHomeTab {
   @override
   AppTab? build() => null;
 
-  void update(AppTab tab) => state = tab;
+  void update(AppTab? tab) => state = tab;
 }
 
 /// The tab that is drawing something the window's chrome is in the way of.

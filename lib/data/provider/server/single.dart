@@ -7,6 +7,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:server_box/core/extension/ssh_client.dart';
+import 'package:server_box/core/service/service_reachability.dart';
 import 'package:server_box/core/utils/monitor_exec.dart';
 import 'package:server_box/core/utils/server.dart';
 import 'package:server_box/core/utils/ssh_auth.dart';
@@ -16,6 +17,7 @@ import 'package:server_box/data/helper/system_detector.dart';
 import 'package:server_box/data/model/app/error.dart';
 import 'package:server_box/data/model/app/scripts/cmd_types.dart';
 import 'package:server_box/data/model/app/scripts/shell_func.dart';
+import 'package:server_box/data/model/app/service_reachability.dart';
 import 'package:server_box/data/model/server/capabilities.dart';
 import 'package:server_box/data/model/server/connect_credential.dart';
 import 'package:server_box/data/model/server/connection_stat.dart';
@@ -178,7 +180,11 @@ class ServerNotifier extends _$ServerNotifier {
     } catch (e, s) {
       // A cache, so a failure to write one is not a failure to poll: the row
       // draws the neutral mark and the next poll tries again.
-      Loggers.app.warning('Caching the distribution of ${state.spi.name}', e, s);
+      Loggers.app.warning(
+        'Caching the distribution of ${state.spi.name}',
+        e,
+        s,
+      );
     }
   }
 
@@ -539,10 +545,9 @@ class ServerNotifier extends _$ServerNotifier {
       // Asking for exactly what the buffer holds. Any more is averaged down
       // on the agent's side instead of being carried here and dropped by
       // [StatusHistory.seed] as it walks past the capacity.
-      final samples = await _resolveSource(credential).fetchHistory(
-        minutes: minutes,
-        maxPoints: StatusHistory.capacity,
-      );
+      final samples = await _resolveSource(
+        credential,
+      ).fetchHistory(minutes: minutes, maxPoints: StatusHistory.capacity);
       if (!_isRefreshCurrent(generation, spi)) return;
       if (samples.isEmpty) return;
       state.status.history.seed(samples);
@@ -621,6 +626,23 @@ class ServerNotifier extends _$ServerNotifier {
       );
       return await _execOver(fallback);
     }
+  }
+
+  /// Fixed external reachability probes. Monitor agents expose a dedicated
+  /// endpoint, so this never broadens their arbitrary-command permission.
+  Future<Map<ServiceKind, ServiceReachabilityResult>> probeServices(
+    Set<ServiceKind> services,
+  ) async {
+    if (services.isEmpty) return const {};
+    final source = _source;
+    if (source is MonitorHttpDataSource) {
+      return source.serviceReachability(services);
+    }
+    final exec = await ensureExec();
+    final result = await exec.run(
+      ServiceReachability.command(state.status.system, services),
+    );
+    return ServiceReachability.parse(result.stdout);
   }
 
   Future<ServerExec> _execOver(

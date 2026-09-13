@@ -2238,4 +2238,358 @@ class AppLocalizationsAz extends AppLocalizations {
 
   @override
   String get scheduledTaskScheduleHint => 'For example: 0 2 * * * or @reboot';
+
+  @override
+  String get warmDashboard => 'Dashboard';
+
+  @override
+  String get warmTerminal => 'Terminal';
+
+  @override
+  String get warmSettings => 'Settings';
+
+  @override
+  String get warmOverview => 'Overview';
+
+  @override
+  String get warmDataMonitoring => 'Data monitoring';
+
+  @override
+  String get warmMonitoring => 'Monitoring';
+
+  @override
+  String get warmServerStatus => 'Server status';
+
+  @override
+  String get warmOnline => 'Online';
+
+  @override
+  String get warmOffline => 'Offline';
+
+  @override
+  String get warmMyServers => 'My servers';
+
+  @override
+  String get warmAll => 'All';
+
+  @override
+  String get warmNoServers => 'No servers yet';
+
+  @override
+  String get warmNoServersInFilter => 'No servers in this filter';
+
+  @override
+  String get warmAddServerTip =>
+      'Add a server to begin monitoring and open an SSH terminal.';
+
+  @override
+  String get warmChooseAnotherTag => 'Choose another tag to see your servers.';
+
+  @override
+  String get warmCpu => 'CPU';
+
+  @override
+  String get warmMemory => 'Memory';
+
+  @override
+  String get warmDisk => 'Disk';
+
+  @override
+  String warmCoreCount(int count) {
+    return '$count cores';
+  }
+
+  @override
+  String get warmUpload => 'Upload';
+
+  @override
+  String get warmDownload => 'Download';
+
+  @override
+  String get warmAlert => 'Alert';
+
+  @override
+  String get warmAlertSettings => 'Alert settings';
+
+  @override
+  String get warmEnableAlerts => 'Enable alerts';
+
+  @override
+  String get warmEnableAlertsTip =>
+      'Monitor server status and send notifications';
+
+  @override
+  String get warmCpuAlert => 'CPU usage alert';
+
+  @override
+  String get warmMemoryAlert => 'Memory usage alert';
+
+  @override
+  String get warmDiskAlert => 'Disk usage alert';
+
+  @override
+  String warmAlertAbove(int value) {
+    return 'Alert when above $value%';
+  }
+
+  @override
+  String get warmAlertSaved => 'Alert settings saved';
+
+  @override
+  String get warmAppearanceSettings => 'Appearance settings';
+
+  @override
+  String get warmLight => 'Light';
+
+  @override
+  String get warmCardBadges => 'Server information display';
+
+  @override
+  String get warmCardBadgesTip =>
+      'Choose network ownership and service reachability badges';
+
+  @override
+  String get serverInfoNetwork => 'Network ownership information';
+
+  @override
+  String get serverInfoNetworkTip =>
+      'Show country, ISP, organization, domain, and ASN';
+
+  @override
+  String get serviceProbePrivacyTitle => 'Service reachability notice';
+
+  @override
+  String get serviceProbePrivacyBody =>
+      'When enabled, the target server directly visits the ChatGPT, Netflix, or Gemini website to check network reachability. No account, cookie, or SSH key is sent.';
+
+  @override
+  String get serviceProbeTip =>
+      'Show on the server card when the check succeeds';
+
+  @override
+  String get serviceProbeDisclaimer =>
+      'Only indicates that the website is reachable; it does not confirm account, API, or regional content access.';
+
+  @override
+  String get settingsAppearanceDisplay => 'Appearance & display';
+
+  @override
+  String get settingsServerMonitoring => 'Servers & monitoring';
+
+  @override
+  String get settingsConnectionsTerminal => 'Connections & terminal';
+
+  @override
+  String get settingsFilesContainers => 'Files & containers';
+
+  @override
+  String get settingsSecurityData => 'Security & data';
+
+  @override
+  String get settingsApplicationAbout => 'App & about';
+
+  @override
+  String get settingsOpenCategory => 'View settings in this category';
+
+  @override
+  String get openSourceTitle => 'Open-source project';
+
+  @override
+  String get openSourceIntro =>
+      'This app is a modified version of the ServerBox open-source project by lollipopkit and contributors, licensed under GNU Affero General Public License v3.0 (AGPLv3).';
+
+  @override
+  String get openSourceCopyright =>
+      'The original project is copyright lollipopkit and contributors; authors retain copyright in their modifications.';
+
+  @override
+  String get openSourceNoWarranty =>
+      'This software is provided as-is, without warranty. See the full license for details.';
+
+  @override
+  String get openSourceRights =>
+      'You may obtain, modify, and redistribute the corresponding source under AGPLv3.';
+
+  @override
+  String get openSourceModifiedUnknown =>
+      'This version has been modified; no verifiable modification date was supplied for this local build.';
+
+  @override
+  String openSourceModifiedOn(String date) {
+    return 'This version was modified; source commit date: $date';
+  }
+
+  @override
+  String get openSourceOriginal => 'Original project repository';
+
+  @override
+  String get openSourceModifiedSource => 'Corresponding source for this build';
+
+  @override
+  String get openSourceUnverified =>
+      'This local build has no verifiable source commit';
+
+  @override
+  String get openSourceThirdParty => 'Third-party dependency licenses';
+
+  @override
+  String get openSourceLicense => 'Full GNU AGPLv3 license';
+
+  @override
+  String get openSourceLicenseError => 'Could not load the bundled license.';
+
+  @override
+  String get settingsNoSshServers =>
+      'Add an SSH server to configure this feature.';
+
+  @override
+  String get warmSecuritySettings => 'Security settings';
+
+  @override
+  String get warmPrivacyMode => 'Privacy mode';
+
+  @override
+  String get warmPrivacyModeTip => 'Hide ServerBox from recent tasks';
+
+  @override
+  String get warmCloudBackup => 'Cloud backup';
+
+  @override
+  String get warmCloudBackupTip => 'Back up and restore app data';
+
+  @override
+  String get warmBastionConfig => 'Bastion configuration';
+
+  @override
+  String get warmBastionConfigTip => 'Access target servers via a bastion';
+
+  @override
+  String get warmTunnelConfig => 'Tunnel configuration';
+
+  @override
+  String get warmTunnelConfigTip => 'Configure SSH port forwarding rules';
+
+  @override
+  String get warmClearSecureData => 'Clear secure data';
+
+  @override
+  String get warmClearSecureDataTip =>
+      'Delete encrypted passwords and private keys';
+
+  @override
+  String get warmAppSettings => 'App settings';
+
+  @override
+  String get warmDefaultStatusSpeed => 'Default status update speed';
+
+  @override
+  String get warmSystem => 'System';
+
+  @override
+  String get warmTerminalFontSize => 'Terminal font size';
+
+  @override
+  String get warmTerminalFont => 'Terminal font';
+
+  @override
+  String get warmSystemMonospace => 'System monospace';
+
+  @override
+  String get ipLookupTitle => 'IP check';
+
+  @override
+  String get ipLookupSubtitle => 'Public address and network ownership';
+
+  @override
+  String get ipLookupPrivacyTitle => 'IP lookup privacy';
+
+  @override
+  String get ipLookupPrivacyBody =>
+      'To perform this lookup, the app sends your public IP or the IP you enter to ipify.org and ipwho.is over HTTPS. It does not save manual searches or upload them to a ServerBox server.';
+
+  @override
+  String get ipLookupAgree => 'Agree and continue';
+
+  @override
+  String get ipLookupCurrent => 'Current public addresses';
+
+  @override
+  String get ipLookupIpv4 => 'Public IPv4';
+
+  @override
+  String get ipLookupIpv6 => 'Public IPv6';
+
+  @override
+  String get ipLookupNotDetected => 'Not detected';
+
+  @override
+  String get ipLookupInputTitle => 'Look up an IP or domain';
+
+  @override
+  String get ipLookupInputHint => 'For example: 8.8.8.8 or example.com';
+
+  @override
+  String get ipLookupAction => 'Look up';
+
+  @override
+  String get ipLookupResults => 'Results';
+
+  @override
+  String get ipLookupCountry => 'Country/region';
+
+  @override
+  String get ipLookupCity => 'Region/city';
+
+  @override
+  String get ipLookupCoordinates => 'Coordinates';
+
+  @override
+  String get ipLookupIsp => 'ISP';
+
+  @override
+  String get ipLookupOrganization => 'Network organization';
+
+  @override
+  String get ipLookupAsn => 'ASN';
+
+  @override
+  String get ipLookupDomain => 'Network domain';
+
+  @override
+  String get ipLookupTimezone => 'Timezone';
+
+  @override
+  String get ipLookupCopied => 'IP address copied';
+
+  @override
+  String get ipLookupInvalid => 'Enter a valid public IP address or domain.';
+
+  @override
+  String get ipLookupPrivate =>
+      'Private and reserved addresses cannot be queried.';
+
+  @override
+  String get ipLookupDnsError => 'The domain could not be resolved.';
+
+  @override
+  String get ipLookupNetworkError =>
+      'The network service is unavailable. Try again later.';
+
+  @override
+  String get ipLookupTimeout => 'The request timed out. Try again.';
+
+  @override
+  String get ipLookupRateLimited =>
+      'The lookup service rate limit has been reached.';
+
+  @override
+  String get ipLookupServiceError =>
+      'The lookup service returned an invalid response.';
+
+  @override
+  String get ipLookupSource => 'Data sources: ipify.org and ipwho.is';
+
+  @override
+  String get ipLookupDisclaimer =>
+      'The organization shown is the registrant or operator of the IP range and may not be the server owner.';
 }

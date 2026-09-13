@@ -1,5 +1,6 @@
 import 'package:fl_lib/fl_lib.dart';
 import 'package:flutter/material.dart';
+import 'package:server_box/core/warm_theme.dart';
 import 'package:server_box/data/res/store.dart';
 import 'package:xterm/ui.dart';
 
@@ -31,11 +32,11 @@ abstract final class TerminalThemes {
     black: Colors.black,
   );
   static const light = TerminalTheme(
-    cursor: Color.fromARGB(153, 174, 175, 173),
-    selectionCursor: Color(0xff8b2252),
-    selection: Color.fromARGB(102, 174, 175, 173),
-    foreground: Color(0XFF000000),
-    background: Color(0XFFFFFFFF),
+    cursor: WarmTheme.muted,
+    selectionCursor: WarmTheme.copper,
+    selection: WarmTheme.peach,
+    foreground: WarmTheme.ink,
+    background: WarmTheme.surface,
     searchHitBackground: Color(0XFFFFFF2B),
     searchHitBackgroundCurrent: Color(0XFF31FF26),
     searchHitForeground: Color(0XFF000000),

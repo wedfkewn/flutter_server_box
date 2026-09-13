@@ -2053,6 +2053,342 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get scheduledTaskScheduleHint => '例如：0 2 * * * 或 @reboot';
+
+  @override
+  String get warmDashboard => '控制台';
+
+  @override
+  String get warmTerminal => '终端';
+
+  @override
+  String get warmSettings => '设置';
+
+  @override
+  String get warmOverview => '总览';
+
+  @override
+  String get warmDataMonitoring => '数据监控';
+
+  @override
+  String get warmMonitoring => '监控中';
+
+  @override
+  String get warmServerStatus => '服务器状态';
+
+  @override
+  String get warmOnline => '在线';
+
+  @override
+  String get warmOffline => '离线';
+
+  @override
+  String get warmMyServers => '我的服务器';
+
+  @override
+  String get warmAll => '全部';
+
+  @override
+  String get warmNoServers => '还没有服务器';
+
+  @override
+  String get warmNoServersInFilter => '此筛选条件下没有服务器';
+
+  @override
+  String get warmAddServerTip => '添加服务器后即可开始监控并打开 SSH 终端。';
+
+  @override
+  String get warmChooseAnotherTag => '请选择其他标签查看服务器。';
+
+  @override
+  String get warmCpu => 'CPU';
+
+  @override
+  String get warmMemory => '内存';
+
+  @override
+  String get warmDisk => '磁盘';
+
+  @override
+  String warmCoreCount(int count) {
+    return '$count 核';
+  }
+
+  @override
+  String get warmUpload => '上传';
+
+  @override
+  String get warmDownload => '下载';
+
+  @override
+  String get warmAlert => '告警';
+
+  @override
+  String get warmAlertSettings => '告警设置';
+
+  @override
+  String get warmEnableAlerts => '启用告警';
+
+  @override
+  String get warmEnableAlertsTip => '监控服务器状态并发送通知';
+
+  @override
+  String get warmCpuAlert => 'CPU 使用率告警';
+
+  @override
+  String get warmMemoryAlert => '内存使用率告警';
+
+  @override
+  String get warmDiskAlert => '磁盘使用率告警';
+
+  @override
+  String warmAlertAbove(int value) {
+    return '高于 $value% 时告警';
+  }
+
+  @override
+  String get warmAlertSaved => '告警设置已保存';
+
+  @override
+  String get warmAppearanceSettings => '外观设置';
+
+  @override
+  String get warmLight => '浅色';
+
+  @override
+  String get warmCardBadges => '服务器信息显示';
+
+  @override
+  String get warmCardBadgesTip => '选择网络归属和服务可访问性标签';
+
+  @override
+  String get serverInfoNetwork => '网络归属信息';
+
+  @override
+  String get serverInfoNetworkTip => '显示国家、ISP、组织、域名和 ASN';
+
+  @override
+  String get serviceProbePrivacyTitle => '服务可访问性说明';
+
+  @override
+  String get serviceProbePrivacyBody =>
+      '开启后，目标服务器会直接访问 ChatGPT、Netflix 或 Gemini 官网以检查网络可访问性。不会发送账号、Cookie 或 SSH 密钥。';
+
+  @override
+  String get serviceProbeTip => '检测成功时在服务器卡片显示';
+
+  @override
+  String get serviceProbeDisclaimer => '仅表示官网可访问，不代表账号、API 或地区内容权限。';
+
+  @override
+  String get settingsAppearanceDisplay => '外观与显示';
+
+  @override
+  String get settingsServerMonitoring => '服务器与监控';
+
+  @override
+  String get settingsConnectionsTerminal => '连接与终端';
+
+  @override
+  String get settingsFilesContainers => '文件与容器';
+
+  @override
+  String get settingsSecurityData => '安全与数据';
+
+  @override
+  String get settingsApplicationAbout => '应用与关于';
+
+  @override
+  String get settingsOpenCategory => '查看此分类的设置';
+
+  @override
+  String get openSourceTitle => '开源项目说明';
+
+  @override
+  String get openSourceIntro =>
+      '本应用基于 lollipopkit 与贡献者的 ServerBox 开源项目修改，采用 GNU Affero General Public License v3.0（AGPLv3）。';
+
+  @override
+  String get openSourceCopyright => '原项目版权归 lollipopkit 与各贡献者所有；修改部分保留各自作者的版权。';
+
+  @override
+  String get openSourceNoWarranty => '本软件按现状提供，不附带任何担保；详情以完整许可证为准。';
+
+  @override
+  String get openSourceRights => '你可以按照 AGPLv3 获取、修改和再分发对应源码。';
+
+  @override
+  String get openSourceModifiedUnknown => '此版本经过修改；本地构建未提供可验证的修改日期。';
+
+  @override
+  String openSourceModifiedOn(String date) {
+    return '此版本经过修改，源码提交日期：$date';
+  }
+
+  @override
+  String get openSourceOriginal => '原项目仓库';
+
+  @override
+  String get openSourceModifiedSource => '本版本对应源码';
+
+  @override
+  String get openSourceUnverified => '本地构建未提供可验证的源码提交';
+
+  @override
+  String get openSourceThirdParty => '第三方依赖许可证';
+
+  @override
+  String get openSourceLicense => 'GNU AGPLv3 完整许可证';
+
+  @override
+  String get openSourceLicenseError => '无法读取随应用提供的许可证。';
+
+  @override
+  String get settingsNoSshServers => '请先添加 SSH 服务器，再配置此功能。';
+
+  @override
+  String get warmSecuritySettings => '安全设置';
+
+  @override
+  String get warmPrivacyMode => '隐私模式';
+
+  @override
+  String get warmPrivacyModeTip => '在最近任务中隐藏 ServerBox';
+
+  @override
+  String get warmCloudBackup => '云备份';
+
+  @override
+  String get warmCloudBackupTip => '备份和恢复应用数据';
+
+  @override
+  String get warmBastionConfig => '堡垒机配置';
+
+  @override
+  String get warmBastionConfigTip => '通过堡垒机访问目标服务器';
+
+  @override
+  String get warmTunnelConfig => '隧道配置';
+
+  @override
+  String get warmTunnelConfigTip => '配置 SSH 端口转发规则';
+
+  @override
+  String get warmClearSecureData => '清除安全数据';
+
+  @override
+  String get warmClearSecureDataTip => '删除加密密码和私钥';
+
+  @override
+  String get warmAppSettings => '应用设置';
+
+  @override
+  String get warmDefaultStatusSpeed => '默认状态刷新速度';
+
+  @override
+  String get warmSystem => '跟随系统';
+
+  @override
+  String get warmTerminalFontSize => '终端字号';
+
+  @override
+  String get warmTerminalFont => '终端字体';
+
+  @override
+  String get warmSystemMonospace => '系统等宽字体';
+
+  @override
+  String get ipLookupTitle => 'IP 检测';
+
+  @override
+  String get ipLookupSubtitle => '公网地址与网络归属';
+
+  @override
+  String get ipLookupPrivacyTitle => 'IP 查询隐私说明';
+
+  @override
+  String get ipLookupPrivacyBody =>
+      '查询时，应用会通过 HTTPS 将你的公网 IP 或输入的 IP 发送给 ipify.org 和 ipwho.is。不保存手动查询记录，也不会上传到 ServerBox 服务器。';
+
+  @override
+  String get ipLookupAgree => '同意并继续';
+
+  @override
+  String get ipLookupCurrent => '当前公网地址';
+
+  @override
+  String get ipLookupIpv4 => '公网 IPv4';
+
+  @override
+  String get ipLookupIpv6 => '公网 IPv6';
+
+  @override
+  String get ipLookupNotDetected => '未检测到';
+
+  @override
+  String get ipLookupInputTitle => '查询 IP 或域名';
+
+  @override
+  String get ipLookupInputHint => '例如：8.8.8.8 或 example.com';
+
+  @override
+  String get ipLookupAction => '查询';
+
+  @override
+  String get ipLookupResults => '查询结果';
+
+  @override
+  String get ipLookupCountry => '国家/地区';
+
+  @override
+  String get ipLookupCity => '地区/城市';
+
+  @override
+  String get ipLookupCoordinates => '经纬度';
+
+  @override
+  String get ipLookupIsp => 'ISP';
+
+  @override
+  String get ipLookupOrganization => '网络运营组织';
+
+  @override
+  String get ipLookupAsn => 'ASN';
+
+  @override
+  String get ipLookupDomain => '网络域名';
+
+  @override
+  String get ipLookupTimezone => '时区';
+
+  @override
+  String get ipLookupCopied => 'IP 地址已复制';
+
+  @override
+  String get ipLookupInvalid => '请输入有效的公网 IP 或域名。';
+
+  @override
+  String get ipLookupPrivate => '不支持查询私有或保留地址。';
+
+  @override
+  String get ipLookupDnsError => '无法解析该域名。';
+
+  @override
+  String get ipLookupNetworkError => '网络服务暂不可用，请稍后重试。';
+
+  @override
+  String get ipLookupTimeout => '请求超时，请重试。';
+
+  @override
+  String get ipLookupRateLimited => 'IP 查询服务已达到限额。';
+
+  @override
+  String get ipLookupServiceError => 'IP 查询服务返回了无效数据。';
+
+  @override
+  String get ipLookupSource => '数据来源：ipify.org 和 ipwho.is';
+
+  @override
+  String get ipLookupDisclaimer => '显示的组织是 IP 地址段的登记或运营方，不一定是服务器实际所有者。';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
