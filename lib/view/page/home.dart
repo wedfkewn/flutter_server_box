@@ -12,6 +12,7 @@ import 'package:server_box/core/extension/context/locale.dart';
 import 'package:server_box/core/service/tray.dart';
 import 'package:server_box/core/sync.dart';
 import 'package:server_box/core/utils/desktop_shortcuts.dart';
+import 'package:server_box/core/warm_theme.dart';
 import 'package:server_box/data/model/app/tab.dart';
 import 'package:server_box/data/provider/app/session_requests.dart';
 import 'package:server_box/data/provider/server/all.dart';
@@ -136,6 +137,7 @@ class _HomePageState extends ConsumerState<HomePage>
   final _settingsOpen = ValueNotifier(false);
 
   bool _switchingPage = false;
+  int _pageSwitchGeneration = 0;
   bool _shouldAuth = false;
   bool? _lastFullscreenMode;
   DateTime? _pausedTime;
@@ -200,6 +202,7 @@ class _HomePageState extends ConsumerState<HomePage>
     WakelockPlus.disable();
 
     _selectIndex.removeListener(_publishCurrentTab);
+    _settingsOpen.removeListener(_publishCurrentTab);
     _selectIndex.dispose();
     _settingsOpen.dispose();
     super.dispose();
@@ -232,6 +235,7 @@ class _HomePageState extends ConsumerState<HomePage>
     // set from the bar, the rail, a request from another page and restoration,
     // and one of those would eventually be forgotten.
     _selectIndex.addListener(_publishCurrentTab);
+    _settingsOpen.addListener(_publishCurrentTab);
   }
 
   /// Re-announces the tab after a hot reload.
@@ -282,7 +286,9 @@ class _HomePageState extends ConsumerState<HomePage>
   void _publishCurrentTab() {
     final index = _selectIndex.value;
     if (index < 0 || index >= _tabs.length) return;
-    ref.read(currentHomeTabProvider.notifier).update(_tabs[index]);
+    ref
+        .read(currentHomeTabProvider.notifier)
+        .update(isMobile && _settingsOpen.value ? null : _tabs[index]);
   }
 
   @override
@@ -368,7 +374,10 @@ class _HomePageState extends ConsumerState<HomePage>
     ref.listen(homeTabRequestProvider, (_, tab) {
       if (tab == null) return;
       final index = _tabs.indexOf(tab);
-      if (index >= 0) _onDestinationSelected(index);
+      if (index >= 0) {
+        if (isMobile) _settingsOpen.value = false;
+        _onDestinationSelected(index);
+      }
       ref.read(homeTabRequestProvider.notifier).done();
     });
     // Watched, and from here, because this page outlives everything else the
@@ -401,54 +410,44 @@ class _HomePageState extends ConsumerState<HomePage>
     // the bottom inset off the body whenever the slot is filled, on the
     // grounds that the bar will spend it. An empty one spends nothing, and the
     // globe ran under the home indicator.
+    Widget homePages(bool narrow) => Row(
+      children: [
+        if (!narrow && !_wantsWindow) _buildRailBar(),
+        Expanded(
+          child: PageView.builder(
+            controller: _pageController,
+            itemCount: _tabs.length,
+            physics: const NeverScrollableScrollPhysics(),
+            itemBuilder: (_, index) => NestedNavigator(
+              key: ValueKey(_tabs[index]),
+              rootBuilder: (_) =>
+                  SafeArea(bottom: false, child: _tabs[index].page),
+            ),
+            onPageChanged: (value) {
+              FocusScope.of(context).unfocus();
+              if (!_switchingPage) {
+                _selectIndex.value = value;
+                _rememberTab(value);
+              }
+              _syncFullscreenSystemUi();
+            },
+          ),
+        ),
+      ],
+    );
+
     Widget mainContent(bool narrow) => ListenableBuilder(
       listenable: Listenable.merge([_selectIndex, _settingsOpen]),
       builder: (_, _) => Scaffold(
-        body: narrow && _settingsOpen.value
+        body: narrow && isMobile
+            ? WarmPersistentTabStack(
+                settingsOpen: _settingsOpen.value,
+                home: homePages(narrow),
+                settings: const SettingsPage(),
+              )
+            : narrow && _settingsOpen.value
             ? const SettingsPage()
-            : Row(
-                children: [
-                  // Absent rather than empty, for the inset again: the rail is a
-                  // `SafeArea`, so one wrapped round nothing still holds the left
-                  // inset open beside a full-bleed page.
-                  if (!narrow && !_wantsWindow) _buildRailBar(),
-                  Expanded(
-                    child: PageView.builder(
-                      controller: _pageController,
-                      itemCount: _tabs.length,
-                      physics: const NeverScrollableScrollPhysics(),
-                      // Each tab keeps its own stack, so a page opened inside one —
-                      // a server's details, its files — covers the tab and not the
-                      // window. The bar or rail that got you here stays put, and
-                      // coming back to a tab returns you to where you were in it.
-                      itemBuilder: (_, index) => NestedNavigator(
-                        key: ValueKey(_tabs[index]),
-                        // The top inset lands on the tab's own content and not on
-                        // the navigator around it, which is the whole point: a page
-                        // pushed here is a sibling route, outside this `SafeArea`,
-                        // so it reaches the top of the window and animates across
-                        // the status bar. Wrapping the navigator instead would inset
-                        // the pushed page too and put the seam back.
-                        //
-                        // Here rather than in each tab because a tab is not one
-                        // shape: three of them put a `Scaffold` *inside* a pane
-                        // splitter, so the splitter's own divider is above any app
-                        // bar that could have spent the inset.
-                        rootBuilder: (_) =>
-                            SafeArea(bottom: false, child: _tabs[index].page),
-                      ),
-                      onPageChanged: (value) {
-                        FocusScope.of(context).unfocus();
-                        if (!_switchingPage) {
-                          _selectIndex.value = value;
-                          _rememberTab(value);
-                        }
-                        _syncFullscreenSystemUi();
-                      },
-                    ),
-                  ),
-                ],
-              ),
+            : homePages(narrow),
         bottomNavigationBar: narrow && !_wantsWindow ? _buildBottomBar() : null,
       ),
     );
@@ -628,6 +627,7 @@ class _HomePageState extends ConsumerState<HomePage>
 
   void _openWarmSettings() {
     if (_settingsOpen.value) return;
+    FocusScope.of(context).unfocus();
     _settingsOpen.value = true;
   }
 
@@ -1006,15 +1006,31 @@ class _HomePageState extends ConsumerState<HomePage>
     if (index < 0 || index >= _tabs.length) return;
     _selectIndex.value = index;
     _rememberTab(index);
+    final generation = ++_pageSwitchGeneration;
     _switchingPage = true;
-    _pageController.animateToPage(
-      index,
-      duration: const Duration(milliseconds: 677),
-      curve: Curves.fastLinearToSlowEaseIn,
-    );
-    Future.delayed(const Duration(milliseconds: 677), () {
+    final duration = isMobile
+        ? WarmMotion.of(context, WarmMotion.page)
+        : const Duration(milliseconds: 677);
+    if (duration == Duration.zero) {
+      _pageController.jumpToPage(index);
       _switchingPage = false;
-    });
+      return;
+    }
+    unawaited(
+      _pageController
+          .animateToPage(
+            index,
+            duration: duration,
+            curve: isMobile
+                ? Curves.easeOutCubic
+                : Curves.fastLinearToSlowEaseIn,
+          )
+          .whenComplete(() {
+            if (mounted && generation == _pageSwitchGeneration) {
+              _switchingPage = false;
+            }
+          }),
+    );
   }
 
   bool get _isServerFullscreenMode {

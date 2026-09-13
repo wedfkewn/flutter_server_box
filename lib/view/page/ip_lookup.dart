@@ -50,6 +50,7 @@ class _IpLookupPageState extends State<IpLookupPage> {
     if (!Stores.setting.ipLookupConsent.fetch()) {
       final accepted = await showDialog<bool>(
         context: context,
+        animationStyle: isMobile ? WarmMotion.dialog(context) : null,
         barrierDismissible: false,
         builder: (ctx) => AlertDialog(
           icon: const Icon(Icons.privacy_tip_outlined),
@@ -237,24 +238,34 @@ class _IpLookupPageState extends State<IpLookupPage> {
               ],
             ),
           ),
-          if (_failure != null) ...[
-            const SizedBox(height: 14),
-            _ErrorCard(message: _failureText(_failure!)),
-          ],
-          if (_results.isNotEmpty) ...[
-            const SizedBox(height: 18),
-            Text(
-              l10n.ipLookupResults,
-              style: Theme.of(
-                context,
-              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+          AnimatedSize(
+            duration: WarmMotion.of(context, WarmMotion.page),
+            curve: Curves.easeOutCubic,
+            alignment: Alignment.topCenter,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (_failure != null) ...[
+                  const SizedBox(height: 14),
+                  _ErrorCard(message: _failureText(_failure!)),
+                ],
+                if (_results.isNotEmpty) ...[
+                  const SizedBox(height: 18),
+                  Text(
+                    l10n.ipLookupResults,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  for (final result in _results) ...[
+                    RepaintBoundary(child: _ResultCard(result: result)),
+                    const SizedBox(height: 12),
+                  ],
+                ],
+              ],
             ),
-            const SizedBox(height: 10),
-            for (final result in _results) ...[
-              _ResultCard(result: result),
-              const SizedBox(height: 12),
-            ],
-          ],
+          ),
           const SizedBox(height: 14),
           Text(
             l10n.ipLookupSource,

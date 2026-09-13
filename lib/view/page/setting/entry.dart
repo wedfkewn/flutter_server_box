@@ -679,6 +679,10 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     required List<SettingsNode> nodes,
     required SettingsNode selected,
   }) {
+    Page<void> settingsPage({required LocalKey key, required Widget child}) =>
+        isMobile
+        ? WarmPage<void>(key: key, child: child)
+        : MaterialPage<void>(key: key, child: child);
     // A route sliding in has to be opaque, or what it is covering shows
     // through it for the length of the transition. The pages under here are
     // `embedded: true` and drop their own `Scaffold`, so without this nothing
@@ -729,7 +733,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       key: _contentNav,
       pages: [
         if (wide)
-          MaterialPage<void>(
+          settingsPage(
             key: ValueKey(
               _groupOf(nodes, selected.id)?.firstOrNull?.id ?? 'root',
             ),
@@ -737,12 +741,12 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           )
         else ...[
           // What settings there are, which is where a narrow window starts.
-          MaterialPage<void>(
+          settingsPage(
             key: const ValueKey('root'),
             child: opaque(_SettingsList(nodes: nodes, onTap: _onTab)),
           ),
           for (final entered in _path)
-            MaterialPage<void>(
+            settingsPage(
               key: ValueKey(entered.id),
               child: opaque(
                 entered.isLeaf

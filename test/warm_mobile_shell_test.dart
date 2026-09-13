@@ -29,6 +29,8 @@ void main() {
   final captureKey = GlobalKey();
 
   setUpAll(() async {
+    temp = await Directory.systemTemp.createTemp('warm-mobile-shell-');
+    Paths.doc = temp.path;
     Future<void> loadFont(String family, String path) async {
       final font = File(path);
       if (!font.existsSync()) return;
@@ -53,8 +55,6 @@ void main() {
   });
 
   setUp(() async {
-    temp = await Directory.systemTemp.createTemp('warm-mobile-shell-');
-    Paths.doc = temp.path;
     await openTestDb();
     getIt.registerSingleton<SettingStore>(SettingStore('setting_test'));
     getIt.registerSingleton<ServerStore>(ServerStore());
@@ -76,14 +76,16 @@ void main() {
   tearDown(() async {
     await getIt.reset();
     await closeTestDb();
-    await temp.delete(recursive: true);
   });
+
+  tearDownAll(() => temp.delete(recursive: true));
 
   Future<void> pump(
     WidgetTester tester, {
     Widget child = const ServerPage(),
+    Size size = const Size(393, 852),
   }) async {
-    tester.view.physicalSize = const Size(393, 852);
+    tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     final warmTheme = WarmTheme.light();
@@ -234,5 +236,40 @@ void main() {
       ),
     );
     await capture(tester, 'implementation-terminal.png');
+  });
+
+  testWidgets('server cards are built lazily and retain stable keys', (
+    tester,
+  ) async {
+    for (var i = 0; i < 30; i++) {
+      Stores.server.put(
+        spiFixture(
+          id: 'server-$i',
+          name: 'Server $i',
+          ip: 'server-$i.example.com',
+          user: 'root',
+          autoConnect: false,
+        ),
+      );
+    }
+    await pump(tester);
+    expect(find.byKey(const ValueKey('server-0')), findsOneWidget);
+    expect(find.byKey(const ValueKey('server-29')), findsNothing);
+    await tester.drag(find.byType(CustomScrollView), const Offset(0, -700));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.byKey(const ValueKey('server-0')), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('warm dashboard fits narrow and wide phones', (tester) async {
+    for (final size in [
+      const Size(320, 740),
+      const Size(430, 930),
+      const Size(568, 320),
+    ]) {
+      await pump(tester, size: size);
+      expect(find.text('总览'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    }
   });
 }

@@ -2,23 +2,19 @@ part of 'tab.dart';
 
 extension _WarmDashboard on _ServerPageState {
   Widget _buildWarmDashboard() {
-    final state = ref.watch(serversProvider);
-    final live = <ServerState>[
-      for (final id in state.serverOrder) ref.watch(serverProvider(id)),
-    ];
+    final order = ref.watch(
+      serversProvider.select((state) => state.serverOrder),
+    );
+    final tags = ref.watch(serversProvider.select((state) => state.tags));
+    // Search and tag filtering read server names/addresses from this map.
+    // Monitoring updates live in each server provider, not in this one.
+    ref.watch(serversProvider.select((state) => state.servers));
 
     return Scaffold(
       body: ListenableBuilder(
         listenable: Listenable.merge([_tag, _tags, _search, _ipLookupRevision]),
         builder: (context, _) {
-          final allowed = _filterServers(state.serverOrder).toSet();
-          final filtered = live
-              .where((e) => allowed.contains(e.spi.id))
-              .toList();
-          final online = live
-              .where((e) => e.conn == ServerConn.finished)
-              .length;
-          final offline = live.length - online;
+          final filtered = _filterServers(order);
 
           return RefreshIndicator(
             onRefresh: _refreshAll,
@@ -26,25 +22,69 @@ extension _WarmDashboard on _ServerPageState {
               controller: _scrollController,
               slivers: [
                 SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 18),
-                  sliver: SliverList.list(
-                    children: [
-                      _warmOverview(online: online, offline: offline),
-                      const SizedBox(height: 22),
-                      _warmServerHeader(),
-                      const SizedBox(height: 14),
-                      _warmFilters(state.tags.toList()),
-                      const SizedBox(height: 16),
-                      if (filtered.isEmpty)
-                        _warmEmpty(state.serverOrder.isEmpty)
-                      else
-                        for (final srv in filtered) ...[
-                          _warmServerCard(srv),
-                          const SizedBox(height: 16),
-                        ],
-                    ],
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+                  sliver: SliverToBoxAdapter(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Consumer(
+                          builder: (context, ref, _) {
+                            final online = order.where((id) {
+                              return ref.watch(
+                                    serverProvider(id).select((s) => s.conn),
+                                  ) ==
+                                  ServerConn.finished;
+                            }).length;
+                            return _warmOverview(
+                              online: online,
+                              offline: order.length - online,
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 22),
+                        _warmServerHeader(),
+                        const SizedBox(height: 14),
+                        _warmFilters(tags.toList()),
+                        const SizedBox(height: 16),
+                      ],
+                    ),
                   ),
                 ),
+                if (filtered.isEmpty)
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 18),
+                    sliver: SliverToBoxAdapter(
+                      child: _warmEmpty(order.isEmpty),
+                    ),
+                  )
+                else
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 18),
+                    sliver: SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                          final id = filtered[index];
+                          return Padding(
+                            key: ValueKey(id),
+                            padding: const EdgeInsets.only(bottom: 16),
+                            child: RepaintBoundary(
+                              child: Consumer(
+                                builder: (context, ref, _) => _warmServerCard(
+                                  ref.watch(serverProvider(id)),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                        childCount: filtered.length,
+                        findChildIndexCallback: (key) {
+                          if (key is! ValueKey<String>) return null;
+                          final index = filtered.indexOf(key.value);
+                          return index < 0 ? null : index;
+                        },
+                      ),
+                    ),
+                  ),
               ],
             ),
           );
@@ -88,7 +128,16 @@ extension _WarmDashboard on _ServerPageState {
                 tooltip: l10n.ipLookupTitle,
                 onPressed: () async {
                   await Navigator.of(context).push<void>(
-                    MaterialPageRoute(builder: (_) => const IpLookupPage()),
+                    isMobile
+                        ? WarmPageRoute<void>(
+                            builder: (_) => const IpLookupPage(),
+                            reduceMotion: MediaQuery.of(
+                              context,
+                            ).disableAnimations,
+                          )
+                        : MaterialPageRoute<void>(
+                            builder: (_) => const IpLookupPage(),
+                          ),
                   );
                   _ipLookupRevision.value++;
                 },
@@ -462,6 +511,7 @@ extension _WarmDashboard on _ServerPageState {
   Future<void> _deleteWarmServer(ServerState srv) async {
     final confirmed = await showDialog<bool>(
       context: context,
+      animationStyle: isMobile ? WarmMotion.dialog(context) : null,
       builder: (ctx) => AlertDialog(
         title: Text('${ctx.libL10n.delete} ${srv.spi.name}?'),
         content: Text(ctx.libL10n.askContinue(ctx.libL10n.delete)),
@@ -491,6 +541,7 @@ extension _WarmDashboard on _ServerPageState {
     var disk = 90.0;
     await showDialog<void>(
       context: context,
+      animationStyle: isMobile ? WarmMotion.dialog(context) : null,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, update) => AlertDialog(
           insetPadding: const EdgeInsets.symmetric(horizontal: 24),

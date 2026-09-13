@@ -1,5 +1,75 @@
 import 'package:flutter/material.dart';
 
+/// Motion shared by the warm mobile shell. Accessibility settings always win.
+abstract final class WarmMotion {
+  static const quick = Duration(milliseconds: 140);
+  static const page = Duration(milliseconds: 240);
+
+  static Duration of(BuildContext context, Duration duration) =>
+      MediaQuery.maybeOf(context)?.disableAnimations == true
+      ? Duration.zero
+      : duration;
+
+  static AnimationStyle dialog(BuildContext context) => AnimationStyle(
+    duration: of(context, page),
+    reverseDuration: of(context, quick),
+    curve: Curves.easeOutCubic,
+    reverseCurve: Curves.easeInCubic,
+  );
+}
+
+/// A shorter route on the warm phone UI; Material keeps the native back gesture.
+class WarmPageRoute<T> extends MaterialPageRoute<T> {
+  WarmPageRoute({
+    required super.builder,
+    super.settings,
+    required this.reduceMotion,
+  });
+
+  final bool reduceMotion;
+
+  @override
+  Duration get transitionDuration =>
+      reduceMotion ? Duration.zero : WarmMotion.page;
+
+  @override
+  Duration get reverseTransitionDuration => transitionDuration;
+}
+
+class WarmPage<T> extends MaterialPage<T> {
+  const WarmPage({required super.child, super.key});
+
+  @override
+  Route<T> createRoute(BuildContext context) => WarmPageRoute<T>(
+    builder: (_) => child,
+    settings: this,
+    reduceMotion: MediaQuery.maybeOf(context)?.disableAnimations == true,
+  );
+}
+
+/// Keeps both phone destinations mounted, while only the visible one ticks.
+class WarmPersistentTabStack extends StatelessWidget {
+  const WarmPersistentTabStack({
+    super.key,
+    required this.settingsOpen,
+    required this.home,
+    required this.settings,
+  });
+
+  final bool settingsOpen;
+  final Widget home;
+  final Widget settings;
+
+  @override
+  Widget build(BuildContext context) => IndexedStack(
+    index: settingsOpen ? 1 : 0,
+    children: [
+      TickerMode(enabled: !settingsOpen, child: home),
+      TickerMode(enabled: settingsOpen, child: settings),
+    ],
+  );
+}
+
 /// The warm, low-contrast visual system used by the mobile ServerBox shell.
 ///
 /// Kept in one place so cards, sheets, navigation and the terminal all share
@@ -16,6 +86,45 @@ abstract final class WarmTheme {
   static const olive = Color(0xff68702c);
   static const lemon = Color(0xfffff69a);
   static const danger = Color(0xffbd2b22);
+
+  /// Phone-only control geometry. Desktop keeps its existing density/layout.
+  static ThemeData mobilePolish(ThemeData base) {
+    final scheme = base.colorScheme;
+    return base.copyWith(
+      visualDensity: VisualDensity.standard,
+      inputDecorationTheme: InputDecorationThemeData(
+        filled: true,
+        fillColor: scheme.surfaceContainerLow,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18),
+          borderSide: BorderSide(color: scheme.primary, width: 1.5),
+        ),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          minimumSize: const Size(44, 44),
+          shape: const StadiumBorder(),
+          textStyle: const TextStyle(fontWeight: FontWeight.w700),
+        ),
+      ),
+      iconButtonTheme: IconButtonThemeData(
+        style: IconButton.styleFrom(
+          minimumSize: const Size(44, 44),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+        ),
+      ),
+    );
+  }
 
   static ThemeData light() {
     const scheme = ColorScheme.light(

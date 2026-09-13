@@ -6,17 +6,35 @@ extension _WarmSettings on _SettingsPageState {
   }
 
   Widget _buildWarmSettingEntries(List<SettingsNode> nodes) {
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(28, 16, 28, 24),
-      children: [
-        for (final node in nodes)
-          _WarmSettingsRow(
-            icon: node.icon,
-            title: node.title,
-            subtitle: node.isLeaf ? '' : context.l10n.settingsOpenCategory,
-            onTap: () => _onTab(node),
-          ),
-      ],
+    return ListView.separated(
+      key: PageStorageKey('warm-settings-${_path.lastOrNull?.id ?? 'root'}'),
+      padding: EdgeInsets.fromLTRB(
+        isMobile ? 16 : 28,
+        16,
+        isMobile ? 16 : 28,
+        24,
+      ),
+      itemCount: nodes.length,
+      separatorBuilder: (_, _) => SizedBox(height: isMobile ? 10 : 0),
+      itemBuilder: (context, index) {
+        final node = nodes[index];
+        final row = _WarmSettingsRow(
+          icon: node.icon,
+          title: node.title,
+          subtitle: node.isLeaf ? '' : context.l10n.settingsOpenCategory,
+          onTap: () => _onTab(node),
+          cardStyle: isMobile,
+        );
+        return isMobile
+            ? Material(
+                key: ValueKey(node.id),
+                color: Theme.of(context).colorScheme.surfaceContainerLow,
+                borderRadius: BorderRadius.circular(20),
+                clipBehavior: Clip.antiAlias,
+                child: row,
+              )
+            : row;
+      },
     );
   }
 }
@@ -32,6 +50,7 @@ class _WarmServerInfoSheetState extends State<_WarmServerInfoSheet> {
   Future<bool> _confirm(String title, String body) async =>
       await showDialog<bool>(
         context: context,
+        animationStyle: isMobile ? WarmMotion.dialog(context) : null,
         builder: (ctx) => AlertDialog(
           title: Text(title),
           content: Text(body),
@@ -138,25 +157,40 @@ class _WarmSettingsRow extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.onTap,
+    required this.cardStyle,
   });
 
   final IconData icon;
   final String title;
   final String subtitle;
   final VoidCallback onTap;
+  final bool cardStyle;
 
   @override
   Widget build(BuildContext context) => InkWell(
-    borderRadius: BorderRadius.circular(18),
+    borderRadius: BorderRadius.circular(cardStyle ? 20 : 18),
     onTap: onTap,
     child: Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+      padding: EdgeInsets.symmetric(
+        vertical: cardStyle ? 14 : 8,
+        horizontal: cardStyle ? 16 : 10,
+      ),
       child: Row(
         children: [
-          SizedBox(
-            width: 46,
-            child: Icon(icon, size: 23, color: WarmTheme.ink),
-          ),
+          cardStyle
+              ? Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Icon(icon, size: 21, color: WarmTheme.copper),
+                )
+              : SizedBox(
+                  width: 46,
+                  child: Icon(icon, size: 23, color: WarmTheme.ink),
+                ),
           const SizedBox(width: 8),
           Expanded(
             child: Column(

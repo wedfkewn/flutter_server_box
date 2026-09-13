@@ -68,11 +68,7 @@ class _MyAppState extends State<MyApp> {
     UIs.colorSeed = WarmTheme.copper;
     UIs.primaryColor = WarmTheme.copper;
 
-    return _buildApp(
-      context,
-      light: WarmTheme.light(),
-      dark: WarmTheme.dark(),
-    );
+    return _buildApp(context, light: WarmTheme.light(), dark: WarmTheme.dark());
   }
 
   Widget _buildDynamicColor(BuildContext context) {
@@ -152,8 +148,12 @@ class _MyAppState extends State<MyApp> {
       navigatorObservers: [AppRouteObserver.instance],
       title: BuildData.name,
       themeMode: themeMode,
-      theme: light.fixWindowsFont,
-      darkTheme: (tMode < 3 ? dark : dark.toAmoled).fixWindowsFont,
+      theme: (isMobile ? WarmTheme.mobilePolish(light) : light).fixWindowsFont,
+      darkTheme:
+          (isMobile
+                  ? WarmTheme.mobilePolish(tMode < 3 ? dark : dark.toAmoled)
+                  : (tMode < 3 ? dark : dark.toAmoled))
+              .fixWindowsFont,
       home: FutureBuilder<List<IntroPageBuilder>>(
         future: _introFuture,
         builder: (context, snapshot) {
