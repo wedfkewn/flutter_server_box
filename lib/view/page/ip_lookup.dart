@@ -335,9 +335,17 @@ class _IpLookupPageState extends State<IpLookupPage> {
                 if (_results.isNotEmpty) ...[
                   const SizedBox(height: 18),
                   Text(
-                    l10n.ipLookupResults,
+                    l10n.networkCheckReport,
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    l10n.networkCheckReportTip,
+                    style: const TextStyle(
+                      color: WarmTheme.muted,
+                      fontSize: 12,
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -363,7 +371,7 @@ class _IpLookupPageState extends State<IpLookupPage> {
                 if (_dnsResult case final result?) ...[
                   const SizedBox(height: 18),
                   Text(
-                    '${l10n.dnsLookupResults} · ${result.domain}',
+                    '${l10n.networkCheckDnsSection} · ${result.domain}',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.w800,
                     ),

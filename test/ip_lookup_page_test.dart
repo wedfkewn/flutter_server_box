@@ -53,6 +53,7 @@ void main() {
 
       expect(setting.ipLookupConsent.fetch(), isTrue);
       expect(service.discoveryCalls, 1);
+      expect(find.text('网络检测报告'), findsOneWidget);
       expect(find.text('8.8.8.8'), findsWidgets);
       expect(find.text('2001:4860:4860::8888'), findsWidgets);
       expect(find.text('Google LLC'), findsWidgets);
@@ -137,14 +138,16 @@ void main() {
     expect(dnsService.calls, 1);
     expect(setting.dnsLookupConsent.fetch(), isTrue);
     await tester.scrollUntilVisible(
-      find.text('DNS 解析结果 · example.com'),
+      find.text('DNS 解析 · example.com'),
       200,
-      scrollable: find.descendant(
-        of: find.byType(ListView),
-        matching: find.byType(Scrollable),
-      ).first,
+      scrollable: find
+          .descendant(
+            of: find.byType(ListView),
+            matching: find.byType(Scrollable),
+          )
+          .first,
     );
-    expect(find.text('DNS 解析结果 · example.com'), findsOneWidget);
+    expect(find.text('DNS 解析 · example.com'), findsOneWidget);
     expect(find.text('1.1.1.1'), findsOneWidget);
     expect(find.text('TTL 300s'), findsOneWidget);
     expect(find.byIcon(Icons.copy_outlined), findsOneWidget);
@@ -176,10 +179,12 @@ void main() {
     await tester.scrollUntilVisible(
       find.textContaining('有效的公网域名'),
       200,
-      scrollable: find.descendant(
-        of: find.byType(ListView),
-        matching: find.byType(Scrollable),
-      ).first,
+      scrollable: find
+          .descendant(
+            of: find.byType(ListView),
+            matching: find.byType(Scrollable),
+          )
+          .first,
     );
     expect(find.textContaining('有效的公网域名'), findsOneWidget);
     expect(dnsService.calls, 0);

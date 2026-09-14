@@ -2421,6 +2421,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get openSourceLicenseError => 'Could not load the bundled license.';
 
   @override
+  String get openSourceReferences => 'Network-check references';
+
+  @override
+  String get openSourceReferencesTip =>
+      'Open-source projects used as references for IP, DNS, and service reachability checks.';
+
+  @override
   String get settingsNoSshServers =>
       'Add an SSH server to configure this feature.';
 
@@ -2515,6 +2522,28 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ipLookupResults => 'Results';
+
+  @override
+  String get networkCheckReport => 'Network check report';
+
+  @override
+  String get networkCheckReportTip =>
+      'Shows IP ownership and website reachability from this device or server. Service checks are only hints, not account or regional-content guarantees.';
+
+  @override
+  String get networkCheckDnsSection => 'DNS records';
+
+  @override
+  String get networkCheckServices => 'Service reachability';
+
+  @override
+  String get networkCheckReachable => 'Reachable';
+
+  @override
+  String get networkCheckUnreachable => 'Not reachable';
+
+  @override
+  String get networkCheckUnknown => 'Not checked or temporarily unavailable';
 
   @override
   String get ipLookupCountry => 'Country/region';

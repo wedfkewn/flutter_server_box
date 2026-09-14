@@ -48,6 +48,20 @@ final class _OpenSourcePage extends StatelessWidget {
           title: Text(l10n.openSourceThirdParty),
           onTap: () => showLicensePage(context: context),
         ),
+        const SizedBox(height: 10),
+        ExpansionTile(
+          leading: const Icon(Icons.travel_explore_outlined),
+          title: Text(l10n.openSourceReferences),
+          subtitle: Text(l10n.openSourceReferencesTip),
+          children: [
+            for (final reference in SourceProvenance.networkReferences)
+              ListTile(
+                title: Text(reference.name),
+                subtitle: Text('${reference.license} · ${reference.purpose}'),
+                onTap: () => reference.url.launchUrl(),
+              ),
+          ],
+        ),
         const SizedBox(height: 14),
         ExpansionTile(
           title: Text(l10n.openSourceLicense),

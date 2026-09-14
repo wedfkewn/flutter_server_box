@@ -2243,6 +2243,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get openSourceLicenseError => '无法读取随应用提供的许可证。';
 
   @override
+  String get openSourceReferences => '网络检测参考项目';
+
+  @override
+  String get openSourceReferencesTip => '用于参考 IP、DNS 和服务可访问性检测的开源项目。';
+
+  @override
   String get settingsNoSshServers => '请先添加 SSH 服务器，再配置此功能。';
 
   @override
@@ -2335,6 +2341,28 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get ipLookupResults => '查询结果';
+
+  @override
+  String get networkCheckReport => '网络检测报告';
+
+  @override
+  String get networkCheckReportTip =>
+      '展示此设备或服务器出口的 IP 归属和官网可访问性；服务检测仅作提示，不代表账号或地区内容权限。';
+
+  @override
+  String get networkCheckDnsSection => 'DNS 解析';
+
+  @override
+  String get networkCheckServices => '服务可访问性';
+
+  @override
+  String get networkCheckReachable => '可访问';
+
+  @override
+  String get networkCheckUnreachable => '不可访问';
+
+  @override
+  String get networkCheckUnknown => '未检测或暂不可用';
 
   @override
   String get ipLookupCountry => '国家/地区';

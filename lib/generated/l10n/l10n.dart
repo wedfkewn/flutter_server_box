@@ -4252,6 +4252,18 @@ abstract class AppLocalizations {
   /// **'Could not load the bundled license.'**
   String get openSourceLicenseError;
 
+  /// No description provided for @openSourceReferences.
+  ///
+  /// In en, this message translates to:
+  /// **'Network-check references'**
+  String get openSourceReferences;
+
+  /// No description provided for @openSourceReferencesTip.
+  ///
+  /// In en, this message translates to:
+  /// **'Open-source projects used as references for IP, DNS, and service reachability checks.'**
+  String get openSourceReferencesTip;
+
   /// No description provided for @settingsNoSshServers.
   ///
   /// In en, this message translates to:
@@ -4437,6 +4449,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Results'**
   String get ipLookupResults;
+
+  /// No description provided for @networkCheckReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Network check report'**
+  String get networkCheckReport;
+
+  /// No description provided for @networkCheckReportTip.
+  ///
+  /// In en, this message translates to:
+  /// **'Shows IP ownership and website reachability from this device or server. Service checks are only hints, not account or regional-content guarantees.'**
+  String get networkCheckReportTip;
+
+  /// No description provided for @networkCheckDnsSection.
+  ///
+  /// In en, this message translates to:
+  /// **'DNS records'**
+  String get networkCheckDnsSection;
+
+  /// No description provided for @networkCheckServices.
+  ///
+  /// In en, this message translates to:
+  /// **'Service reachability'**
+  String get networkCheckServices;
+
+  /// No description provided for @networkCheckReachable.
+  ///
+  /// In en, this message translates to:
+  /// **'Reachable'**
+  String get networkCheckReachable;
+
+  /// No description provided for @networkCheckUnreachable.
+  ///
+  /// In en, this message translates to:
+  /// **'Not reachable'**
+  String get networkCheckUnreachable;
+
+  /// No description provided for @networkCheckUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Not checked or temporarily unavailable'**
+  String get networkCheckUnknown;
 
   /// No description provided for @ipLookupCountry.
   ///

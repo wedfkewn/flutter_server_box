@@ -857,18 +857,125 @@ class _WarmNetworkBadgesState extends ConsumerState<_WarmNetworkBadges> {
     if (labels.isEmpty) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.only(top: 6),
-      child: Wrap(
-        spacing: 6,
-        runSpacing: 6,
-        children: [
-          for (final label in labels)
-            Tooltip(
-              message: label.$2,
-              child: _WarmOutlineChip(label: label.$1),
-            ),
-        ],
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: () => _showReport(result),
+        child: Wrap(
+          spacing: 6,
+          runSpacing: 6,
+          children: [
+            for (final label in labels)
+              Tooltip(
+                message: label.$2,
+                child: _WarmOutlineChip(label: label.$1),
+              ),
+          ],
+        ),
       ),
     );
+  }
+
+  Future<void> _showReport(IpLookupResult? result) async {
+    final l10n = context.l10n;
+    final services = {
+      ServiceKind.chatGpt: 'ChatGPT',
+      ServiceKind.netflix: 'Netflix',
+      ServiceKind.gemini: 'Gemini',
+    };
+    final rows = <(String, String)>[
+      if (result != null) ...[
+        (result.type, result.ip),
+        (
+          l10n.ipLookupCountry,
+          [result.flagEmoji, result.country].whereType<String>().join(' '),
+        ),
+        (l10n.ipLookupIsp, result.isp ?? ''),
+        (l10n.ipLookupOrganization, result.organization ?? ''),
+        (l10n.ipLookupAsn, result.asnLabel ?? ''),
+        (l10n.ipLookupDomain, result.networkDomain ?? ''),
+      ],
+    ].where((row) => row.$2.trim().isNotEmpty).toList(growable: false);
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: ListView(
+          shrinkWrap: true,
+          padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
+          children: [
+            Text(
+              l10n.networkCheckReport,
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              l10n.networkCheckReportTip,
+              style: const TextStyle(color: WarmTheme.muted),
+            ),
+            const SizedBox(height: 14),
+            if (rows.isEmpty)
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.public_off_outlined),
+                title: Text(l10n.ipLookupNotDetected),
+                subtitle: Text(l10n.ipLookupDisclaimer),
+              )
+            else
+              for (final row in rows)
+                ListTile(
+                  dense: true,
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(
+                    row.$1,
+                    style: const TextStyle(color: WarmTheme.muted),
+                  ),
+                  subtitle: Text(
+                    row.$2,
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                ),
+            const Divider(height: 22),
+            Text(
+              l10n.networkCheckServices,
+              style: const TextStyle(fontWeight: FontWeight.w800),
+            ),
+            const SizedBox(height: 6),
+            for (final entry in services.entries)
+              if (_enabledServices().contains(entry.key))
+                ListTile(
+                  dense: true,
+                  contentPadding: EdgeInsets.zero,
+                  leading: Icon(
+                    _services[entry.key]?.reachable == true
+                        ? Icons.check_circle_outline
+                        : Icons.info_outline,
+                    color: _services[entry.key]?.reachable == true
+                        ? Colors.green
+                        : WarmTheme.muted,
+                  ),
+                  title: Text(entry.value),
+                  subtitle: Text(_serviceStateText(_services[entry.key])),
+                ),
+            Text(
+              l10n.serviceProbeDisclaimer,
+              style: const TextStyle(color: WarmTheme.muted, fontSize: 12),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _serviceStateText(ServiceReachabilityResult? result) {
+    return switch (result?.state) {
+      ServiceReachabilityState.reachable => context.l10n.networkCheckReachable,
+      ServiceReachabilityState.unreachable =>
+        context.l10n.networkCheckUnreachable,
+      ServiceReachabilityState.unknown ||
+      null => context.l10n.networkCheckUnknown,
+    };
   }
 }
 
