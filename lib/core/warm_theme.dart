@@ -86,6 +86,11 @@ abstract final class WarmTheme {
   static const olive = Color(0xff68702c);
   static const lemon = Color(0xfffff69a);
   static const danger = Color(0xffbd2b22);
+  static const pagePadding = 18.0;
+  static const cardRadius = 22.0;
+  static const controlRadius = 16.0;
+  static const sectionGap = 16.0;
+  static const cardPadding = 18.0;
 
   /// Phone-only control geometry. Desktop keeps its existing density/layout.
   static ThemeData mobilePolish(ThemeData base) {
@@ -164,6 +169,7 @@ abstract final class WarmTheme {
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
+        centerTitle: false,
         titleTextStyle: TextStyle(
           color: ink,
           fontSize: 20,
@@ -176,7 +182,7 @@ abstract final class WarmTheme {
         elevation: 0,
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(24)),
+          borderRadius: BorderRadius.all(Radius.circular(cardRadius)),
         ),
       ),
       navigationBarTheme: NavigationBarThemeData(
@@ -217,8 +223,19 @@ abstract final class WarmTheme {
         backgroundColor: surface,
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
         ),
+      ),
+      listTileTheme: const ListTileThemeData(
+        contentPadding: EdgeInsets.symmetric(horizontal: 2),
+        minLeadingWidth: 32,
+        horizontalTitleGap: 12,
+        titleTextStyle: TextStyle(
+          color: ink,
+          fontSize: 15,
+          fontWeight: FontWeight.w700,
+        ),
+        subtitleTextStyle: TextStyle(color: muted, fontSize: 12, height: 1.25),
       ),
       chipTheme: const ChipThemeData(
         backgroundColor: Color(0xffffeee2),

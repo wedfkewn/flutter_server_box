@@ -251,13 +251,25 @@ class _IpLookupPageState extends State<IpLookupPage> {
     return Scaffold(
       appBar: AppBar(title: Text(l10n.ipLookupTitle)),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(18, 8, 18, 28),
+        padding: const EdgeInsets.fromLTRB(
+          WarmTheme.pagePadding,
+          8,
+          WarmTheme.pagePadding,
+          30,
+        ),
         children: [
-          Text(
-            l10n.ipLookupSubtitle,
-            style: const TextStyle(color: WarmTheme.muted),
+          Padding(
+            padding: const EdgeInsets.only(left: 2, right: 2, bottom: 2),
+            child: Text(
+              l10n.ipLookupSubtitle,
+              style: const TextStyle(
+                color: WarmTheme.muted,
+                fontSize: 14,
+                height: 1.35,
+              ),
+            ),
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: WarmTheme.sectionGap),
           _section(
             title: l10n.ipLookupCurrent,
             trailing: IconButton(
@@ -274,7 +286,7 @@ class _IpLookupPageState extends State<IpLookupPage> {
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: WarmTheme.sectionGap),
           _section(
             title: l10n.ipLookupInputTitle,
             child: Column(
@@ -346,6 +358,7 @@ class _IpLookupPageState extends State<IpLookupPage> {
                     style: const TextStyle(
                       color: WarmTheme.muted,
                       fontSize: 12,
+                      height: 1.3,
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -416,7 +429,7 @@ class _IpLookupPageState extends State<IpLookupPage> {
               ],
             ),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: WarmTheme.sectionGap),
           Text(
             l10n.ipLookupSource,
             style: const TextStyle(color: WarmTheme.muted),
@@ -436,10 +449,10 @@ class _IpLookupPageState extends State<IpLookupPage> {
     required Widget child,
     Widget? trailing,
   }) => Container(
-    padding: const EdgeInsets.all(16),
+    padding: const EdgeInsets.all(WarmTheme.cardPadding),
     decoration: BoxDecoration(
       color: WarmTheme.surface,
-      borderRadius: BorderRadius.circular(24),
+      borderRadius: BorderRadius.circular(WarmTheme.cardRadius),
     ),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -458,7 +471,7 @@ class _IpLookupPageState extends State<IpLookupPage> {
             ?trailing,
           ],
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 12),
         child,
       ],
     ),
@@ -468,6 +481,7 @@ class _IpLookupPageState extends State<IpLookupPage> {
     final text = value?.address?.address ?? context.l10n.ipLookupNotDetected;
     return ListTile(
       contentPadding: EdgeInsets.zero,
+      minVerticalPadding: 10,
       title: Text(title),
       subtitle: Text(text),
       trailing: value?.address == null
@@ -486,7 +500,7 @@ class _IpLookupPageState extends State<IpLookupPage> {
   }
 
   Widget _dnsRecordRow(DnsRecord record) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 6),
+    padding: const EdgeInsets.symmetric(vertical: 8),
     child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -569,10 +583,13 @@ class _ResultCard extends StatelessWidget {
       ),
     ];
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(
+        horizontal: WarmTheme.cardPadding,
+        vertical: 10,
+      ),
       decoration: BoxDecoration(
         color: WarmTheme.surface,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(WarmTheme.cardRadius),
       ),
       child: Column(
         children: [
@@ -581,13 +598,14 @@ class _ResultCard extends StatelessWidget {
               ListTile(
                 dense: true,
                 contentPadding: EdgeInsets.zero,
+                minVerticalPadding: 9,
                 title: Text(
                   row.$1,
                   style: const TextStyle(color: WarmTheme.muted),
                 ),
                 subtitle: Text(
                   row.$2!,
-                  style: const TextStyle(fontWeight: FontWeight.w600),
+                  style: const TextStyle(fontWeight: FontWeight.w700),
                 ),
                 trailing: row.$2 == result.ip
                     ? IconButton(
@@ -620,7 +638,7 @@ class _ErrorCard extends StatelessWidget {
     padding: const EdgeInsets.all(14),
     decoration: BoxDecoration(
       color: Theme.of(context).colorScheme.errorContainer,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(WarmTheme.controlRadius),
     ),
     child: Row(
       children: [
