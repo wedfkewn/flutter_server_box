@@ -43,6 +43,7 @@ import 'package:server_box/view/widget/agent_common.dart';
 import 'package:server_box/view/widget/agent_entry_appear.dart';
 import 'package:server_box/view/widget/agent_proposal_pager.dart';
 import 'package:server_box/view/widget/agent_user_bubble.dart';
+import 'package:server_box/view/widget/dot_matrix_loader.dart';
 import 'package:server_box/view/widget/tmux_session_selector.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:xterm/core.dart';

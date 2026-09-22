@@ -13,6 +13,7 @@ import 'package:server_box/core/warm_theme.dart';
 import 'package:server_box/data/model/app/dns_lookup.dart';
 import 'package:server_box/data/model/app/ip_lookup.dart';
 import 'package:server_box/data/res/store.dart';
+import 'package:server_box/view/widget/dot_matrix_loader.dart';
 
 class IpLookupPage extends StatefulWidget {
   const IpLookupPage({super.key, this.service, this.dnsService});
@@ -275,14 +276,21 @@ class _IpLookupPageState extends State<IpLookupPage> {
             trailing: IconButton(
               tooltip: context.libL10n.refresh,
               onPressed: _loadingPublic ? null : _detectPublic,
-              icon: const Icon(Icons.refresh),
+              icon: _loadingPublic && isMobile
+                  ? DotMatrixLoader(
+                      size: 24,
+                      label: l10n.ipDetectLoading,
+                      style: DotMatrixStyle.orbit,
+                    )
+                  : const Icon(Icons.refresh),
             ),
             child: Column(
               children: [
                 _publicRow(l10n.ipLookupIpv4, _publicIps?.ipv4),
                 const Divider(height: 1),
                 _publicRow(l10n.ipLookupIpv6, _publicIps?.ipv6),
-                if (_loadingPublic) const LinearProgressIndicator(),
+                if (_loadingPublic && !isMobile)
+                  const LinearProgressIndicator(),
               ],
             ),
           ),
@@ -308,10 +316,17 @@ class _IpLookupPageState extends State<IpLookupPage> {
                   child: FilledButton.icon(
                     onPressed: _loadingQuery ? null : _query,
                     icon: _loadingQuery
-                        ? const SizedBox.square(
-                            dimension: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
+                        ? isMobile
+                              ? DotMatrixLoader(
+                                  label: l10n.ipQueryLoading,
+                                  size: 18,
+                                )
+                              : const SizedBox.square(
+                                  dimension: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
                         : const Icon(Icons.search),
                     label: Text(l10n.ipLookupAction),
                   ),
@@ -322,10 +337,18 @@ class _IpLookupPageState extends State<IpLookupPage> {
                   child: OutlinedButton.icon(
                     onPressed: _loadingDns ? null : _queryDns,
                     icon: _loadingDns
-                        ? const SizedBox.square(
-                            dimension: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
+                        ? isMobile
+                              ? DotMatrixLoader(
+                                  label: l10n.dnsQueryLoading,
+                                  size: 18,
+                                  style: DotMatrixStyle.scan,
+                                )
+                              : const SizedBox.square(
+                                  dimension: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
                         : const Icon(Icons.dns_outlined),
                     label: Text(l10n.dnsLookupAction),
                   ),

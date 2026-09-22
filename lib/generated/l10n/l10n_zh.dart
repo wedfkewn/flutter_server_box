@@ -2340,6 +2340,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get ipLookupAction => '查询';
 
   @override
+  String get ipDetectLoading => '正在检测公网 IP';
+
+  @override
+  String get ipQueryLoading => '正在查询 IP';
+
+  @override
+  String get dnsQueryLoading => '正在解析 DNS';
+
+  @override
   String get ipLookupResults => '查询结果';
 
   @override

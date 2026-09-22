@@ -4444,6 +4444,24 @@ abstract class AppLocalizations {
   /// **'Look up'**
   String get ipLookupAction;
 
+  /// No description provided for @ipDetectLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Detecting public IP'**
+  String get ipDetectLoading;
+
+  /// No description provided for @ipQueryLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Looking up IP'**
+  String get ipQueryLoading;
+
+  /// No description provided for @dnsQueryLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Resolving DNS'**
+  String get dnsQueryLoading;
+
   /// No description provided for @ipLookupResults.
   ///
   /// In en, this message translates to:

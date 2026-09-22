@@ -369,11 +369,19 @@ extension _Init on SSHPageState {
       context.showRoundDialog(
         child: Row(
           children: [
-            const SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(strokeWidth: 2.5),
-            ),
+            if (isMobile)
+              DotMatrixLoader(
+                label: libL10n.reconnecting,
+                size: 24,
+                style: DotMatrixStyle.scan,
+                color: Theme.of(context).colorScheme.primary,
+              )
+            else
+              const SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(strokeWidth: 2.5),
+              ),
             const SizedBox(width: 16),
             Expanded(child: Text(libL10n.reconnecting)),
             // Closes the dialog itself. An `onTap` replaces the pop `Btn`

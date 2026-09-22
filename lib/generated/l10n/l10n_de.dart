@@ -2548,6 +2548,15 @@ class AppLocalizationsDe extends AppLocalizations {
   String get ipLookupAction => 'Look up';
 
   @override
+  String get ipDetectLoading => 'Detecting public IP';
+
+  @override
+  String get ipQueryLoading => 'Looking up IP';
+
+  @override
+  String get dnsQueryLoading => 'Resolving DNS';
+
+  @override
   String get ipLookupResults => 'Results';
 
   @override
