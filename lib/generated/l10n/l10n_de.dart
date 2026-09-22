@@ -2448,6 +2448,13 @@ class AppLocalizationsDe extends AppLocalizations {
   String get openSourceLicenseError => 'Could not load the bundled license.';
 
   @override
+  String get openSourceReferences => 'Network-check references';
+
+  @override
+  String get openSourceReferencesTip =>
+      'Open-source projects used as references for IP, DNS, and service reachability checks.';
+
+  @override
   String get settingsNoSshServers =>
       'Add an SSH server to configure this feature.';
 
@@ -2544,6 +2551,28 @@ class AppLocalizationsDe extends AppLocalizations {
   String get ipLookupResults => 'Results';
 
   @override
+  String get networkCheckReport => 'Network check report';
+
+  @override
+  String get networkCheckReportTip =>
+      'Shows IP ownership and website reachability from this device or server. Service checks are only hints, not account or regional-content guarantees.';
+
+  @override
+  String get networkCheckDnsSection => 'DNS records';
+
+  @override
+  String get networkCheckServices => 'Service reachability';
+
+  @override
+  String get networkCheckReachable => 'Reachable';
+
+  @override
+  String get networkCheckUnreachable => 'Not reachable';
+
+  @override
+  String get networkCheckUnknown => 'Not checked or temporarily unavailable';
+
+  @override
   String get ipLookupCountry => 'Country/region';
 
   @override
@@ -2597,6 +2626,48 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get ipLookupSource => 'Data sources: ipify.org and ipwho.is';
+
+  @override
+  String get dnsLookupAction => 'DNS records';
+
+  @override
+  String get dnsLookupPrivacyTitle => 'DNS lookup privacy';
+
+  @override
+  String get dnsLookupPrivacyBody =>
+      'The domain you enter will be sent to Alibaba Public DNS over HTTPS. If that connection fails or times out, Cloudflare Public DNS will be tried. Queries are not saved or uploaded to a ServerBox server.';
+
+  @override
+  String get dnsLookupInvalid =>
+      'Enter a valid public domain (ASCII/Punycode only), not an IP address, URL, or private domain.';
+
+  @override
+  String get dnsLookupResults => 'DNS results';
+
+  @override
+  String get dnsLookupNoRecords =>
+      'No DNS records found for the selected types.';
+
+  @override
+  String get dnsLookupPartial => 'Some record types failed: ';
+
+  @override
+  String get dnsLookupSource =>
+      'Source: Alibaba Public DNS (DoH), with Cloudflare fallback. Results come from recursive resolution; TTL values change.';
+
+  @override
+  String get dnsLookupCopied => 'DNS record copied';
+
+  @override
+  String get dnsLookupRateLimited => 'Too many DNS requests. Try again later.';
+
+  @override
+  String get dnsLookupServiceError =>
+      'The DNS service returned an invalid response. Try again later.';
+
+  @override
+  String get dnsLookupDnsError =>
+      'The domain does not exist or DNS resolution failed.';
 
   @override
   String get ipLookupDisclaimer =>

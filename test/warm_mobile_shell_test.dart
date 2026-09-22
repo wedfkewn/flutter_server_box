@@ -202,6 +202,17 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('原项目仓库'), findsOneWidget);
     expect(find.text('第三方依赖许可证'), findsOneWidget);
+    expect(find.text('网络检测参考项目'), findsOneWidget);
+    await tester.tap(find.text('网络检测参考项目'));
+    await tester.pumpAndSettle();
+    expect(find.text('lmc999/RegionRestrictionCheck'), findsOneWidget);
+    expect(find.text('xykt/IPQuality'), findsOneWidget);
+    expect(find.text('bitscoper/bitscoper_cyberkit'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('GNU AGPLv3 完整许可证'),
+      160,
+      scrollable: find.byType(Scrollable).last,
+    );
     expect(find.text('GNU AGPLv3 完整许可证'), findsOneWidget);
     await tester.tap(find.text('GNU AGPLv3 完整许可证'));
     await tester.pumpAndSettle();

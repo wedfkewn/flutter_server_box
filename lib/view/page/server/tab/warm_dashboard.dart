@@ -22,7 +22,12 @@ extension _WarmDashboard on _ServerPageState {
               controller: _scrollController,
               slivers: [
                 SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+                  padding: const EdgeInsets.fromLTRB(
+                    WarmTheme.pagePadding,
+                    16,
+                    WarmTheme.pagePadding,
+                    0,
+                  ),
                   sliver: SliverToBoxAdapter(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -41,32 +46,44 @@ extension _WarmDashboard on _ServerPageState {
                             );
                           },
                         ),
-                        const SizedBox(height: 22),
+                        const SizedBox(height: 20),
                         _warmServerHeader(),
-                        const SizedBox(height: 14),
+                        const SizedBox(height: 12),
                         _warmFilters(tags.toList()),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: WarmTheme.sectionGap),
                       ],
                     ),
                   ),
                 ),
                 if (filtered.isEmpty)
                   SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 18),
+                    padding: const EdgeInsets.fromLTRB(
+                      WarmTheme.pagePadding,
+                      0,
+                      WarmTheme.pagePadding,
+                      18,
+                    ),
                     sliver: SliverToBoxAdapter(
                       child: _warmEmpty(order.isEmpty),
                     ),
                   )
                 else
                   SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 18),
+                    padding: const EdgeInsets.fromLTRB(
+                      WarmTheme.pagePadding,
+                      0,
+                      WarmTheme.pagePadding,
+                      18,
+                    ),
                     sliver: SliverList(
                       delegate: SliverChildBuilderDelegate(
                         (context, index) {
                           final id = filtered[index];
                           return Padding(
                             key: ValueKey(id),
-                            padding: const EdgeInsets.only(bottom: 16),
+                            padding: const EdgeInsets.only(
+                              bottom: WarmTheme.sectionGap,
+                            ),
                             child: RepaintBoundary(
                               child: Consumer(
                                 builder: (context, ref, _) => _warmServerCard(
@@ -96,10 +113,15 @@ extension _WarmDashboard on _ServerPageState {
   Widget _warmOverview({required int online, required int offline}) {
     final l10n = context.l10n;
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 22),
+      padding: const EdgeInsets.fromLTRB(
+        WarmTheme.cardPadding,
+        18,
+        WarmTheme.cardPadding,
+        20,
+      ),
       decoration: BoxDecoration(
         color: WarmTheme.surface,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(WarmTheme.cardRadius),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -113,7 +135,7 @@ extension _WarmDashboard on _ServerPageState {
                     Text(
                       l10n.warmOverview,
                       style: const TextStyle(
-                        fontSize: 18,
+                        fontSize: 20,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -124,7 +146,7 @@ extension _WarmDashboard on _ServerPageState {
                   ],
                 ),
               ),
-              IconButton(
+              IconButton.filledTonal(
                 tooltip: l10n.ipLookupTitle,
                 onPressed: () async {
                   await Navigator.of(context).push<void>(
@@ -141,11 +163,13 @@ extension _WarmDashboard on _ServerPageState {
                   );
                   _ipLookupRevision.value++;
                 },
-                icon: const Icon(
-                  Icons.travel_explore,
-                  color: Color(0xff367cff),
+                style: IconButton.styleFrom(
+                  backgroundColor: WarmTheme.surfaceStrong,
+                  foregroundColor: WarmTheme.copper,
                 ),
+                icon: const Icon(Icons.travel_explore),
               ),
+              const SizedBox(width: 6),
               _WarmPill(
                 icon: Icons.circle,
                 label: l10n.warmMonitoring,
@@ -154,12 +178,12 @@ extension _WarmDashboard on _ServerPageState {
               ),
             ],
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 20),
           Text(
             l10n.warmServerStatus,
-            style: const TextStyle(fontWeight: FontWeight.w600),
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 12),
           Row(
             children: [
               Expanded(
@@ -170,7 +194,7 @@ extension _WarmDashboard on _ServerPageState {
                   color: WarmTheme.olive,
                 ),
               ),
-              const SizedBox(width: 14),
+              const SizedBox(width: 12),
               Expanded(
                 child: _WarmStatusTile(
                   icon: Icons.cloud_off_outlined,
@@ -193,7 +217,7 @@ extension _WarmDashboard on _ServerPageState {
         Expanded(
           child: Text(
             l10n.warmMyServers,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
           ),
         ),
         IconButton.filledTonal(
@@ -212,11 +236,11 @@ extension _WarmDashboard on _ServerPageState {
   Widget _warmFilters(List<String> tags) {
     final shown = ['', ...tags];
     return SizedBox(
-      height: 38,
+      height: 40,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: shown.length,
-        separatorBuilder: (_, _) => const SizedBox(width: 8),
+        separatorBuilder: (_, _) => const SizedBox(width: 10),
         itemBuilder: (_, index) {
           final tag = shown[index];
           final selected = tag == _tag.value;
@@ -225,7 +249,7 @@ extension _WarmDashboard on _ServerPageState {
             showCheckmark: selected,
             label: Text(tag.isEmpty ? context.l10n.warmAll : tag),
             onSelected: (_) => _tag.value = tag,
-            selectedColor: const Color(0xffffb97f),
+            selectedColor: WarmTheme.peach,
             backgroundColor: WarmTheme.canvas,
           );
         },
@@ -239,7 +263,7 @@ extension _WarmDashboard on _ServerPageState {
       padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 42),
       decoration: BoxDecoration(
         color: WarmTheme.surface,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(WarmTheme.cardRadius),
       ),
       child: Column(
         children: [
@@ -285,12 +309,17 @@ extension _WarmDashboard on _ServerPageState {
 
     return Material(
       color: WarmTheme.surface,
-      borderRadius: BorderRadius.circular(24),
+      borderRadius: BorderRadius.circular(WarmTheme.cardRadius),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () => _onTapCard(context, srv),
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+          padding: const EdgeInsets.fromLTRB(
+            WarmTheme.cardPadding,
+            18,
+            WarmTheme.cardPadding,
+            16,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -302,8 +331,8 @@ extension _WarmDashboard on _ServerPageState {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
@@ -338,7 +367,7 @@ extension _WarmDashboard on _ServerPageState {
                 ],
               ),
               if (tags.isNotEmpty) ...[
-                const SizedBox(height: 12),
+                const SizedBox(height: 14),
                 Wrap(
                   spacing: 6,
                   runSpacing: 6,
@@ -362,7 +391,7 @@ extension _WarmDashboard on _ServerPageState {
                       color: const Color(0xff168bd2),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: _WarmMetric(
                       label: l10n.warmMemory,
@@ -370,7 +399,7 @@ extension _WarmDashboard on _ServerPageState {
                       color: const Color(0xff9223b0),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: _WarmMetric(
                       label: l10n.warmDisk,
@@ -380,7 +409,7 @@ extension _WarmDashboard on _ServerPageState {
                   ),
                 ],
               ),
-              const SizedBox(height: 7),
+              const SizedBox(height: 8),
               Row(
                 children: [
                   Expanded(
@@ -421,7 +450,7 @@ extension _WarmDashboard on _ServerPageState {
                 ),
                 decoration: BoxDecoration(
                   color: WarmTheme.surfaceStrong,
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(WarmTheme.controlRadius),
                 ),
                 child: Row(
                   children: [
@@ -857,18 +886,125 @@ class _WarmNetworkBadgesState extends ConsumerState<_WarmNetworkBadges> {
     if (labels.isEmpty) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.only(top: 6),
-      child: Wrap(
-        spacing: 6,
-        runSpacing: 6,
-        children: [
-          for (final label in labels)
-            Tooltip(
-              message: label.$2,
-              child: _WarmOutlineChip(label: label.$1),
-            ),
-        ],
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: () => _showReport(result),
+        child: Wrap(
+          spacing: 6,
+          runSpacing: 6,
+          children: [
+            for (final label in labels)
+              Tooltip(
+                message: label.$2,
+                child: _WarmOutlineChip(label: label.$1),
+              ),
+          ],
+        ),
       ),
     );
+  }
+
+  Future<void> _showReport(IpLookupResult? result) async {
+    final l10n = context.l10n;
+    final services = {
+      ServiceKind.chatGpt: 'ChatGPT',
+      ServiceKind.netflix: 'Netflix',
+      ServiceKind.gemini: 'Gemini',
+    };
+    final rows = <(String, String)>[
+      if (result != null) ...[
+        (result.type, result.ip),
+        (
+          l10n.ipLookupCountry,
+          [result.flagEmoji, result.country].whereType<String>().join(' '),
+        ),
+        (l10n.ipLookupIsp, result.isp ?? ''),
+        (l10n.ipLookupOrganization, result.organization ?? ''),
+        (l10n.ipLookupAsn, result.asnLabel ?? ''),
+        (l10n.ipLookupDomain, result.networkDomain ?? ''),
+      ],
+    ].where((row) => row.$2.trim().isNotEmpty).toList(growable: false);
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: ListView(
+          shrinkWrap: true,
+          padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
+          children: [
+            Text(
+              l10n.networkCheckReport,
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              l10n.networkCheckReportTip,
+              style: const TextStyle(color: WarmTheme.muted),
+            ),
+            const SizedBox(height: 14),
+            if (rows.isEmpty)
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.public_off_outlined),
+                title: Text(l10n.ipLookupNotDetected),
+                subtitle: Text(l10n.ipLookupDisclaimer),
+              )
+            else
+              for (final row in rows)
+                ListTile(
+                  dense: true,
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(
+                    row.$1,
+                    style: const TextStyle(color: WarmTheme.muted),
+                  ),
+                  subtitle: Text(
+                    row.$2,
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                ),
+            const Divider(height: 22),
+            Text(
+              l10n.networkCheckServices,
+              style: const TextStyle(fontWeight: FontWeight.w800),
+            ),
+            const SizedBox(height: 6),
+            for (final entry in services.entries)
+              if (_enabledServices().contains(entry.key))
+                ListTile(
+                  dense: true,
+                  contentPadding: EdgeInsets.zero,
+                  leading: Icon(
+                    _services[entry.key]?.reachable == true
+                        ? Icons.check_circle_outline
+                        : Icons.info_outline,
+                    color: _services[entry.key]?.reachable == true
+                        ? Colors.green
+                        : WarmTheme.muted,
+                  ),
+                  title: Text(entry.value),
+                  subtitle: Text(_serviceStateText(_services[entry.key])),
+                ),
+            Text(
+              l10n.serviceProbeDisclaimer,
+              style: const TextStyle(color: WarmTheme.muted, fontSize: 12),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _serviceStateText(ServiceReachabilityResult? result) {
+    return switch (result?.state) {
+      ServiceReachabilityState.reachable => context.l10n.networkCheckReachable,
+      ServiceReachabilityState.unreachable =>
+        context.l10n.networkCheckUnreachable,
+      ServiceReachabilityState.unknown ||
+      null => context.l10n.networkCheckUnknown,
+    };
   }
 }
 
@@ -886,27 +1022,31 @@ class _WarmStatusTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-    height: 104,
+    height: 96,
     decoration: BoxDecoration(
       color: const Color(0xfff6e6da),
-      borderRadius: BorderRadius.circular(24),
+      borderRadius: BorderRadius.circular(20),
     ),
     child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(icon, color: color, size: 23),
+        Icon(icon, color: color, size: 22),
         const SizedBox(height: 5),
         Text(
           '$value',
           style: TextStyle(
             color: color,
-            fontSize: 27,
+            fontSize: 25,
             fontWeight: FontWeight.w800,
           ),
         ),
         Text(
           label,
-          style: const TextStyle(fontSize: 11, color: WarmTheme.muted),
+          style: const TextStyle(
+            fontSize: 11,
+            height: 1.15,
+            color: WarmTheme.muted,
+          ),
         ),
       ],
     ),
@@ -927,10 +1067,10 @@ class _WarmPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
     decoration: BoxDecoration(
       color: color,
-      borderRadius: BorderRadius.circular(22),
+      borderRadius: BorderRadius.circular(18),
     ),
     child: Row(
       mainAxisSize: MainAxisSize.min,
@@ -961,13 +1101,17 @@ class _WarmOutlineChip extends StatelessWidget {
     decoration: BoxDecoration(
       color: const Color(0xffffeee2),
       border: Border.all(color: const Color(0xffd3bdad)),
-      borderRadius: BorderRadius.circular(18),
+      borderRadius: BorderRadius.circular(14),
     ),
     child: Text(
       label,
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
-      style: const TextStyle(fontSize: 10, color: WarmTheme.ink),
+      style: const TextStyle(
+        fontSize: 10.5,
+        height: 1.15,
+        color: WarmTheme.ink,
+      ),
     ),
   );
 }
@@ -1004,11 +1148,11 @@ class _WarmMetric extends StatelessWidget {
           ),
         ],
       ),
-      const SizedBox(height: 5),
+      const SizedBox(height: 6),
       ClipRRect(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(6),
         child: LinearProgressIndicator(
-          minHeight: 7,
+          minHeight: 6,
           value: value / 100,
           backgroundColor: const Color(0xffefded1),
           valueColor: AlwaysStoppedAnimation(color),
@@ -1032,11 +1176,11 @@ class _WarmTransfer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.fromLTRB(14, 12, 14, 13),
+    padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
     decoration: BoxDecoration(
       color: const Color(0xfff3e3d6),
       border: Border.all(color: const Color(0xffc9aa92)),
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(18),
     ),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1060,11 +1204,11 @@ class _WarmTransfer extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 7),
+        const SizedBox(height: 8),
         Text(
           speed,
           style: const TextStyle(
-            fontSize: 17,
+            fontSize: 18,
             fontWeight: FontWeight.w800,
             color: WarmTheme.copper,
           ),
@@ -1094,7 +1238,7 @@ class _WarmAction extends StatelessWidget {
     style: FilledButton.styleFrom(
       backgroundColor: background,
       foregroundColor: foreground,
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       visualDensity: VisualDensity.compact,
     ),
     icon: Icon(icon, size: 15),

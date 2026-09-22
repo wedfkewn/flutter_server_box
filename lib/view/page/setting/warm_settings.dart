@@ -9,13 +9,13 @@ extension _WarmSettings on _SettingsPageState {
     return ListView.separated(
       key: PageStorageKey('warm-settings-${_path.lastOrNull?.id ?? 'root'}'),
       padding: EdgeInsets.fromLTRB(
-        isMobile ? 16 : 28,
+        isMobile ? WarmTheme.pagePadding : 28,
         16,
-        isMobile ? 16 : 28,
+        isMobile ? WarmTheme.pagePadding : 28,
         24,
       ),
       itemCount: nodes.length,
-      separatorBuilder: (_, _) => SizedBox(height: isMobile ? 10 : 0),
+      separatorBuilder: (_, _) => SizedBox(height: isMobile ? 12 : 0),
       itemBuilder: (context, index) {
         final node = nodes[index];
         final row = _WarmSettingsRow(
@@ -29,7 +29,7 @@ extension _WarmSettings on _SettingsPageState {
             ? Material(
                 key: ValueKey(node.id),
                 color: Theme.of(context).colorScheme.surfaceContainerLow,
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(WarmTheme.cardRadius),
                 clipBehavior: Clip.antiAlias,
                 child: row,
               )
@@ -168,30 +168,32 @@ class _WarmSettingsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => InkWell(
-    borderRadius: BorderRadius.circular(cardStyle ? 20 : 18),
+    borderRadius: BorderRadius.circular(cardStyle ? WarmTheme.cardRadius : 18),
     onTap: onTap,
     child: Padding(
       padding: EdgeInsets.symmetric(
-        vertical: cardStyle ? 14 : 8,
+        vertical: cardStyle ? 16 : 8,
         horizontal: cardStyle ? 16 : 10,
       ),
       child: Row(
         children: [
           cardStyle
               ? Container(
-                  width: 42,
-                  height: 42,
+                  width: 46,
+                  height: 46,
                   decoration: BoxDecoration(
                     color: Theme.of(context).colorScheme.primaryContainer,
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(
+                      WarmTheme.controlRadius,
+                    ),
                   ),
-                  child: Icon(icon, size: 21, color: WarmTheme.copper),
+                  child: Icon(icon, size: 22, color: WarmTheme.copper),
                 )
               : SizedBox(
                   width: 46,
                   child: Icon(icon, size: 23, color: WarmTheme.ink),
                 ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -199,7 +201,7 @@ class _WarmSettingsRow extends StatelessWidget {
                 Text(
                   title,
                   style: TextStyle(
-                    fontSize: 15,
+                    fontSize: 16,
                     fontWeight: FontWeight.w700,
                     color: WarmTheme.ink,
                   ),
@@ -209,7 +211,7 @@ class _WarmSettingsRow extends StatelessWidget {
                   subtitle,
                   style: const TextStyle(
                     fontSize: 12,
-                    height: 1.2,
+                    height: 1.3,
                     color: WarmTheme.muted,
                   ),
                 ),

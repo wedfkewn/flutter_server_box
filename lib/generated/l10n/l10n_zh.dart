@@ -2243,6 +2243,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get openSourceLicenseError => '无法读取随应用提供的许可证。';
 
   @override
+  String get openSourceReferences => '网络检测参考项目';
+
+  @override
+  String get openSourceReferencesTip => '用于参考 IP、DNS 和服务可访问性检测的开源项目。';
+
+  @override
   String get settingsNoSshServers => '请先添加 SSH 服务器，再配置此功能。';
 
   @override
@@ -2337,6 +2343,28 @@ class AppLocalizationsZh extends AppLocalizations {
   String get ipLookupResults => '查询结果';
 
   @override
+  String get networkCheckReport => '网络检测报告';
+
+  @override
+  String get networkCheckReportTip =>
+      '展示此设备或服务器出口的 IP 归属和官网可访问性；服务检测仅作提示，不代表账号或地区内容权限。';
+
+  @override
+  String get networkCheckDnsSection => 'DNS 解析';
+
+  @override
+  String get networkCheckServices => '服务可访问性';
+
+  @override
+  String get networkCheckReachable => '可访问';
+
+  @override
+  String get networkCheckUnreachable => '不可访问';
+
+  @override
+  String get networkCheckUnknown => '未检测或暂不可用';
+
+  @override
   String get ipLookupCountry => '国家/地区';
 
   @override
@@ -2386,6 +2414,45 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get ipLookupSource => '数据来源：ipify.org 和 ipwho.is';
+
+  @override
+  String get dnsLookupAction => 'DNS 解析';
+
+  @override
+  String get dnsLookupPrivacyTitle => 'DNS 查询隐私说明';
+
+  @override
+  String get dnsLookupPrivacyBody =>
+      '解析时，应用会通过 HTTPS 将你输入的域名发送给阿里公共 DNS；若连接失败或超时，会改用 Cloudflare 公共 DNS。不会保存查询记录，也不会上传到 ServerBox 服务器。';
+
+  @override
+  String get dnsLookupInvalid =>
+      '请输入有效的公网域名（仅支持 ASCII/Punycode），不要输入 IP、网址或内网域名。';
+
+  @override
+  String get dnsLookupResults => 'DNS 解析结果';
+
+  @override
+  String get dnsLookupNoRecords => '未找到所选类型的 DNS 记录。';
+
+  @override
+  String get dnsLookupPartial => '部分记录类型查询失败：';
+
+  @override
+  String get dnsLookupSource =>
+      '数据来源：阿里公共 DNS（DoH），失败时回退 Cloudflare；结果来自递归解析，TTL 会变化。';
+
+  @override
+  String get dnsLookupCopied => 'DNS 记录已复制';
+
+  @override
+  String get dnsLookupRateLimited => 'DNS 查询过于频繁，请稍后重试。';
+
+  @override
+  String get dnsLookupServiceError => 'DNS 服务返回异常，请稍后重试。';
+
+  @override
+  String get dnsLookupDnsError => '域名不存在或 DNS 解析失败。';
 
   @override
   String get ipLookupDisclaimer => '显示的组织是 IP 地址段的登记或运营方，不一定是服务器实际所有者。';

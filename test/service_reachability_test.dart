@@ -27,12 +27,15 @@ void main() {
       expect(command, contains('https://www.netflix.com/'));
 
       final result = ServiceReachability.parse(
-        'noise\nchatGpt=reachable\r\nnetflix=unreachable\n',
+        'noise\nchatGpt=reachable\r\nnetflix=unreachable\ngemini=unknown\n',
         checkedAt: DateTime(2026),
       );
       expect(result[ServiceKind.chatGpt]?.reachable, isTrue);
       expect(result[ServiceKind.netflix]?.reachable, isFalse);
-      expect(result, isNot(contains(ServiceKind.gemini)));
+      expect(
+        result[ServiceKind.gemini]?.state,
+        ServiceReachabilityState.unknown,
+      );
     });
   });
 
