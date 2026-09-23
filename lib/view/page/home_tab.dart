@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:icons_plus/icons_plus.dart';
 import 'package:server_box/core/extension/context/locale.dart';
 import 'package:server_box/data/model/app/tab.dart';
-import 'package:server_box/view/page/agent/agent.dart';
 import 'package:server_box/view/page/benchmark/tab.dart';
 import 'package:server_box/view/page/server/tab/tab.dart';
 import 'package:server_box/view/page/snippet/list.dart';
@@ -18,7 +17,7 @@ extension AppTabViewX on AppTab {
       AppTab.ssh => const SSHTabPage(),
       AppTab.file => const FileTabPage(),
       AppTab.snippet => const SnippetListPage(),
-      AppTab.agent => const AgentPage(),
+      AppTab.agent => const SizedBox.shrink(),
       AppTab.benchmark => const BenchmarkTabPage(),
     };
   }

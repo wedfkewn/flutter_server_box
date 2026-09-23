@@ -23,7 +23,6 @@ import 'package:server_box/data/provider/snippet.dart';
 import 'package:server_box/data/res/store.dart';
 import 'package:server_box/view/page/container/container.dart';
 import 'package:server_box/view/page/iperf.dart';
-import 'package:server_box/view/page/port_forward.dart';
 import 'package:server_box/view/page/process.dart';
 import 'package:server_box/view/page/scheduled_tasks.dart';
 import 'package:server_box/view/page/services.dart';
@@ -266,11 +265,7 @@ extension ServerFuncBtnsActions on ServerFuncBtns {
         await ServerPower.pick(context, ref, spi);
         break;
       case ServerFuncBtn.portForward:
-        if (!await _ensureSshClient(context, spi.id, ref)) return;
-        if (!context.mounted) return;
-        final args = SpiRequiredArgs(spi);
-        PortForwardPage.route.go(context, args);
-        break;
+        return;
       case ServerFuncBtn.users:
         if (!await _ensureExec(context, spi.id, ref)) return;
         if (!context.mounted) return;
@@ -295,8 +290,7 @@ void _gotoSSH(Spi spi, BuildContext context, WidgetRef ref) async {
   // agent's WebSocket, which only this app speaks. The built-in terminal is
   // the only option for them regardless of the setting.
   final ssh = spi.ssh;
-  final useBuiltin =
-      isMobile || !useSystemSsh || ssh == null;
+  final useBuiltin = isMobile || !useSystemSsh || ssh == null;
 
   // One way in. A terminal opened from here used to be a page pushed over
   // whatever was on screen, unknown to the SSH tab and its sessions, so the
@@ -595,9 +589,7 @@ Future<bool> _ensure(
   } catch (e, s) {
     Loggers.app.warning('Connect $id for a server function', e, s);
     if (context.mounted) {
-      Toast.error(
-        e is SSHErr ? (e.message ?? e.type.name) : e.toString(),
-      );
+      Toast.error(e is SSHErr ? (e.message ?? e.type.name) : e.toString());
     }
     return false;
   }

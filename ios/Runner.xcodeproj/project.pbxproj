@@ -15,6 +15,7 @@
 		4A2DCD802E4B127100CF68B7 /* CrashDiagnostics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A2DCD812E4B127100CF68B7 /* CrashDiagnostics.swift */; };
 		4A2DCDB22E4B127100CF68B7 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A2DCDB32E4B127100CF68B7 /* SceneDelegate.swift */; };
 		4A2DCDB02E4B127100CF68B7 /* IncomingShare.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A2DCDB12E4B127100CF68B7 /* IncomingShare.swift */; };
+		A11E0001DA5B0A4D00000001 /* NativeDashboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11E0002DA5B0A4D00000001 /* NativeDashboard.swift */; };
 		4A2DCD6C2E4B127100CF68B7 /* TerminalLiveActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A2DCD6A2E4B127100CF68B7 /* TerminalLiveActivityAttributes.swift */; };
 		4A2DCD6F2E4B128100CF68B7 /* TerminalLiveActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A2DCD6D2E4B128100CF68B7 /* TerminalLiveActivity.swift */; };
 		4A2DCD702E4B128100CF68B7 /* TerminalLiveActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A2DCD6E2E4B128100CF68B7 /* TerminalLiveActivityAttributes.swift */; };
@@ -138,6 +139,7 @@
 		4A2DCD812E4B127100CF68B7 /* CrashDiagnostics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashDiagnostics.swift; sourceTree = "<group>"; };
 		4A2DCDB32E4B127100CF68B7 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		4A2DCDB12E4B127100CF68B7 /* IncomingShare.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IncomingShare.swift; sourceTree = "<group>"; };
+		A11E0002DA5B0A4D00000001 /* NativeDashboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeDashboard.swift; sourceTree = "<group>"; };
 		4A2DCD6A2E4B127100CF68B7 /* TerminalLiveActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalLiveActivityAttributes.swift; sourceTree = "<group>"; };
 		4A2DCD6D2E4B128100CF68B7 /* TerminalLiveActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalLiveActivity.swift; sourceTree = "<group>"; };
 		4A2DCD6E2E4B128100CF68B7 /* TerminalLiveActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalLiveActivityAttributes.swift; sourceTree = "<group>"; };
@@ -326,6 +328,7 @@
 				4A2DCD812E4B127100CF68B7 /* CrashDiagnostics.swift */,
 				4A2DCDB32E4B127100CF68B7 /* SceneDelegate.swift */,
 				4A2DCDB12E4B127100CF68B7 /* IncomingShare.swift */,
+				A11E0002DA5B0A4D00000001 /* NativeDashboard.swift */,
 				1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */,
 				E3AE8AE92AB601DB000A6459 /* Utils.swift */,
 				FA7C40000000000000000091 /* WidgetStore.swift */,
@@ -655,6 +658,7 @@
 				4A2DCD802E4B127100CF68B7 /* CrashDiagnostics.swift in Sources */,
 				4A2DCDB22E4B127100CF68B7 /* SceneDelegate.swift in Sources */,
 				4A2DCDB02E4B127100CF68B7 /* IncomingShare.swift in Sources */,
+				A11E0001DA5B0A4D00000001 /* NativeDashboard.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

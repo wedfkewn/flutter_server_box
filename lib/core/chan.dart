@@ -5,6 +5,9 @@ import 'package:server_box/data/res/store.dart';
 
 abstract final class MethodChans {
   static const _channel = MethodChannel('${Miscs.pkgName}/main_chan');
+  static const _nativeDashboardChannel = MethodChannel(
+    '${Miscs.pkgName}/native_dashboard',
+  );
 
   /// Where Android extracted this app's native libraries, or null elsewhere.
   ///
@@ -53,6 +56,54 @@ abstract final class MethodChans {
   static Future<void> publishWidgetServers(String payload) async {
     if (!isIOS && !isAndroid) return;
     await _channel.invokeMethod('publishWidgetServers', payload);
+  }
+
+  /// Presents the incremental iOS-only SwiftUI dashboard using a read-only
+  /// snapshot. The caller keeps ownership of monitoring state and may refresh
+  /// it independently; this method never transfers credentials or commands.
+  static Future<bool> showNativeDashboard(String payload) async {
+    if (!isIOS) return false;
+    try {
+      await _channel.invokeMethod('showNativeDashboard', payload);
+      return true;
+    } catch (e, s) {
+      Loggers.app.warning('Failed to show native dashboard', e, s);
+      return false;
+    }
+  }
+
+  /// Replaces the data rendered by an already presented native dashboard.
+  /// Revisions in the payload keep late async deliveries from replacing newer
+  /// monitor state.
+  static Future<bool> updateNativeDashboard(String payload) async {
+    if (!isIOS) return false;
+    try {
+      await _channel.invokeMethod('updateNativeDashboard', payload);
+      return true;
+    } catch (e, s) {
+      Loggers.app.warning('Failed to update native dashboard', e, s);
+      return false;
+    }
+  }
+
+  /// Closes the native presentation. It does not stop or alter Flutter's
+  /// server providers, SSH sessions or monitor refresh cycle.
+  static Future<void> closeNativeDashboard() async {
+    if (!isIOS) return;
+    try {
+      await _channel.invokeMethod('closeNativeDashboard');
+    } catch (e, s) {
+      Loggers.app.warning('Failed to close native dashboard', e, s);
+    }
+  }
+
+  /// Observes only presentation lifecycle. Server state continues to flow in
+  /// the other direction from Flutter through immutable snapshots.
+  static void onNativeDashboardClosed(VoidCallback onClosed) {
+    if (!isIOS) return;
+    _nativeDashboardChannel.setMethodCallHandler((call) async {
+      if (call.method == 'closed') onClosed();
+    });
   }
 
   /// Which servers the native side currently holds a widget token for, and
@@ -285,7 +336,11 @@ abstract final class MethodChans {
       return await _channel.invokeMethod<bool>('liveActivityAvailable') ??
           false;
     } catch (e, s) {
-      Loggers.app.warning('Failed to query iOS Live Activity availability', e, s);
+      Loggers.app.warning(
+        'Failed to query iOS Live Activity availability',
+        e,
+        s,
+      );
       return false;
     }
   }
@@ -346,9 +401,7 @@ abstract final class MethodChans {
   /// A channel has exactly one handler and [registerHandler] already owns the
   /// main one, so a second `setMethodCallHandler` on that name would silently
   /// replace it. Separate names cannot collide however either side grows.
-  static const _shareChannel = MethodChannel(
-    '${Miscs.pkgName}/incoming_share',
-  );
+  static const _shareChannel = MethodChannel('${Miscs.pkgName}/incoming_share');
 
   /// Runs [onOpened] when the platform hands this app a share while it is
   /// **already frontmost**.

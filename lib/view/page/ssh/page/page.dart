@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;
 import 'dart:ui';
@@ -13,15 +12,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:server_box/core/extension/context/locale.dart';
 import 'package:server_box/core/utils/sudo_password.dart';
 import 'package:server_box/core/warm_theme.dart';
-import 'package:server_box/data/model/ai/agent_conversation.dart';
-import 'package:server_box/data/model/ai/ask_ai_models.dart';
 import 'package:server_box/data/model/app/tab.dart';
 import 'package:server_box/data/model/server/server_private_info.dart';
 import 'package:server_box/data/model/server/shell_backend.dart';
 import 'package:server_box/data/model/server/snippet.dart';
 import 'package:server_box/data/model/ssh/virtual_key.dart';
-import 'package:server_box/data/provider/ai/agent_scope.dart';
-import 'package:server_box/data/provider/ai/agent_session.dart';
 import 'package:server_box/data/provider/app/session_requests.dart';
 import 'package:server_box/data/provider/app/terminal_shell.dart';
 import 'package:server_box/data/provider/server/single.dart';
@@ -34,23 +29,15 @@ import 'package:server_box/data/ssh/session_manager.dart';
 import 'package:server_box/data/ssh/terminal_session.dart';
 import 'package:server_box/data/ssh/terminal_source.dart';
 import 'package:server_box/data/ssh/tmux/tmux_export.dart';
-import 'package:server_box/view/page/agent/history.dart';
-import 'package:server_box/view/page/ssh/ask_ai_layout.dart';
 import 'package:server_box/view/page/ssh/page/virt_key_intro.dart';
 import 'package:server_box/view/page/storage/server_file.dart';
 import 'package:server_box/view/page/storage/sftp.dart';
-import 'package:server_box/view/widget/agent_common.dart';
-import 'package:server_box/view/widget/agent_entry_appear.dart';
-import 'package:server_box/view/widget/agent_proposal_pager.dart';
-import 'package:server_box/view/widget/agent_user_bubble.dart';
 import 'package:server_box/view/widget/dot_matrix_loader.dart';
 import 'package:server_box/view/widget/tmux_session_selector.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:xterm/core.dart';
 import 'package:xterm/ui.dart' hide TerminalThemes;
 
-part 'agent_history.dart';
-part 'ask_ai.dart';
 part 'init.dart';
 part 'keyboard.dart';
 part 'virt_key.dart';
@@ -238,18 +225,6 @@ class SSHPageState extends ConsumerState<SSHPage>
 
   ShellSession? get _session => _sess.foreground;
 
-  /// The agent's own command channel, separate from the terminal's session.
-  /// SSH-only: the agent runs commands with `exec`, which the monitor PTY
-  /// cannot do — see [ShellBackend.supportsExec].
-  SSHSession? _aiCommandSession;
-  bool _aiCommandCancelled = false;
-
-  /// Takes this terminal out of reach of its Agent session, run on dispose.
-  ///
-  /// A closure rather than a call in `dispose`, because unregistering needs the
-  /// notifier and `ref` is not usable once the state is going away. Captured
-  /// while it still is — see [_attachAgentHost].
-  VoidCallback? _releaseAgentHost;
   Timer? _discontinuityTimer;
   static const _connectionCheckInterval = Duration(seconds: 60);
   static const _connectionCheckTimeout = Duration(seconds: 10);
@@ -295,8 +270,6 @@ class SSHPageState extends ConsumerState<SSHPage>
 
   Future<void> pickSnippetFromToolbar() => _pickSnippet();
 
-  Future<void> openAgentFromToolbar() => _showAskAiPanel(autoStart: false);
-
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
@@ -312,15 +285,10 @@ class SSHPageState extends ConsumerState<SSHPage>
     final shell = _terminalShell;
     final session = _sess;
     WidgetsBinding.instance.addPostFrameCallback((_) => shell.hideIf(session));
-    _releaseAgentHost?.call();
     _virtKeyLongPressTimer?.cancel();
     final introListener = _introVisibilityListener;
     if (introListener != null) {
       widget.args.visibleListenable?.removeListener(introListener);
-    }
-    final aiCommandSession = _aiCommandSession;
-    if (aiCommandSession != null) {
-      unawaited(_terminateAiCommandSession(aiCommandSession));
     }
     _terminalController.dispose();
     _virtKeyPage.dispose();
@@ -362,7 +330,6 @@ class SSHPageState extends ConsumerState<SSHPage>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _terminalShell = ref.read(terminalShellProvider.notifier);
-    _attachAgentHost();
     _initStoredCfg();
     _reloadVirtKeys();
     Stores.setting.virtKeyRows.listenable().addListener(
@@ -612,7 +579,6 @@ class SSHPageState extends ConsumerState<SSHPage>
           ),
           hideScrollBar: false,
           focusNode: widget.args.focusNode,
-          toolbarBuilder: _buildTerminalToolbar,
           onCopied: _onTerminalCopied,
           onSelectAll: _onTerminalSelectAll,
           onPaste: _onTerminalPaste,
@@ -687,15 +653,6 @@ class SSHPageState extends ConsumerState<SSHPage>
 
   List<Widget> _buildAppBarActions() {
     final actions = <Widget>[
-      // The agent's tools all name a server, so on this device the button
-      // would look tappable and do nothing. Snippets are different: the ones
-      // that do not mention a server run here fine — see [_pickSnippet].
-      if (widget.args.spi != null)
-        IconButton(
-          onPressed: openAgentFromToolbar,
-          tooltip: 'SSH Agent',
-          icon: const Icon(Icons.auto_awesome),
-        ),
       IconButton(
         onPressed: _pickSnippet,
         tooltip: libL10n.snippet,

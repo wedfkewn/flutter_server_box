@@ -5,7 +5,6 @@ import 'package:server_box/core/diag.dart';
 import 'package:server_box/core/utils/android_rootfs.dart';
 import 'package:server_box/core/utils/ios_rootfs.dart';
 import 'package:server_box/core/utils/linux_seed.dart';
-import 'package:server_box/core/utils/rootfs_manifest_source.dart';
 import 'package:server_box/data/model/app/linux_distro.dart';
 import 'package:server_box/data/model/app/linux_distros.dart';
 import 'package:server_box/data/model/app/rootfs_manifest.dart';
@@ -23,12 +22,10 @@ import 'package:server_box/data/model/app/rootfs_manifest.dart';
 /// answered "no", and the terminal tab is written to expect that.
 abstract final class Rootfs {
   /// Whether this build could offer one.
-  static bool get isAvailable =>
-      isAndroid ? AndroidRootfs.isAvailable : IosRootfs.isAvailable;
+  static bool get isAvailable => false;
 
   /// Whether one is installed and ready to enter.
-  static bool get isReady =>
-      isAndroid ? AndroidRootfs.isReady : IosRootfs.isReadySync;
+  static bool get isReady => false;
 
   /// Where the selected profile's tree is, or null before [prepare].
   static String? get root => isAndroid ? AndroidRootfs.root : IosRootfs.root;
@@ -137,9 +134,7 @@ abstract final class Rootfs {
 
   /// Locates both, so a caller does not have to ask which platform it is on.
   static Future<void> prepare() async {
-    await RootfsManifestSource.loadLocal();
-    await AndroidRootfs.prepare();
-    await IosRootfs.prepare();
+    // Local Linux is no longer offered; leave existing user files untouched.
   }
 
   /// Rewrites an installed system's mirror and resolver from the settings.

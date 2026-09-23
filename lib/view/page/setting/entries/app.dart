@@ -6,7 +6,6 @@ extension _App on _AppSettingsPageState {
   }
 
   Widget _buildApp() {
-    final androidSettings = isAndroid ? _buildAndroidSettings() : null;
     final specific = _buildPlatformSetting();
     // Carded one by one rather than by mapping the list. `buildBioAuth` owns
     // its own card and answers with an empty widget where there is no
@@ -23,63 +22,11 @@ extension _App on _AppSettingsPageState {
       // who can read what is on screen, which is what the privacy page is —
       // and a setting is easier to find under the subject it belongs to than
       // in the list of everything.
-      if (androidSettings != null) androidSettings.cardx,
       if (specific != null) specific.cardx,
       _buildAppMore().cardx,
     ];
 
     return Column(children: children);
-  }
-
-  Widget _buildAndroidSettings() {
-    return ExpandTile(
-      leading: const Icon(Icons.phone_android),
-      title: Text('Android ${libL10n.setting}'),
-      children: [_buildBgRun()],
-    );
-  }
-
-  Widget _buildBgRun() {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        ListTile(
-          title: TipText(l10n.bgRun, l10n.bgRunTip),
-          trailing: StoreSwitch(prop: Stores.setting.bgRun),
-        ),
-        _buildBgRunPermission(),
-      ],
-    );
-  }
-
-  /// Says so when the switch above cannot do what it says.
-  ///
-  /// Running in the background means holding a foreground service, and a
-  /// foreground service means a notification — so an app whose notifications
-  /// are turned off is frozen the moment it leaves the screen, and every
-  /// connection dies with nothing on screen explaining it (#1287). Shown only
-  /// in that case: a row saying "this is fine" on every other device is noise.
-  Widget _buildBgRunPermission() {
-    return FutureWidget(
-      future: MethodChans.notificationsAllowed(),
-      loading: UIs.placeholder,
-      error: (_, _) => UIs.placeholder,
-      success: (allowed) {
-        if (allowed != false) return UIs.placeholder;
-        return ListTile(
-          leading: Icon(Icons.notifications_off, color: UIs.primaryColor),
-          title: TipText(libL10n.permission, l10n.bgRunNeedsNotification),
-          trailing: const Icon(Icons.keyboard_arrow_right),
-          onTap: () async {
-            await MethodChans.openNotificationSettings();
-            // Read again on the way back: the point of sending someone there
-            // is that they change it, and a row still saying it is off would
-            // make them wonder whether it took.
-            setStateSafe(() {});
-          },
-        );
-      },
-    );
   }
 
   Widget? _buildPlatformSetting() {
@@ -125,8 +72,10 @@ extension _App on _AppSettingsPageState {
           githubReleasesUrl: Urls.githubReleasesApi,
           storeUrl: Urls.appStore,
           force: BuildMode.isDebug,
-          noticeBuilder: (ctx) =>
-              DmgNotice.forUpdate(ctx, build: AppUpdateIface.newestBuild.value ?? BuildData.build),
+          noticeBuilder: (ctx) => DmgNotice.forUpdate(
+            ctx,
+            build: AppUpdateIface.newestBuild.value ?? BuildData.build,
+          ),
         ),
       ),
       trailing: StoreSwitch(prop: _setting.autoCheckAppUpdate),
@@ -424,10 +373,7 @@ extension _App on _AppSettingsPageState {
         return ListTile(
           leading: const Icon(Icons.bug_report_outlined),
           title: Text(l10n.crashReportTitle),
-          subtitle: Text(
-            l10n.crashLastRunFailed,
-            style: UIs.textGrey,
-          ),
+          subtitle: Text(l10n.crashLastRunFailed, style: UIs.textGrey),
           trailing: const Icon(Icons.chevron_right),
           onTap: () async {
             final kept = await CrashReportDialog.show(context, report);
@@ -602,33 +548,36 @@ extension _App on _AppSettingsPageState {
           // One transaction, as `Backup.merge` does: this rewrites the whole
           // settings store, and half of an edit is not a state to leave behind.
           SqliteStore.transact(() {
-          for (final entry in newSettings.entries) {
-            final value = entry.value;
-            // A key set to null means "clear this". Skipping it instead left
-            // the previous value in place, and the key being present kept it
-            // out of `removedKeys` below too — so the edit reported success and
-            // changed nothing.
-            if (value == null) {
-              Stores.setting.remove(entry.key, updateLastUpdateTsOnRemove: false);
-              continue;
+            for (final entry in newSettings.entries) {
+              final value = entry.value;
+              // A key set to null means "clear this". Skipping it instead left
+              // the previous value in place, and the key being present kept it
+              // out of `removedKeys` below too — so the edit reported success and
+              // changed nothing.
+              if (value == null) {
+                Stores.setting.remove(
+                  entry.key,
+                  updateLastUpdateTsOnRemove: false,
+                );
+                continue;
+              }
+              Stores.setting.set(
+                entry.key,
+                value as Object,
+                updateLastUpdateTsOnSet: false,
+              );
             }
-            Stores.setting.set(
-              entry.key,
-              value as Object,
-              updateLastUpdateTsOnSet: false,
+            final newKeys = newSettings.keys.toSet();
+            // Internal keys are shown by the editor (it reads with
+            // `includeInternalKeys: true`) but are not the user's to delete: one
+            // of them records that the Hive import already ran, and dropping it
+            // makes the next launch copy the retained boxes back over everything.
+            final removedKeys = initialKeys.where(
+              (e) => !newKeys.contains(e) && !Stores.setting.isInternalKey(e),
             );
-          }
-          final newKeys = newSettings.keys.toSet();
-          // Internal keys are shown by the editor (it reads with
-          // `includeInternalKeys: true`) but are not the user's to delete: one
-          // of them records that the Hive import already ran, and dropping it
-          // makes the next launch copy the retained boxes back over everything.
-          final removedKeys = initialKeys.where(
-            (e) => !newKeys.contains(e) && !Stores.setting.isInternalKey(e),
-          );
-          for (final key in removedKeys) {
-            Stores.setting.remove(key, updateLastUpdateTsOnRemove: false);
-          }
+            for (final key in removedKeys) {
+              Stores.setting.remove(key, updateLastUpdateTsOnRemove: false);
+            }
           });
         }
       } catch (e, trace) {

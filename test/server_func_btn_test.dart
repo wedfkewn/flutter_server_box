@@ -37,7 +37,6 @@ void main() {
       ServerFuncBtn.terminal.index,
       ServerFuncBtn.files.index,
       ServerFuncBtn.systemd.index,
-      ServerFuncBtn.portForward.index,
       ServerFuncBtn.power.index,
       ServerFuncBtn.users.index,
       ServerFuncBtn.scheduledTasks.index,
@@ -45,7 +44,7 @@ void main() {
   });
 
   test(
-    'uses release tags as the Systemd and port-forward boundaries',
+    'keeps Systemd upgrades without reintroducing port forwarding',
     () async {
       setting.serverFuncBtns.put([ServerFuncBtn.terminal.index]);
 
@@ -59,7 +58,6 @@ void main() {
       expect(row(), [
         ServerFuncBtn.terminal.index,
         ServerFuncBtn.systemd.index,
-        ServerFuncBtn.portForward.index,
       ]);
     },
   );
@@ -133,7 +131,6 @@ void main() {
     });
   }
 
-
   test('a fresh install gets the defaults untouched', () async {
     // lastVer is 0 on a first run, and the window is wide open — but the
     // defaults already list every entry, so nothing is appended to them.
@@ -149,7 +146,6 @@ void main() {
       ServerFuncBtn.defaultIdxs,
       containsAll([
         ServerFuncBtn.systemd.index,
-        ServerFuncBtn.portForward.index,
         ServerFuncBtn.power.index,
         ServerFuncBtn.users.index,
         ServerFuncBtn.scheduledTasks.index,

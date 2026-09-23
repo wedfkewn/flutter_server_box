@@ -213,12 +213,12 @@ class _SSHTabPageState extends ConsumerState<SSHTabPage>
       child: InlineSearchBar(
         controller: _search,
         child: SessionTabBar(
-        names: _sessions.names,
-        index: _sessions.index,
-        onTap: _sessions.select,
-        onClose: _confirmClose,
-        detailOf: _sessionAddr,
-        sessionActions: _serverActions,
+          names: _sessions.names,
+          index: _sessions.index,
+          onTap: _sessions.select,
+          onClose: _confirmClose,
+          detailOf: _sessionAddr,
+          sessionActions: _serverActions,
           leadingActions: [_sortBtn, _searchBtn, _historyBtn],
         ),
       ),
@@ -583,9 +583,7 @@ extension _Actions on _SSHTabPageState {
     final current = _sessions.current;
     if (current == null) return const [];
     final onServer = current.data.page.args.spi != null;
-    return onServer
-        ? [_agentBtn, _snippetBtn, _floatBtn]
-        : [_snippetBtn, _floatBtn];
+    return onServer ? [_snippetBtn, _floatBtn] : [_snippetBtn, _floatBtn];
   }
 
   /// Sends the terminal on screen into the window that floats over every tab,
@@ -639,15 +637,6 @@ extension _Actions on _SSHTabPageState {
     shell.float(state.session, title: tab.name);
   }
 
-  /// Opens the agent on the terminal that is on screen, the same way the
-  /// snippet picker beside it works.
-  Widget get _agentBtn => Btn.icon(
-    text: l10n.askAi,
-    icon: const Icon(Icons.auto_awesome, size: 18),
-    onTap: () =>
-        _sessions.current?.data.pageKey.currentState?.openAgentFromToolbar(),
-  );
-
   Widget get _snippetBtn => Btn.icon(
     text: libL10n.snippet,
     icon: const Icon(Icons.code, size: 18),
@@ -698,7 +687,6 @@ extension _Actions on _SSHTabPageState {
       ],
     );
   }
-
 
   void _showHistory() {
     final history = Stores.history.sshServerHistory.all.cast<String>();

@@ -13,7 +13,6 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_highlight/theme_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:icons_plus/icons_plus.dart';
-import 'package:server_box/core/chan.dart';
 import 'package:server_box/core/diag.dart';
 import 'package:server_box/core/extension/context/inset.dart';
 import 'package:server_box/core/extension/context/locale.dart';
@@ -21,25 +20,15 @@ import 'package:server_box/core/route.dart';
 import 'package:server_box/core/service/crash_report.dart';
 import 'package:server_box/core/service/diagnostics_upload.dart';
 import 'package:server_box/core/service/geo_data.dart';
-import 'package:server_box/core/utils/linux_seed.dart';
-import 'package:server_box/core/utils/local_exec.dart';
 import 'package:server_box/core/utils/logo_url.dart';
-import 'package:server_box/core/utils/rootfs.dart';
-import 'package:server_box/core/utils/rootfs_manifest_source.dart';
 import 'package:server_box/core/utils/server_dedup.dart';
 import 'package:server_box/core/utils/ssh_config.dart';
 import 'package:server_box/core/warm_theme.dart';
-import 'package:server_box/data/model/ai/ask_ai_models.dart';
-import 'package:server_box/data/model/ai/model_context.dart';
 import 'package:server_box/data/model/app/geo_manifest.dart';
-import 'package:server_box/data/model/app/linux_distro.dart';
-import 'package:server_box/data/model/app/linux_distros.dart';
 import 'package:server_box/data/model/app/net_view.dart';
-import 'package:server_box/data/model/app/rootfs_manifest.dart';
 import 'package:server_box/data/model/server/server_private_info.dart';
 import 'package:server_box/data/provider/server/all.dart';
 import 'package:server_box/data/res/build_data.dart';
-import 'package:server_box/data/res/default.dart';
 import 'package:server_box/data/res/github_id.dart';
 import 'package:server_box/data/res/source_provenance.dart';
 import 'package:server_box/data/res/store.dart';
@@ -48,7 +37,6 @@ import 'package:server_box/data/store/setting.dart';
 import 'package:server_box/generated/l10n/l10n.dart';
 import 'package:server_box/view/page/backup.dart';
 import 'package:server_box/view/page/bmc_credential/list.dart';
-import 'package:server_box/view/page/port_forward.dart';
 import 'package:server_box/view/page/private_key/list.dart';
 import 'package:server_box/view/page/server/connection_stats.dart';
 import 'package:server_box/view/page/server/edit/edit.dart';
@@ -67,20 +55,16 @@ import 'package:server_box/view/widget/dmg_notice.dart';
 import 'package:server_box/view/widget/edge_fade_scroll.dart';
 import 'package:server_box/view/widget/geo_data_install.dart';
 import 'package:server_box/view/widget/pane_settings.dart';
-import 'package:server_box/view/widget/progress_line.dart';
-import 'package:server_box/view/widget/rootfs_install.dart';
 
 part 'about.dart';
 part 'open_source.dart';
 part 'connection_targets.dart';
 part 'menu.dart';
-part 'entries/ai.dart';
 part 'entries/app.dart';
 part 'entries/container.dart';
 part 'entries/editor.dart';
 part 'entries/full_screen.dart';
 part 'entries/globe.dart';
-part 'entries/linux.dart';
 part 'entries/server.dart';
 part 'entries/sftp.dart';
 part 'entries/ssh.dart';
@@ -175,12 +159,6 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             icon: Icons.privacy_tip_outlined,
             page: () => const AppSettingsPage(section: SettingsSection.privacy),
           ),
-          SettingsNode.leaf(
-            id: 'app.ai',
-            title: libL10n.ai,
-            icon: Icons.auto_awesome_outlined,
-            page: () => const AppSettingsPage(section: SettingsSection.ai),
-          ),
           // A tab of its own rather than a row leading out of the general
           // page: pushed from there it drew a second title bar under the one
           // this page already has, naming the same thing twice.
@@ -258,16 +236,6 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           // one. Named for Linux rather than for the distribution: which one
           // is installed is allowed to change, and none of what is on that
           // page is about which.
-          if (Rootfs.isAvailable)
-            SettingsNode.leaf(
-              id: 'terminal.linux',
-              // Not localized, and not searched for either: the id above is
-              // what the settings search matches on, and "Linux" is the same
-              // word in every locale this ships in.
-              title: 'Linux (Beta)',
-              icon: Icons.layers_outlined,
-              page: () => const AppSettingsPage(section: SettingsSection.linux),
-            ),
           SettingsNode.leaf(
             id: 'terminal.knownHosts',
             title: l10n.sshKnownHostKeys,
@@ -390,17 +358,10 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             id: 'connection.bastion',
             title: context.l10n.warmBastionConfig,
             icon: Icons.hub_outlined,
-            page: () => const _ConnectionTargetsPage(tunnel: false),
-          ),
-          SettingsNode.leaf(
-            id: 'connection.tunnels',
-            title: context.l10n.warmTunnelConfig,
-            icon: Icons.cable_outlined,
-            page: () => const _ConnectionTargetsPage(tunnel: true),
+            page: () => const _ConnectionTargetsPage(),
           ),
           leaf('terminal.knownHosts'),
           leaf('terminal.virtKey'),
-          if (leaves.containsKey('terminal.linux')) leaf('terminal.linux'),
         ],
       ),
       SettingsNode.branch(
@@ -426,7 +387,6 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         title: context.l10n.settingsApplicationAbout,
         icon: Icons.info_outline,
         children: [
-          leaf('app.ai'),
           if (leaves.containsKey('app.ios')) leaf('app.ios'),
           if (leaves.containsKey('app.desktop')) leaf('app.desktop'),
           SettingsNode.leaf(
@@ -970,23 +930,6 @@ final class _AppSettingsPageState extends ConsumerState<AppSettingsPage> {
   );
 
   @override
-  void initState() {
-    super.initState();
-    // Which releases are installable is fetched rather than compiled in, and
-    // this page is where someone is about to act on the answer: the version
-    // beside "add", the update button on a profile. Launch already tries once;
-    // this catches the case where it failed or the release moved since.
-    //
-    // Not awaited and not shown. What is in force already works, and a refresh
-    // that changes nothing — the ordinary case — should look like nothing.
-    if (widget.section == SettingsSection.linux && Rootfs.isAvailable) {
-      RootfsManifestSource.refresh().then((changed) {
-        if (changed && mounted) setState(() {});
-      });
-    }
-  }
-
-  @override
   void dispose() {
     _sshOpacityCtrl.dispose();
     _sshBlurCtrl.dispose();
@@ -1003,10 +946,10 @@ final class _AppSettingsPageState extends ConsumerState<AppSettingsPage> {
     final group = switch (widget.section) {
       SettingsSection.app => _buildApp(),
       SettingsSection.privacy => _buildPrivacy(),
-      SettingsSection.ai => _buildAskAiConfig(),
+      SettingsSection.ai => const SizedBox.shrink(),
       SettingsSection.server => _buildServer(),
       SettingsSection.ssh => _buildSSH(),
-      SettingsSection.linux => _buildLinux(),
+      SettingsSection.linux => const SizedBox.shrink(),
       SettingsSection.sftp => _buildSFTP(),
       SettingsSection.container => _buildContainer(),
       SettingsSection.editor => _buildEditor(),

@@ -9,7 +9,7 @@ import 'package:server_box/view/page/setting/seq/reorder_proxy_decorator.dart';
 
 List<AppTab> availableHomeTabs(Iterable<AppTab> selectedTabs) {
   final selected = selectedTabs.toSet();
-  return AppTab.values
+  return AppTab.available
       .where((tab) => !selected.contains(tab))
       .toList(growable: false);
 }

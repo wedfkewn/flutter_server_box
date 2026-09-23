@@ -88,7 +88,7 @@ void main() {
     );
     expect(
       find.descendant(of: rail, matching: find.text('Tunnel configuration')),
-      findsOneWidget,
+      findsNothing,
     );
   });
 
@@ -119,21 +119,11 @@ void main() {
     }
   });
 
-  testWidgets('bastion and tunnel entries select an SSH server', (
-    tester,
-  ) async {
+  testWidgets('bastion entry selects an SSH server', (tester) async {
     await pump(tester, width: 500);
     await tester.tap(find.text('Connections & terminal'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Bastion configuration'));
-    await tester.pumpAndSettle();
-    expect(
-      find.text('Add an SSH server to configure this feature.'),
-      findsOneWidget,
-    );
-    await tester.tap(find.byType(BackButton).first);
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Tunnel configuration'));
     await tester.pumpAndSettle();
     expect(
       find.text('Add an SSH server to configure this feature.'),
@@ -151,7 +141,8 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Original project repository'), findsOneWidget);
     expect(find.text('Third-party dependency licenses'), findsOneWidget);
-    await tester.ensureVisible(find.text('Full GNU AGPLv3 license'));
+    await tester.drag(find.byType(ListView).last, const Offset(0, -900));
+    await tester.pumpAndSettle();
     await tester.pumpAndSettle();
     await tester.tap(find.text('Full GNU AGPLv3 license'));
     await tester.pumpAndSettle();

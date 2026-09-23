@@ -5,7 +5,7 @@ import 'package:server_box/data/model/app/menu/server_func.dart';
 import 'package:server_box/data/res/store.dart';
 
 class ServerFuncBtnsOrderPage extends StatefulWidget {
-    /// Whether it is being shown inside the settings pane rather than pushed.
+  /// Whether it is being shown inside the settings pane rather than pushed.
   ///
   /// The pane already names what it is showing, in the one bar the page has;
   /// a second one under it would say it twice.
@@ -37,8 +37,17 @@ class _ServerDetailOrderPageState extends State<ServerFuncBtnsOrderPage> {
   Widget _buildBody(BuildContext context) {
     return ValBuilder(
       listenable: prop.listenable(),
-      builder: (keys) {
+      builder: (storedKeys) {
+        final keys = storedKeys
+            .where(
+              (key) =>
+                  key >= 0 &&
+                  key < ServerFuncBtn.values.length &&
+                  key != ServerFuncBtn.portForward.index,
+            )
+            .toList();
         final disabled = ServerFuncBtn.values
+            .where((e) => e != ServerFuncBtn.portForward)
             .map((e) => e.index)
             .where((e) => !keys.contains(e))
             .toList();

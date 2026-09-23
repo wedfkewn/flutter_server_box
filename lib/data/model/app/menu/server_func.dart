@@ -57,9 +57,12 @@ enum ServerFuncBtn {
     final list = prop.fetch();
     final added = [
       for (final btn in values)
-        if (btn.introducedAfterBuild case final boundary?
-            when boundary >= from && boundary < to && !list.contains(btn.index))
-          btn.index,
+        if (btn != portForward)
+          if (btn.introducedAfterBuild case final boundary?
+              when boundary >= from &&
+                  boundary < to &&
+                  !list.contains(btn.index))
+            btn.index,
     ];
     if (added.isEmpty) return;
     prop.putSync([...list, ...added]);
@@ -72,7 +75,6 @@ enum ServerFuncBtn {
     process,
     snippet,
     systemd,
-    portForward,
     power,
     users,
     scheduledTasks,
@@ -102,13 +104,17 @@ enum ServerFuncBtn {
     // All three end in the terminal — snippets and iperf hand it a command to
     // start with, and nothing else.
     terminal || snippet || iperf => caps.terminal,
-    container || process || systemd || power || users || scheduledTasks =>
-      caps.shell,
+    container ||
+    process ||
+    systemd ||
+    power ||
+    users ||
+    scheduledTasks => caps.shell,
     // Browsing files is its own question: a transport could grow a file API
     // without growing a stream this app can point anywhere.
     files => caps.files,
     // A forwarded connection is a byte stream, not a command's output.
-    portForward => caps.byteStream,
+    portForward => false,
   };
 
   String get toStr => switch (this) {

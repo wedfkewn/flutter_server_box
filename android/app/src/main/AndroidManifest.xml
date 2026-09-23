@@ -14,20 +14,8 @@
         android:maxSdkVersion="32"
         tools:replace="android:maxSdkVersion" />
     <uses-permission android:name="android.permission.USE_BIOMETRIC" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
-    <!-- Guards the in-process broadcast the notification's "Stop All" action
-         sends. `RECEIVER_NOT_EXPORTED` only exists from API 33, so on anything
-         older the dynamically registered receiver was reachable by any app on
-         the device — and its one action disconnects every SSH session. Signature
-         level, so only a build signed with this key can send it. -->
-    <permission
-        android:name="tech.lolli.toolbox.permission.INTERNAL_BROADCAST"
-        android:protectionLevel="signature" />
-    <uses-permission android:name="tech.lolli.toolbox.permission.INTERNAL_BROADCAST" />
 
     <!-- The database is encrypted with a random key held by Android's
          device-bound secure storage. Auto Backup can restore the database on
@@ -157,12 +145,6 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/widget_medium" />
         </receiver>
-
-        <service
-            android:name=".ForegroundService"
-            android:enabled="true"
-            android:foregroundServiceType="dataSync"
-            android:exported="false" />
 
     </application>
     <!-- Required to query activities that can process text, see:

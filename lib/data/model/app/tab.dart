@@ -36,6 +36,9 @@ enum AppTab {
   /// of an hour and is started deliberately.
   static const defaultOrder = [server, ssh];
 
+  // Keep persisted enum ordinals stable for existing installations.
+  static const available = [server, ssh, file, snippet, benchmark];
+
   /// The tabs not in [enabled], in declaration order — what "more" holds.
   ///
   /// Settings is not among them, and is not an [AppTab] at all: it is a
@@ -49,7 +52,7 @@ enum AppTab {
   static List<AppTab> overflowOf(Iterable<AppTab> enabled) {
     final on = enabled.toSet();
     return [
-      for (final tab in values)
+      for (final tab in available)
         if (!on.contains(tab)) tab,
     ];
   }
@@ -67,7 +70,7 @@ enum AppTab {
       final tabs = <AppTab>{};
       for (final e in val) {
         final tab = _parseAppTabFromElement(e);
-        if (tab != null) {
+        if (tab != null && available.contains(tab)) {
           tabs.add(tab);
         }
       }
@@ -91,5 +94,4 @@ enum AppTab {
     }
     return null;
   }
-
 }

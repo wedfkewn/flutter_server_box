@@ -6,26 +6,22 @@ void main() {
   group('the default order', () {
     test('is the bar, and the rest are behind "more"', () {
       // The list *is* the bar now, so it is a subset rather than everything.
-      expect(AppTab.defaultOrder, [
-        AppTab.server,
-        AppTab.ssh,
-      ]);
+      expect(AppTab.defaultOrder, [AppTab.server, AppTab.ssh]);
       // The screenshot-led mobile shell keeps one destination each for the
       // dashboard and terminal; the remaining tools stay reachable in More.
       expect(AppTab.overflowOf(AppTab.defaultOrder), [
         AppTab.file,
         AppTab.snippet,
-        AppTab.agent,
         AppTab.benchmark,
       ]);
     });
 
     test('every tab is reachable, in the bar or behind more', () {
       // Anything in neither is a tab a fresh install could not reach at all.
-      expect(
-        {...AppTab.defaultOrder, ...AppTab.overflowOf(AppTab.defaultOrder)},
-        AppTab.values.toSet(),
-      );
+      expect({
+        ...AppTab.defaultOrder,
+        ...AppTab.overflowOf(AppTab.defaultOrder),
+      }, AppTab.available.toSet());
     });
 
     test('turning every tab on leaves nothing behind "more"', () {
@@ -57,7 +53,7 @@ void main() {
     expect(tabs, [AppTab.server, AppTab.ssh, AppTab.file, AppTab.snippet]);
   });
 
-  test('preserves an existing Agent tab without duplication', () {
+  test('drops a removed Agent tab from legacy settings', () {
     final tabs = AppTab.parseAppTabsFromObj([
       'server',
       'ssh',
@@ -68,14 +64,16 @@ void main() {
 
     // The stored order, kept as it was -- not the default, which the two
     // happen to differ from since Agent moved ahead of snippets.
-    expect(tabs, [
-      AppTab.server,
-      AppTab.ssh,
-      AppTab.file,
-      AppTab.snippet,
-      AppTab.agent,
-    ]);
-    expect(tabs.where((tab) => tab == AppTab.agent), hasLength(1));
+    expect(tabs, [AppTab.server, AppTab.ssh, AppTab.file, AppTab.snippet]);
+    expect(tabs, isNot(contains(AppTab.agent)));
+  });
+
+  test('removed Agent is filtered for every legacy encoding', () {
+    for (final value in ['agent', AppTab.agent.index, AppTab.agent]) {
+      expect(AppTab.parseAppTabsFromObj([value]), AppTab.defaultOrder);
+      expect(AppTab.parseAppTabsFromObj([value, 'file']), [AppTab.file]);
+    }
+    expect(availableHomeTabs([]), isNot(contains(AppTab.agent)));
   });
 
   test('preserves an intentionally customized home tab list', () {
@@ -93,27 +91,34 @@ void main() {
     expect(AppTab.parseAppTabsFromObj(['unknown']), AppTab.defaultOrder);
   });
 
-  test('names one tab twice and gets it once, in the order it first appeared', () {
-    // The home page indexes its pages and its nav bar by position, so a repeat
-    // puts the same page on screen twice and leaves "which position is
-    // Terminal" without an answer — which is also what the reorder handler
-    // asks when the set changes under it.
-    final tabs = AppTab.parseAppTabsFromObj([
-      'ssh',
-      'server',
-      'ssh',
-      'file',
-      'server',
-    ]);
+  test(
+    'names one tab twice and gets it once, in the order it first appeared',
+    () {
+      // The home page indexes its pages and its nav bar by position, so a repeat
+      // puts the same page on screen twice and leaves "which position is
+      // Terminal" without an answer — which is also what the reorder handler
+      // asks when the set changes under it.
+      final tabs = AppTab.parseAppTabsFromObj([
+        'ssh',
+        'server',
+        'ssh',
+        'file',
+        'server',
+      ]);
 
-    expect(tabs, [AppTab.ssh, AppTab.server, AppTab.file]);
-  });
+      expect(tabs, [AppTab.ssh, AppTab.server, AppTab.file]);
+    },
+  );
 
   test('and mixes the ways a tab can be named without repeating it', () {
     // A record written by a build that stored indices, merged with one that
     // stored names: the same tab, said two ways.
     expect(
-      AppTab.parseAppTabsFromObj(['server', AppTab.server.index, AppTab.server]),
+      AppTab.parseAppTabsFromObj([
+        'server',
+        AppTab.server.index,
+        AppTab.server,
+      ]),
       [AppTab.server],
     );
   });
@@ -128,7 +133,7 @@ void main() {
       AppTab.snippet,
     ]);
 
-    expect(available, [AppTab.agent, AppTab.benchmark]);
+    expect(available, [AppTab.benchmark]);
   });
 
   group('reorderHomeTabs', () {
@@ -157,7 +162,12 @@ void main() {
       );
 
       expect(next?.enabled, [AppTab.server]);
-      expect(next?.disabled, [AppTab.ssh, AppTab.file, AppTab.snippet, AppTab.agent]);
+      expect(next?.disabled, [
+        AppTab.ssh,
+        AppTab.file,
+        AppTab.snippet,
+        AppTab.agent,
+      ]);
     });
 
     test('reorders within one half without changing what is enabled', () {

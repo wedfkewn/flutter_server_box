@@ -88,6 +88,17 @@ import ActivityKit
             }
         })
 
+        // Kept separate from `main_chan`: Dart already owns that channel's
+        // native-to-Flutter handler. This channel only reports the end of the
+        // native dashboard presentation lifecycle.
+        let dashboardLifecycleChannel = FlutterMethodChannel(
+            name: "tech.lolli.toolbox/native_dashboard",
+            binaryMessenger: binaryMessenger
+        )
+        NativeDashboardCoordinator.shared.onClosed = {
+            dashboardLifecycleChannel.invokeMethod("closed", arguments: nil)
+        }
+
         let mainChannel = FlutterMethodChannel(name: "tech.lolli.toolbox/main_chan", binaryMessenger: binaryMessenger)
         mainChannel.setMethodCallHandler({(call: FlutterMethodCall, result: @escaping FlutterResult) -> Void in
             switch call.method {
@@ -164,6 +175,75 @@ import ActivityKit
                 }
                 Self.publishWidgetServers(payload)
                 result(nil)
+            // The dashboard payload is an immutable, credential-free Flutter
+            // snapshot. Native UI only presents it; it never starts a second
+            // monitor loop or retains a second source of server state.
+            case "showNativeDashboard":
+                guard let payload = call.arguments as? String else {
+                    result(FlutterError(
+                        code: "INVALID_DASHBOARD_PAYLOAD",
+                        message: "Expected a dashboard JSON string.",
+                        details: nil
+                    ))
+                    return
+                }
+                Task { @MainActor in
+                    guard let root = UIApplication.shared.connectedScenes
+                        .compactMap({ $0 as? UIWindowScene })
+                        .flatMap(\.windows)
+                        .first(where: \.isKeyWindow)?
+                        .rootViewController
+                    else {
+                        result(FlutterError(
+                            code: "DASHBOARD_WINDOW_UNAVAILABLE",
+                            message: "No active application window.",
+                            details: nil
+                        ))
+                        return
+                    }
+                    do {
+                        try NativeDashboardCoordinator.shared.present(json: payload, from: root)
+                        result(nil)
+                    } catch {
+                        result(FlutterError(
+                            code: "INVALID_DASHBOARD_PAYLOAD",
+                            message: "Unable to decode dashboard data.",
+                            details: nil
+                        ))
+                    }
+                }
+            case "updateNativeDashboard":
+                guard let payload = call.arguments as? String else {
+                    result(FlutterError(
+                        code: "INVALID_DASHBOARD_PAYLOAD",
+                        message: "Expected a dashboard JSON string.",
+                        details: nil
+                    ))
+                    return
+                }
+                Task { @MainActor in
+                    do {
+                        try NativeDashboardCoordinator.shared.update(json: payload)
+                        result(nil)
+                    } catch NativeDashboardPresentationError.notPresented {
+                        result(FlutterError(
+                            code: "DASHBOARD_NOT_PRESENTED",
+                            message: "The native dashboard is not presented.",
+                            details: nil
+                        ))
+                    } catch {
+                        result(FlutterError(
+                            code: "INVALID_DASHBOARD_PAYLOAD",
+                            message: "Unable to decode dashboard data.",
+                            details: nil
+                        ))
+                    }
+                }
+            case "closeNativeDashboard":
+                Task { @MainActor in
+                    NativeDashboardCoordinator.shared.dismiss()
+                    result(nil)
+                }
             case "widgetTokenState":
                 result(Self.widgetTokenState())
             // A `.sbxsrv` the platform handed this app — see [IncomingShare]

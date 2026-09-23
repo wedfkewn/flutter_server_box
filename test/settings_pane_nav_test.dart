@@ -178,9 +178,13 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
     expect(find.text('pushed editor'), findsOneWidget);
 
-    // Any other section in the left menu.
-    final target = find.text(libL10n.ai);
-    expect(target, findsWidgets, reason: 'the menu has to be on screen');
+    // Select a different visible leaf. This invokes the same menu selection
+    // path that discards pages pushed above the declarative settings content.
+    final target = find.descendant(
+      of: find.byKey(settingsMenuKey),
+      matching: find.text('Home Tabs'),
+    );
+    expect(target, findsWidgets, reason: 'the menu leaf has to be on screen');
     await tester.tap(target.first);
     await tester.pump(const Duration(milliseconds: 500));
 
@@ -208,7 +212,14 @@ void main() {
     );
     await tester.pump(const Duration(milliseconds: 500));
 
-    await tester.tap(find.text(libL10n.ai).first);
+    await tester.tap(
+      find
+          .descendant(
+            of: find.byKey(settingsMenuKey),
+            matching: find.text('Home Tabs'),
+          )
+          .first,
+    );
     await tester.pump(const Duration(milliseconds: 500));
 
     // `popUntil` stops at the first route whose settings is a `Page`. Popping

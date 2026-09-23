@@ -1,10 +1,8 @@
 part of 'entry.dart';
 
-/// Select a real SSH target for bastion chains or port forwarding.
+/// Select a real SSH target for bastion configuration.
 final class _ConnectionTargetsPage extends ConsumerWidget {
-  const _ConnectionTargetsPage({required this.tunnel});
-
-  final bool tunnel;
+  const _ConnectionTargetsPage();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -17,25 +15,17 @@ final class _ConnectionTargetsPage extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.all(18),
       children: [
-        Text(
-          tunnel
-              ? context.l10n.warmTunnelConfigTip
-              : context.l10n.warmBastionConfigTip,
-        ),
+        Text(context.l10n.warmBastionConfigTip),
         const SizedBox(height: 12),
         if (servers.isEmpty)
           ListTile(title: Text(context.l10n.settingsNoSshServers)),
         for (final spi in servers)
           ListTile(
-            leading: Icon(tunnel ? Icons.cable_outlined : Icons.hub_outlined),
+            leading: const Icon(Icons.hub_outlined),
             title: Text(spi.name),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
-              if (tunnel) {
-                PortForwardPage.route.go(context, SpiRequiredArgs(spi));
-              } else {
-                ServerEditPage.route.go(context, args: SpiRequiredArgs(spi));
-              }
+              ServerEditPage.route.go(context, args: SpiRequiredArgs(spi));
             },
           ),
       ],
