@@ -97,6 +97,7 @@ private struct NativeDashboardLegacyContent: View {
     }
 }
 
+@available(iOS 16.0, *)
 private struct NativeDashboardContent: View {
     @ObservedObject var store: NativeDashboardStore
 
@@ -121,6 +122,7 @@ private struct NativeDashboardContent: View {
     }
 }
 
+@available(iOS 16.0, *)
 private struct NativeDashboardSplitView: View {
     @ObservedObject var store: NativeDashboardStore
     @State private var selection: NativeDashboardServer.ID?
