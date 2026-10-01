@@ -131,13 +131,7 @@
   "monitorAllowInsecureHttp": "Allow HTTP",
   "monitorAllowInsecureHttpTip": "Only on a trusted private network that encrypts the transport itself, such as Tailscale",
   "monitorHttpTip": "Read this server's status from a **monitor** agent's HTTP API instead of running commands over SSH.\n\nThe agent has to be installed on the server first, and it is what makes trends, the watch app and the home-screen widgets possible.\n\n[Setting up a monitor agent]({url})",
-  "@monitorHttpTip": {
-    "placeholders": {
-      "url": {
-        "type": "String"
-      }
-    }
-  },
+  "@monitorHttpTip": {"placeholders": {"url": {"type": "String"}}},
   "backupTip": "The exported data can be encrypted with password. \nPlease keep it safe.",
   "icloudBackupStatusTitle": "Backup status",
   "icloudBackupStatusLoading": "Loading iCloud backup status...",
@@ -231,26 +225,14 @@
   "sshKeyGenerate": "Generate key pair",
   "sshKeyGenerating": "Generating…",
   "sshKeyLockedFmt": "The private key [{name}] was not unlocked.",
-  "@sshKeyLockedFmt": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
+  "@sshKeyLockedFmt": {"placeholders": {"name": {"type": "String"}}},
   "sshKeyPassphraseTip": "Optional. A key with a passphrase is stored encrypted, and you are asked for it the first time a connection uses the key.",
   "sshKeyPassphraseWrong": "Wrong passphrase.",
   "sshKeyPublicKey": "Public key",
   "sshKeyPublicKeyTip": "Append this line to ~/.ssh/authorized_keys on the server.",
   "sshKeyRecommended": "Recommended",
   "sshKeyUnlockTip": "Enter the passphrase for the private key [{name}].",
-  "@sshKeyUnlockTip": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
+  "@sshKeyUnlockTip": {"placeholders": {"name": {"type": "String"}}},
   "ungrouped": "Ungrouped",
   "unused": "Unused",
   "dangling": "Dangling",
@@ -356,13 +338,7 @@
   "bmcCertChanged": "The certificate does not match. Check it.",
   "bmcCertExpired": "Expired.",
   "bmcCertWas": "Previously accepted: {fingerprint}",
-  "@bmcCertWas": {
-    "placeholders": {
-      "fingerprint": {
-        "type": "String"
-      }
-    }
-  },
+  "@bmcCertWas": {"placeholders": {"fingerprint": {"type": "String"}}},
   "bmcAddrInvalid": "The BMC address must be a URL, e.g. https://10.0.0.9",
   "proxyCommandSandboxed": "This build is sandboxed: the command gets an empty home, not yours, so anything reading ~/.ssh fails. The DMG build is not.",
   "privateKeyFileUnreadable": "Cannot read the private key file {path}: {reason}",
@@ -377,13 +353,7 @@
     }
   },
   "privateKeyFileSandboxed": "This build cannot read files outside its own container, so the key at {path} is unreachable. Import the key in Settings, or use the DMG build.",
-  "@privateKeyFileSandboxed": {
-    "placeholders": {
-      "path": {
-        "type": "String"
-      }
-    }
-  },
+  "@privateKeyFileSandboxed": {"placeholders": {"path": {"type": "String"}}},
   "pushToken": "Push token",
   "liveActivity": "Live Activity",
   "liveActivityTip": "Show terminal sessions on the Lock Screen and Dynamic Island. Without unlocking, the server name and connection state are visible there.",
@@ -465,22 +435,10 @@
   "shareOmittedTip": "Not included; the recipient must configure:",
   "sharePassphraseTip": "This passphrase encrypts the file. The recipient needs it to import the server, and it cannot be recovered.",
   "shareQrTip": "The connection details in this QR code are encrypted. The share expires in {minutes} minutes.",
-  "@shareQrTip": {
-    "placeholders": {
-      "minutes": {
-        "type": "int"
-      }
-    }
-  },
+  "@shareQrTip": {"placeholders": {"minutes": {"type": "int"}}},
   "shareScanQr": "Scan a QR code",
   "shareServerExists": "“{name}” on this device already uses this address. Import anyway?",
-  "@shareServerExists": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
+  "@shareServerExists": {"placeholders": {"name": {"type": "String"}}},
   "shareTooBigForQr": "Too large for a QR code. Share it as a file instead.",
   "shareTooNew": "This share was created with a newer version of ServerBox. Update the app to open it.",
   "shareUnreadable": "This is not a valid ServerBox share.",
@@ -592,58 +550,22 @@
   "tmuxNewWindow": "New window",
   "tmuxNoWindowsFound": "No windows found",
   "tmuxWindowCount": "{count, plural, one{1 window} other{{count} windows}}",
-  "@tmuxWindowCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
+  "@tmuxWindowCount": {"placeholders": {"count": {"type": "int"}}},
   "tmuxPaneCount": "{count, plural, one{1 pane} other{{count} panes}}",
-  "@tmuxPaneCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
+  "@tmuxPaneCount": {"placeholders": {"count": {"type": "int"}}},
   "tmuxAttached": "Attached",
   "tmuxActive": "Active",
   "tmuxActiveAt": "active: {time}",
-  "@tmuxActiveAt": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
+  "@tmuxActiveAt": {"placeholders": {"time": {"type": "String"}}},
   "tmuxAttachedAt": "attached: {time}",
-  "@tmuxAttachedAt": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
+  "@tmuxAttachedAt": {"placeholders": {"time": {"type": "String"}}},
   "tmuxSkip": "Skip",
   "tmuxNotAvailable": "tmux is not available",
   "containerSegmentsMismatch": "Unexpected container response segment count: {count}",
-  "@containerSegmentsMismatch": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
+  "@containerSegmentsMismatch": {"placeholders": {"count": {"type": "int"}}},
   "containerOperationInProgress": "Another container operation is already in progress",
   "processCount": "{count, plural, one{1 process} other{{count} processes}}",
-  "@processCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
+  "@processCount": {"placeholders": {"count": {"type": "int"}}},
   "processParseUnsupportedOutput": "The process list format is not supported.",
   "processParseInvalidRows": "Some process entries could not be read.",
   "processParseInvalidWindowsJson": "The Windows process response could not be read.",
@@ -663,13 +585,7 @@
   "serviceManagerUnsupported": "Unsupported service manager",
   "serviceManagerUnsupportedTip": "This server uses a service manager that ServerBox does not support yet. Supported managers: systemd, procd, and OpenRC.",
   "serviceManagerFmt": "Managed by {manager}",
-  "@serviceManagerFmt": {
-    "placeholders": {
-      "manager": {
-        "type": "String"
-      }
-    }
-  },
+  "@serviceManagerFmt": {"placeholders": {"manager": {"type": "String"}}},
   "serviceListFailed": "Could not list services",
   "serviceDetailsUnavailable": "Some service details are unavailable",
   "serviceDetailsUnavailableTip": "The service list is usable, but the manager did not return all status or startup information.",
@@ -687,33 +603,15 @@
   "agentLocalExecTip": "Lets the Agent work on the machine running ServerBox. Even read-only commands are reviewed",
   "agentLocalExecRootfsTip": "Lets the Agent work locally, confined to the Linux container ServerBox installed",
   "macDmgImportedPartly": "Imported the data of the previously installed build. Downloaded files were left where they were, in {path}.",
-  "@macDmgImportedPartly": {
-    "placeholders": {
-      "path": {
-        "type": "String"
-      }
-    }
-  },
+  "@macDmgImportedPartly": {"placeholders": {"path": {"type": "String"}}},
   "bmcAccount": "Account",
   "bmcAccountUnset": "None picked - tap to choose or create one",
   "bmcAccountShared": "Used by {count} servers",
-  "@bmcAccountShared": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
+  "@bmcAccountShared": {"placeholders": {"count": {"type": "int"}}},
   "bmcAccounts": "BMC accounts",
   "bmcAccountSharedTip": "Editing this changes what all of them use.",
   "bmcAccountInUse": "{count} servers use it. They keep their address and lose the account.",
-  "@bmcAccountInUse": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
+  "@bmcAccountInUse": {"placeholders": {"count": {"type": "int"}}},
   "bmcStaleWrite": "The BMC changed while this was being written. Try again.",
   "send": "Send",
   "privacyBlur": "Background privacy",
@@ -747,13 +645,7 @@
   "benchmark": "Benchmark",
   "benchmarkIntro": "Runs Yet Another Bench Script on this server: disk, network and CPU. A full run takes 10–20 minutes and keeps going if you leave this page or close the app.",
   "benchmarkLinuxOnly": "Benchmarking needs Linux. This server reports {system}.",
-  "@benchmarkLinuxOnly": {
-    "placeholders": {
-      "system": {
-        "type": "String"
-      }
-    }
-  },
+  "@benchmarkLinuxOnly": {"placeholders": {"system": {"type": "String"}}},
   "benchmarkNoRuns": "No benchmarks yet.",
   "benchmarkRunning": "Benchmark running",
   "benchmarkStartFailed": "Could not start the benchmark",
@@ -783,21 +675,9 @@
   "benchmarkWorkDir": "Working directory",
   "benchmarkWorkDirTip": "Decides which filesystem the disk test measures. Empty means the login account's home directory.",
   "benchmarkEstimatedTime": "About {minutes} min",
-  "@benchmarkEstimatedTime": {
-    "placeholders": {
-      "minutes": {
-        "type": "String"
-      }
-    }
-  },
+  "@benchmarkEstimatedTime": {"placeholders": {"minutes": {"type": "String"}}},
   "benchmarkEstimatedTraffic": "About {size} of traffic",
-  "@benchmarkEstimatedTraffic": {
-    "placeholders": {
-      "size": {
-        "type": "String"
-      }
-    }
-  },
+  "@benchmarkEstimatedTraffic": {"placeholders": {"size": {"type": "String"}}},
   "benchmarkPhaseSystem": "Reading system information",
   "benchmarkPhaseDisk": "Testing disk",
   "benchmarkPhaseNetwork": "Testing network",
@@ -819,13 +699,7 @@
   "benchmarkCompareEmpty": "At least two finished benchmarks are needed to compare.",
   "benchmarkRawLog": "Run log",
   "benchmarkUpstream": "Powered by Yet Another Bench Script ({version})",
-  "@benchmarkUpstream": {
-    "placeholders": {
-      "version": {
-        "type": "String"
-      }
-    }
-  },
+  "@benchmarkUpstream": {"placeholders": {"version": {"type": "String"}}},
   "benchmarkPhaseStarting": "Starting",
   "benchmarkNoOutputYet": "No output yet. Before printing its first line, YABS checks whether google.com and icanhazip.com are reachable. On networks that block either site, this can take several minutes.",
   "tagsEmptyTip": "No tags yet. Add one while editing a server and it will appear here.",
@@ -928,6 +802,9 @@
   "settingsSecurityData": "Security & data",
   "settingsApplicationAbout": "App & about",
   "settingsOpenCategory": "View settings in this category",
+  "settingsCategoryIntro": "Manage your preferences by category",
+  "settingsTerminalTitle": "Terminal settings",
+  "settingsKnownHostsTitle": "Known host keys",
   "openSourceTitle": "Open-source project",
   "openSourceIntro": "This app is a modified version of the ServerBox open-source project by lollipopkit and contributors, licensed under GNU Affero General Public License v3.0 (AGPLv3).",
   "openSourceCopyright": "The original project is copyright lollipopkit and contributors; authors retain copyright in their modifications.",
@@ -1011,5 +888,13 @@
   "dnsLookupRateLimited": "Too many DNS requests. Try again later.",
   "dnsLookupServiceError": "The DNS service returned an invalid response. Try again later.",
   "dnsLookupDnsError": "The domain does not exist or DNS resolution failed.",
-  "ipLookupDisclaimer": "The organization shown is the registrant or operator of the IP range and may not be the server owner."
+  "ipLookupDisclaimer": "The organization shown is the registrant or operator of the IP range and may not be the server owner.",
+  "warmTerminalConnections": "Connections & sessions",
+  "warmTerminalCurrentSessions": "Open sessions",
+  "warmTerminalNewConnection": "New connection",
+  "warmTerminalPickConnection": "Choose a connection to start a terminal session",
+  "warmTerminalConnected": "Connected",
+  "warmTerminalConnecting": "Connecting",
+  "warmTerminalDisconnected": "Disconnected",
+  "warmTerminalNoSessions": "No open sessions"
 }

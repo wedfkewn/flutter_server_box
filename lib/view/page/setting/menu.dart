@@ -221,7 +221,9 @@ final class _TabButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final color = selected ? scheme.onSecondaryContainer : scheme.onSurfaceVariant;
+    final color = selected
+        ? scheme.onSecondaryContainer
+        : scheme.onSurfaceVariant;
 
     // Which tab is on is a colour and a pill, neither of which a screen reader
     // has any way to read. `TabBar` says it for its own tabs; this bar is not
@@ -280,64 +282,6 @@ final class _TabButton extends StatelessWidget {
   }
 }
 
-/// One row of the narrow list.
-///
-/// A card with a tile in it, which is what every row of the settings it leads
-/// to is — on a whole screen, getting there and being there read the same way.
-/// The wide menu is a strip beside the content and keeps its rail.
-final class _SettingsRow extends StatelessWidget {
-  final SettingsNode node;
-  final Widget? trailing;
-  final VoidCallback onTap;
-
-  const _SettingsRow({required this.node, required this.onTap, this.trailing});
-
-  @override
-  Widget build(BuildContext context) {
-    return CardX(
-      child: ListTile(
-        leading: Icon(node.icon, size: 20),
-        title: Text(
-          node.title,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-        ),
-        trailing: trailing,
-        onTap: onTap,
-      ),
-    );
-  }
-}
-
-/// The first thing a narrow window shows: what settings there are.
-///
-/// Flat, and every row goes somewhere. The wide menu opens a branch in place
-/// because it has a column to open it into; here there is only the one screen,
-/// so a branch is a door rather than a fold.
-final class _SettingsList extends StatelessWidget {
-  final List<SettingsNode> nodes;
-  final void Function(SettingsNode node) onTap;
-
-  const _SettingsList({required this.nodes, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-      key: settingsMenuKey,
-      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 8),
-      children: [
-        for (final node in nodes)
-          _SettingsRow(
-            node: node,
-            onTap: () => onTap(node),
-            trailing: const Icon(Icons.chevron_right, size: 18),
-          ),
-      ],
-    );
-  }
-}
-
 /// One level's leaves, side by side.
 ///
 /// A [PageView] rather than one page swapped for another: the tabs under it are
@@ -361,7 +305,9 @@ final class _SettingsPages extends StatefulWidget {
 }
 
 class _SettingsPagesState extends State<_SettingsPages> {
-  late final PageController _controller = PageController(initialPage: _indexOf(widget.selectedId));
+  late final PageController _controller = PageController(
+    initialPage: _indexOf(widget.selectedId),
+  );
 
   /// Where a tap is currently being animated to, and null the rest of the time.
   ///
@@ -405,7 +351,9 @@ class _SettingsPagesState extends State<_SettingsPages> {
           // choice like any other — reported now rather than dropped, or the
           // tabs would keep pointing at a page nobody is on.
           final landed = _controller.page?.round();
-          if (landed != null && landed != target && landed < widget.leaves.length) {
+          if (landed != null &&
+              landed != target &&
+              landed < widget.leaves.length) {
             widget.onChanged(widget.leaves[landed]);
           }
         });

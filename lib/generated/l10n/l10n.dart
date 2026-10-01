@@ -4228,6 +4228,24 @@ abstract class AppLocalizations {
   /// **'View settings in this category'**
   String get settingsOpenCategory;
 
+  /// No description provided for @settingsCategoryIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage your preferences by category'**
+  String get settingsCategoryIntro;
+
+  /// No description provided for @settingsTerminalTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Terminal settings'**
+  String get settingsTerminalTitle;
+
+  /// No description provided for @settingsKnownHostsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Known host keys'**
+  String get settingsKnownHostsTitle;
+
   /// No description provided for @openSourceTitle.
   ///
   /// In en, this message translates to:
@@ -4725,6 +4743,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The organization shown is the registrant or operator of the IP range and may not be the server owner.'**
   String get ipLookupDisclaimer;
+
+  /// No description provided for @warmTerminalConnections.
+  ///
+  /// In en, this message translates to:
+  /// **'Connections & sessions'**
+  String get warmTerminalConnections;
+
+  /// No description provided for @warmTerminalCurrentSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'Open sessions'**
+  String get warmTerminalCurrentSessions;
+
+  /// No description provided for @warmTerminalNewConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'New connection'**
+  String get warmTerminalNewConnection;
+
+  /// No description provided for @warmTerminalPickConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a connection to start a terminal session'**
+  String get warmTerminalPickConnection;
+
+  /// No description provided for @warmTerminalConnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected'**
+  String get warmTerminalConnected;
+
+  /// No description provided for @warmTerminalConnecting.
+  ///
+  /// In en, this message translates to:
+  /// **'Connecting'**
+  String get warmTerminalConnecting;
+
+  /// No description provided for @warmTerminalDisconnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnected'**
+  String get warmTerminalDisconnected;
+
+  /// No description provided for @warmTerminalNoSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'No open sessions'**
+  String get warmTerminalNoSessions;
 }
 
 class _AppLocalizationsDelegate

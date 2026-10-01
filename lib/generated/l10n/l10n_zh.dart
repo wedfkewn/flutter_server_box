@@ -2228,6 +2228,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsOpenCategory => '查看此分类的设置';
 
   @override
+  String get settingsCategoryIntro => '按分类管理应用偏好';
+
+  @override
+  String get settingsTerminalTitle => '终端设置';
+
+  @override
+  String get settingsKnownHostsTitle => '已知主机密钥';
+
+  @override
   String get openSourceTitle => '开源项目说明';
 
   @override
@@ -2483,6 +2492,30 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get ipLookupDisclaimer => '显示的组织是 IP 地址段的登记或运营方，不一定是服务器实际所有者。';
+
+  @override
+  String get warmTerminalConnections => '连接与会话';
+
+  @override
+  String get warmTerminalCurrentSessions => '当前会话';
+
+  @override
+  String get warmTerminalNewConnection => '新建连接';
+
+  @override
+  String get warmTerminalPickConnection => '选择连接以开始终端会话';
+
+  @override
+  String get warmTerminalConnected => '已连接';
+
+  @override
+  String get warmTerminalConnecting => '连接中';
+
+  @override
+  String get warmTerminalDisconnected => '已断开';
+
+  @override
+  String get warmTerminalNoSessions => '暂无会话';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).

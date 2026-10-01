@@ -124,6 +124,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   /// opens as a list of subjects rather than as everything there is.
   final _expanded = <String>{};
 
+  // The phone accordion is independent of the desktop rail's open branches.
+  String? _warmExpandedId = 'connections';
+
   /// Which branch the narrow tabs are inside, innermost last.
   ///
   /// The wide menu shows every level at once and needs no such thing; the tabs
@@ -466,6 +469,12 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     });
   }
 
+  void _onWarmToggle(SettingsNode node) {
+    setState(() {
+      _warmExpandedId = _warmExpandedId == node.id ? null : node.id;
+    });
+  }
+
   /// The navigator holding the right-hand side, so a selection can reach it.
   final _contentNav = GlobalKey<NavigatorState>();
 
@@ -751,7 +760,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           // What settings there are, which is where a narrow window starts.
           settingsPage(
             key: const ValueKey('root'),
-            child: opaque(_SettingsList(nodes: nodes, onTap: _onTab)),
+            child: opaque(_buildWarmSettings(nodes)),
           ),
           for (final entered in _path)
             settingsPage(

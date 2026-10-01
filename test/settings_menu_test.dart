@@ -13,8 +13,8 @@ import 'package:server_box/view/page/setting/entry.dart';
 
 import 'helpers/test_db.dart';
 
-/// The same six categories appear as a rail on desktop and a two-level list
-/// on mobile. The old floating-tabs assertions no longer describe this UI.
+/// The same six categories appear as a rail on desktop and an inline
+/// accordion on mobile. Leaves keep their existing navigation.
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   late Directory tempDir;
@@ -92,7 +92,7 @@ void main() {
     );
   });
 
-  testWidgets('mobile category, leaf, and back navigation stay two-level', (
+  testWidgets('mobile accordion opens a leaf and returns to its category', (
     tester,
   ) async {
     await pump(tester, width: 500);
@@ -112,8 +112,6 @@ void main() {
     await tester.tap(find.byType(BackButton).first);
     await tester.pumpAndSettle();
     expect(find.text('Server information display'), findsOneWidget);
-    await tester.tap(find.byType(BackButton).first);
-    await tester.pumpAndSettle();
     for (final title in categories) {
       expect(find.text(title), findsOneWidget);
     }
@@ -123,8 +121,6 @@ void main() {
     tester,
   ) async {
     await pump(tester, width: 500);
-    await tester.tap(find.text('Connections & terminal'));
-    await tester.pumpAndSettle();
     await tester.tap(find.text('Bastion configuration'));
     await tester.pumpAndSettle();
     expect(
@@ -151,7 +147,11 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Original project repository'), findsOneWidget);
     expect(find.text('Third-party dependency licenses'), findsOneWidget);
-    await tester.ensureVisible(find.text('Full GNU AGPLv3 license'));
+    await tester.scrollUntilVisible(
+      find.text('Full GNU AGPLv3 license'),
+      150,
+      scrollable: find.byType(Scrollable).last,
+    );
     await tester.pumpAndSettle();
     await tester.tap(find.text('Full GNU AGPLv3 license'));
     await tester.pumpAndSettle();

@@ -42,7 +42,9 @@ void main() {
 
     await loadFont(
       'WarmSans',
-      '/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc',
+      Platform.isWindows
+          ? r'C:\Windows\Fonts\msyh.ttc'
+          : '/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc',
     );
     final flutterRoot = Platform.environment['FLUTTER_ROOT'];
     if (flutterRoot != null) {
@@ -182,8 +184,6 @@ void main() {
     expect(find.text('Netflix'), findsOneWidget);
     expect(find.text('Gemini'), findsOneWidget);
 
-    await tester.tap(find.byType(BackButton).first);
-    await tester.pumpAndSettle();
     await tester.tap(find.byType(BackButton).first);
     await tester.pumpAndSettle();
     for (final category in [

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math' as math;
 
 import 'package:fl_lib/fl_lib.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ import 'package:server_box/core/extension/context/locale.dart';
 import 'package:server_box/core/route.dart';
 import 'package:server_box/core/utils/local_shell.dart';
 import 'package:server_box/core/utils/rootfs.dart';
+import 'package:server_box/core/warm_theme.dart';
 import 'package:server_box/data/model/app/linux_distro.dart';
 import 'package:server_box/data/model/server/dist.dart';
 import 'package:server_box/data/model/server/server_private_info.dart';
@@ -16,6 +18,7 @@ import 'package:server_box/data/provider/app/session_requests.dart';
 import 'package:server_box/data/provider/app/terminal_shell.dart';
 import 'package:server_box/data/provider/server/all.dart';
 import 'package:server_box/data/res/store.dart';
+import 'package:server_box/data/ssh/session_manager.dart';
 import 'package:server_box/data/ssh/terminal_session.dart';
 import 'package:server_box/data/ssh/terminal_source.dart';
 import 'package:server_box/view/page/server/edit/edit.dart';
@@ -27,6 +30,7 @@ import 'package:server_box/view/widget/rootfs_install.dart';
 
 part 'tab_add.dart';
 part 'tab_sort.dart';
+part 'warm_terminal.dart';
 
 /// Every open terminal, one tab each, plus a picker at the head of the strip.
 class SSHTabPage extends ConsumerStatefulWidget {
@@ -78,6 +82,35 @@ class _SSHTabPageState extends ConsumerState<SSHTabPage>
 
   /// The bar's search: what is typed, and whether the bar is a field at all.
   final _search = InlineSearchController();
+  final _drawerOpen = ValueNotifier(true);
+  final _controlsHidden = ValueNotifier(false);
+  final _statusVersion = RNode();
+  bool _narrow = false;
+  bool _statusRefreshPending = false;
+
+  void _sessionStatusChanged() {
+    if (_statusRefreshPending || !mounted) return;
+    _statusRefreshPending = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _statusRefreshPending = false;
+      if (mounted) _statusVersion.notify();
+    });
+  }
+
+  void _setDrawer(bool open) {
+    if (open) FocusScope.of(context).unfocus();
+    _drawerOpen.value = open;
+    _controlsHidden.value = _narrow && open;
+    if (!open) {
+      _search.end();
+      _sessions.current?.focus.requestFocus();
+    }
+  }
+
+  void _selectWarmSession(int index) {
+    _sessions.select(index);
+    _setDrawer(false);
+  }
 
   /// The picker, and the button for adding a server to pick from.
   ///
@@ -130,6 +163,9 @@ class _SSHTabPageState extends ConsumerState<SSHTabPage>
     _sessions.dispose();
     _sortVersion.dispose();
     _search.dispose();
+    _drawerOpen.dispose();
+    _controlsHidden.dispose();
+    _statusVersion.dispose();
     super.dispose();
   }
 
@@ -140,28 +176,43 @@ class _SSHTabPageState extends ConsumerState<SSHTabPage>
     ref.listen(terminalCloseAllRequestProvider, (_, _) => _drainCloseAll());
     return ListenBuilder(
       listenable: _sessions,
-      builder: () => SbPaneList(
-        // The rail is there from the start, empty surface or not. Folding it
-        // away until the first terminal opened meant this tab greeted a wide
-        // window with a full-width grid of cards, and then rearranged itself
-        // into a rail and a surface the moment one was opened — two layouts
-        // for one page, the first of which is not what the page looks like.
-        sideBuilder: (_) => _SideBar(
-          sessions: _sessions,
-          sortVersion: Listenable.merge([_sortVersion, _search]),
-          search: _search,
-          actions: [_sortBtn, _searchBtn, _historyBtn],
-          onOpen: _openServer,
-          onLocal: () => _open(const LocalSource()),
-          onRootfsOpen: _openRootfs,
-          onRootfsAdd: _addRootfs,
-          onRootfsRemove: _removeRootfs,
-          onEdit: (spi) =>
-              ServerEditPage.route.go(context, args: SpiRequiredArgs(spi)),
-          onSelect: _sessions.select,
-          onClose: _confirmClose,
-        ),
-        builder: (_, split) => _buildTerminals(split),
+      builder: () => LayoutBuilder(
+        builder: (context, constraints) {
+          _narrow = constraints.maxWidth < AdaptivePanes.kSplitWidth;
+          final hidden =
+              _narrow && (_drawerOpen.value || _sessions.current == null);
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted && _controlsHidden.value != hidden) {
+              _controlsHidden.value = hidden;
+            }
+          });
+          if (_narrow) {
+            return _buildWarmTerminal();
+          }
+          return SbPaneList(
+            // The rail is there from the start, empty surface or not. Folding it
+            // away until the first terminal opened meant this tab greeted a wide
+            // window with a full-width grid of cards, and then rearranged itself
+            // into a rail and a surface the moment one was opened — two layouts
+            // for one page, the first of which is not what the page looks like.
+            sideBuilder: (_) => _SideBar(
+              sessions: _sessions,
+              sortVersion: Listenable.merge([_sortVersion, _search]),
+              search: _search,
+              actions: [_sortBtn, _searchBtn, _historyBtn],
+              onOpen: _openServer,
+              onLocal: () => _open(const LocalSource()),
+              onRootfsOpen: _openRootfs,
+              onRootfsAdd: _addRootfs,
+              onRootfsRemove: _removeRootfs,
+              onEdit: (spi) =>
+                  ServerEditPage.route.go(context, args: SpiRequiredArgs(spi)),
+              onSelect: _sessions.select,
+              onClose: _confirmClose,
+            ),
+            builder: (_, split) => _buildTerminals(split),
+          );
+        },
       ),
     );
   }
@@ -213,12 +264,12 @@ class _SSHTabPageState extends ConsumerState<SSHTabPage>
       child: InlineSearchBar(
         controller: _search,
         child: SessionTabBar(
-        names: _sessions.names,
-        index: _sessions.index,
-        onTap: _sessions.select,
-        onClose: _confirmClose,
-        detailOf: _sessionAddr,
-        sessionActions: _serverActions,
+          names: _sessions.names,
+          index: _sessions.index,
+          onTap: _sessions.select,
+          onClose: _confirmClose,
+          detailOf: _sessionAddr,
+          sessionActions: _serverActions,
           leadingActions: [_sortBtn, _searchBtn, _historyBtn],
         ),
       ),
@@ -308,6 +359,8 @@ extension _Sessions on _SSHTabPageState {
               onSessionEnd: () => _closeTab(id),
               focusNode: focus,
               visibleListenable: visible,
+              controlsHidden: _controlsHidden,
+              onStatusChanged: _sessionStatusChanged,
               tmuxSession: tmuxSession,
               tmuxWindow: tmuxWindow,
               onTmuxStateChanged: _saveTabs,
@@ -333,6 +386,7 @@ extension _Sessions on _SSHTabPageState {
     if (!select) return;
     _saveTabs();
     _sessions.select(_sessions.names.indexOf(tab.name));
+    _setDrawer(false);
   }
 
   /// Opens a shell in the system a chip names.
@@ -698,7 +752,6 @@ extension _Actions on _SSHTabPageState {
       ],
     );
   }
-
 
   void _showHistory() {
     final history = Stores.history.sshServerHistory.all.cast<String>();

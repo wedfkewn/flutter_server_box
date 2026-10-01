@@ -2,7 +2,55 @@ part of 'entry.dart';
 
 extension _WarmSettings on _SettingsPageState {
   Widget _buildWarmSettings(List<SettingsNode> nodes) {
-    return _buildWarmSettingEntries(nodes);
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return ListView(
+      key: const PageStorageKey('warm-settings-root'),
+      padding: const EdgeInsets.fromLTRB(
+        WarmTheme.pagePadding,
+        24,
+        WarmTheme.pagePadding,
+        20,
+      ),
+      children: [
+        Text(
+          context.libL10n.setting,
+          style: theme.textTheme.headlineMedium?.copyWith(
+            fontSize: 28,
+            fontWeight: FontWeight.w700,
+            color: scheme.onSurface,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          BuildData.name,
+          style: TextStyle(fontSize: 14, color: scheme.onSurfaceVariant),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          context.l10n.settingsCategoryIntro,
+          style: TextStyle(fontSize: 13, color: scheme.onSurfaceVariant),
+        ),
+        const SizedBox(height: 20),
+        Divider(height: 1, color: scheme.outlineVariant),
+        for (final node in nodes)
+          _WarmSettingsCategory(
+            key: ValueKey('warm-category-${node.id}'),
+            node: node,
+            expanded: _warmExpandedId == node.id,
+            onToggle: () => _onWarmToggle(node),
+            onSelect: _onTab,
+          ),
+        Padding(
+          padding: const EdgeInsets.only(top: 16),
+          child: Text(
+            '${BuildData.name} v${BuildData.build}',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant),
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _buildWarmSettingEntries(List<SettingsNode> nodes) {
@@ -35,6 +83,151 @@ extension _WarmSettings on _SettingsPageState {
               )
             : row;
       },
+    );
+  }
+}
+
+/// One inline category; its leaves still open the existing settings navigator.
+class _WarmSettingsCategory extends StatelessWidget {
+  const _WarmSettingsCategory({
+    super.key,
+    required this.node,
+    required this.expanded,
+    required this.onToggle,
+    required this.onSelect,
+  });
+
+  final SettingsNode node;
+  final bool expanded;
+  final VoidCallback onToggle;
+  final ValueChanged<SettingsNode> onSelect;
+
+  String _leafTitle(BuildContext context, SettingsNode leaf) =>
+      switch (leaf.id) {
+        'terminal.setting' => context.l10n.settingsTerminalTitle,
+        'terminal.knownHosts' => context.l10n.settingsKnownHostsTitle,
+        _ => leaf.title,
+      };
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: expanded ? 6 : 0),
+      child: Material(
+        color: expanded ? scheme.surfaceContainerLow : Colors.transparent,
+        borderRadius: BorderRadius.circular(WarmTheme.cardRadius),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Semantics(
+              expanded: expanded,
+              child: InkWell(
+                key: ValueKey('warm-category-toggle-${node.id}'),
+                onTap: onToggle,
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    vertical: 10,
+                    horizontal: expanded ? 8 : 0,
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 38,
+                        height: 38,
+                        decoration: BoxDecoration(
+                          color: expanded
+                              ? scheme.primaryContainer
+                              : scheme.surfaceContainerHigh,
+                          borderRadius: BorderRadius.circular(13),
+                        ),
+                        child: Icon(node.icon, size: 23, color: scheme.primary),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Text(
+                          node.title,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: expanded ? scheme.primary : scheme.onSurface,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Icon(
+                        expanded ? Icons.expand_less : Icons.expand_more,
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            AnimatedSize(
+              duration: WarmMotion.of(context, WarmMotion.page),
+              curve: Curves.easeOutCubic,
+              alignment: Alignment.topCenter,
+              child: expanded
+                  ? Padding(
+                      padding: const EdgeInsets.fromLTRB(10, 0, 10, 8),
+                      child: Column(
+                        children: [
+                          for (var i = 0; i < node.children.length; i++) ...[
+                            if (i > 0)
+                              Divider(
+                                height: 1,
+                                indent: 8,
+                                endIndent: 8,
+                                color: scheme.outlineVariant,
+                              ),
+                            InkWell(
+                              key: ValueKey(
+                                'warm-setting-${node.children[i].id}',
+                              ),
+                              onTap: () => onSelect(node.children[i]),
+                              child: ConstrainedBox(
+                                constraints: const BoxConstraints(
+                                  minHeight: 44,
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 10,
+                                    horizontal: 8,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          _leafTitle(context, node.children[i]),
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: scheme.onSurface,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Icon(
+                                        Icons.chevron_right,
+                                        size: 22,
+                                        color: scheme.onSurfaceVariant,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    )
+                  : const SizedBox(width: double.infinity),
+            ),
+            if (!expanded) Divider(height: 1, color: scheme.outlineVariant),
+          ],
+        ),
+      ),
     );
   }
 }

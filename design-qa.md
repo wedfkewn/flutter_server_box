@@ -1,62 +1,69 @@
-# 首页服务器数据接入验收
+# 终端第三方案 UI 验收
 
-日期：2026-10-01。范围：用户确认的手机首页布局，以及现有 SSH / Monitor 服务器信息和 ChatGPT / Netflix 可访问性接入。
+日期：2026-10-01。范围：现有 Flutter 终端首页及连接后的命令行，移动端为主。
 
 ## Findings
 
-- 当前范围没有未解决的 P0、P1 或 P2 布局或数据接入问题。
-- [P3] Windows 测试字体不能绘制国家旗帜 emoji；国家代码 CN 和其余中文、英文、图标均可读。手机端使用平台字体，仍需实机确认。
-- [P3] Widget 截图只包含 ServerPage 内容，不包含 iOS 状态栏、系统安全区域和 Home 提供的底部导航。底部导航仍由现有 Home 实现提供。
+没有未解决的 P0、P1、P2 问题。
+
+- [P3] 原生 Material Icons 与生成图的图标笔画存在差异；Windows 渲染加载微软雅黑与 Consolas，手机平台字体仍以系统和用户终端字体设置为准。
+- [P3] Windows 支持本机 shell，截图列表末尾因此有“设备”入口；iOS 根据现有能力判断隐藏该入口。Linux (Beta) 及已安装系统保持原有平台条件，没有为了截图删除功能。
+- [P3] 源图的当前会话游标为实心，实际打开抽屉后终端失去输入焦点，游标为空心；关闭抽屉恢复会话焦点。
+- 截图通过真实 SSHTabPage、SSHPage、TerminalSession 和 Home 相同配置的底部导航测试壳渲染；测试使用 FakeShellBackend 和内存数据库。没有访问真实服务器，也不代表完整 Home 或 iOS/Android 设备运行验证。
+- 手机软件键盘、虚拟按键和真实 SSH 重连仍需设备验证。抽屉打开时隐藏虚拟按键并释放输入焦点，收起后恢复原有按键布局；没有改变键位配置。
 
 ## Comparison target
 
-用户选定的首页设计：
+Source visual truth：用户选择的第三张方案图。
+`C:\Users\17641\.codex\generated_images\01a0f2ee-b489-7f43-9e9d-4752ff0ab854\exec-e166c11e-cf98-4a1a-9b7b-d96bc20d4b77.png`
 
-`C:\Users\17641\.codex\generated_images\01a0f2ee-b489-7f43-9e9d-4752ff0ab854\exec-8cbc1968-2693-4319-99ee-6113a4032cb2.png`
+源图 850 × 1851；对比中仅规范到 390 × 848。实际 Flutter 截图为 390 × 848、DPR 1，未经修改。比较状态：中文、浅色、当前会话 123、连接与会话抽屉展开；192.0.2.10/20 及命令输出仅为测试夹具，不写入生产页面。
 
-实际 Flutter 渲染：
+Implementation evidence：
+- `design-qa/terminal-redesign-expanded.png`
+- `design-qa/terminal-redesign-collapsed.png`
+- `design-qa/terminal-redesign-picker.png`
+- `design-qa/terminal-redesign-large-text.png`：320 × 568，两倍字号。
+- `design-qa/terminal-redesign-landscape.png`：568 × 320，列表可滚动。
+- `design-qa/terminal-redesign-dark.png`：与真实设置一致的深色主题。
 
-- `design-qa/implementation-dashboard-data.png`：检测开关关闭。
-- `design-qa/implementation-dashboard-checks.png`：ChatGPT 可访问、Netflix 不可访问的缓存状态。
+## Combined full-view and focused evidence
 
-截图视口为 393 × 852 逻辑像素，DPR 1，简体中文、浅色主题。截图中的 123、ubuntu、43.138.167.180、腾讯网络信息及 CPU 1% / 内存 36% / 磁盘 45% 均为测试夹具，不是生产默认值或真实联调结果。
+已直接打开源图、Flutter 渲染，并查看同一输入中的左右并排全图及抽屉细节。左为选定方案，右为实现。
 
-## Full-view and focused comparison
+- 全图：`design-qa/terminal-comparison.png`
+- 细节：`design-qa/terminal-focus.png`
 
-已直接查看完整设计图及两张实际渲染图。以内容区 393 像素宽比较，排除设计图的底部设备区域。
+五项保真检查：
 
-- 保留奶油色背景、桃色圆角服务器卡片、铜色操作按钮和三列资源指标。
-- 总览保持紧凑，在线/离线计数在列表上方。
-- 服务器信息位于卡片标题下方，包含系统、连接地址和网络归属信息；较长字段截断后可在报告中查看。
-- 服务检测位于服务器信息与 CPU/内存/磁盘之间，有独立检测报告入口。
-- 实际渲染使用 Material 控件的点击区域；报告入口放在各小节标题右侧。生产/测试筛选仅在服务器具有对应标签时出现。
-- 专项检查信息标签换行、检测状态颜色、三列指标、CPU 型号和底部操作布局，未发现溢出。Windows 字体及原生控件字形与设计图有轻微差异。
+1. 字体/排版：顶部会话名和地址分层，连接状态与工具菜单右对齐；抽屉标题、区段标题、会话及服务器行保持方案层级。终端字体与字号继续读取用户设置。
+2. 间距/布局：上方直接显示命令行，下方为圆角桃色抽屉；只有当前会话使用高亮表面，新建连接是分隔行。竖屏抽屉最高 392 逻辑像素；横屏适当增加抽屉占比，大字号及长列表可滚动。
+3. 色彩/tokens：使用现有 WarmTheme 奶油画布、桃色表面、铜色图标和橄榄色连接状态；深色读取 ColorScheme。保留 Home 原有 76 像素导航栏。
+4. 图标/资产：复用 Material Icons 终端、服务器、搜索、展开/收起、关闭及更多；目标没有需要生成的位图资产，生产代码无需加载生成图。
+5. 文案/内容：会话名、地址、状态和服务器列表均读取现有模型。连接中/已连接/已断开来自实际 SSHPage 生命周期状态；新增中英文资源，其余语言使用生成器回退。
 
-## Data and interaction validation
+## Comparison history
 
-- 指标读取现有 ServerStatus；缺失观测值显示破折号，不将初始占位数据显示为 0%。
-- 国家、组织、域名、ASN、ISP 使用现有 IP 查询及缓存，保留查询授权和显示开关。
-- SSH 检测通过服务器上的固定 curl / wget / PowerShell 命令执行；Monitor 通过已存在的专用 service-reachability 接口执行。
-- 官网检测区分可访问、不可访问和暂不可用；另显示未开启、未检测和检测中。
-- 缓存结果保留既有有效期；新检测等待服务器连接完成。切换端点、凭据、关闭开关及卸载卡片后，旧请求不能更新卡片或写入缓存。
-- 检测报告显示独立结果和时间，并可进入现有设置启用检测。
-- 官网可访问性不代表 ChatGPT 账号/API 或 Netflix 地区内容解锁。
+第一轮发现抽屉里本机入口占据远程服务器行的位置、标题和分隔线间距有偏差；搜索空结果还存在固定高度内容溢出，保持 blocked。
 
-## Verification evidence
+修正：移动端优先排列远程连接，本机入口保留在后；调整页边距、选中行、头部高度、图标及区段分隔线；空结果改为可滚动文本。补充小屏横屏的抽屉高度策略。
 
-35 个测试通过：
+最终轮重新捕获相同状态，并打开 full-view、focus、大字号、横屏和深色截图。上述 P2 差异已解决，剩余差异为平台字体、原生图标、真实能力入口及焦点游标等明确约束。
 
-- `test/service_reachability_test.dart`（9）：解析以及实际生成的 Unix / Windows 检测命令的本地模拟响应。
-- `test/monitor_service_reachability_test.dart`（8）：专用接口、认证、独立状态、异常响应、429/404 和 401 token 刷新。
-- `test/warm_dashboard_data_test.dart`（12）：数据展示、初始占位、开关、连接生命周期、缓存、过期异步响应，以及 320/393 像素宽、1.0/1.3 文字比例。
-- `test/warm_mobile_shell_test.dart`、`test/ip_lookup_cache_test.dart`（合计 6）：现有首页交互及 IP 缓存回归。
+## Interaction and code validation
 
-新增开启检测后的截图断言后，12 个首页数据测试再次通过。修改的生产文件和新增/修改测试通过 Dart 静态分析，结果为 No issues found。格式与 git diff --check 已检查。
+31 项相关测试通过：
 
-Windows 原目录包含空格，第三方原生 hook 的依赖路径解析失败。测试在临时无空格目录运行同一份源代码；修改文件及 pubspec.lock 的 SHA-256 与工作区逐项一致。未修改产品代码以绕过 hook，未安装系统级 Flutter 或开启 Windows 开发者模式。
+`flutter test --no-pub --timeout 30s test/warm_terminal_test.dart test/ssh_tab_restore_test.dart test/settings_accordion_test.dart test/settings_menu_test.dart test/warm_mobile_shell_test.dart`
 
-## Remaining validation
+最后一次横屏高度与截图主题夹具调整后，终端 10 项再次通过：
 
-Android / iOS 实机显示及真实服务器联调尚未执行。本次通过范围为首页实现、模拟数据渲染和本地回归验证。
+`flutter test --no-pub --timeout 30s test/warm_terminal_test.dart`
 
-final result: passed
+终端覆盖：展开/收起保留同一个 SSHPage 与 TerminalSession、输入继续到原 shell、名称/地址搜索、空结果保留打开的会话、已结束输出显示已断开、会话切换不结束后台 shell、关闭取消与确认、保存的 tab 状态、工具菜单及历史入口、小屏/两倍字号/横屏/深色、空会话下的真实服务器列表。桌面会话恢复及前次设置与首页测试保持通过。
+
+修改范围静态分析无问题，`git diff --check` 通过。没有重新编译 IPA 或上传这次修改。
+
+前次设置页验收已保存为 `design-qa/settings-accordion-report.md`。
+
+Final result: passed

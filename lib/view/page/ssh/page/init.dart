@@ -25,13 +25,20 @@ extension _Init on SSHPageState {
 
   /// Connects a new source of shells, asking the provider what the agent
   /// allows at the moment of use rather than trusting a stored answer.
-  Future<ShellBackend> _connectBackend() => _sess.connect(
-    granted: switch (widget.args.spi) {
-      final spi? => ref.read(serverProvider(spi.id)).remoteAccess,
-      null => null,
-    },
-    context: mounted ? context : null,
-  );
+  Future<ShellBackend> _connectBackend() async {
+    try {
+      return await _sess.connect(
+        granted: switch (widget.args.spi) {
+          final spi? => ref.read(serverProvider(spi.id)).remoteAccess,
+          null => null,
+        },
+        context: mounted ? context : null,
+      );
+    } catch (_) {
+      _setConnectionStatus(TermSessionStatus.disconnected);
+      rethrow;
+    }
+  }
 
   Map<String, String>? get _sshEnvironment => _sess.environment;
 
@@ -39,7 +46,7 @@ extension _Init on SSHPageState {
 
   void _bindForegroundSession(ShellSession session) {
     _sess.bindForeground(session);
-    TermSessionManager.updateStatus(_sessionId, TermSessionStatus.connected);
+    _setConnectionStatus(TermSessionStatus.connected);
   }
 
   void _onForegroundSessionDone(ShellSession session) {
@@ -73,7 +80,11 @@ extension _Init on SSHPageState {
     try {
       session = await _sess.execute(plan.command!);
     } catch (e, st) {
-      Loggers.app.warning('Failed to replace foreground session with tmux', e, st);
+      Loggers.app.warning(
+        'Failed to replace foreground session with tmux',
+        e,
+        st,
+      );
       return false;
     }
 
@@ -162,8 +173,7 @@ extension _Init on SSHPageState {
       // It may also have finished on the way here, in which case this tab is
       // the output and nothing more — said plainly rather than left looking
       // like a shell that stopped answering.
-      TermSessionManager.updateStatus(
-        _sessionId,
+      _setConnectionStatus(
         _session != null
             ? TermSessionStatus.connected
             : TermSessionStatus.disconnected,
@@ -179,6 +189,7 @@ extension _Init on SSHPageState {
     final session = await _openForegroundSession();
 
     if (session == null) {
+      _setConnectionStatus(TermSessionStatus.disconnected);
       _writeLn(libL10n.fail);
       return;
     }
@@ -264,10 +275,7 @@ extension _Init on SSHPageState {
           _missedKeepAliveCount = 0;
           if (_reportedDisconnected) {
             _reportedDisconnected = false;
-            TermSessionManager.updateStatus(
-              _sessionId,
-              TermSessionStatus.connected,
-            );
+            _setConnectionStatus(TermSessionStatus.connected);
           }
           return;
         } on Object catch (error, stackTrace) {
@@ -315,7 +323,7 @@ extension _Init on SSHPageState {
     _reportedDisconnected = true;
     _discontinuityTimer?.cancel();
     _writeLn('\n\n${libL10n.disconnected}\r\n');
-    TermSessionManager.updateStatus(_sessionId, TermSessionStatus.disconnected);
+    _setConnectionStatus(TermSessionStatus.disconnected);
 
     // Always, not only when there is a tmux session to re-attach. Reconnecting
     // was gated on that because tmux is what makes a shell's *state* survive,
@@ -429,7 +437,10 @@ extension _Init on SSHPageState {
           onPressed: () => context.popDialog(false),
           child: Text(libL10n.cancel),
         ),
-        TextButton(onPressed: () => context.popDialog(true), child: Text(libL10n.ok)),
+        TextButton(
+          onPressed: () => context.popDialog(true),
+          child: Text(libL10n.ok),
+        ),
       ],
     );
 
@@ -450,7 +461,7 @@ extension _Init on SSHPageState {
     }
 
     _reportedDisconnected = false;
-    TermSessionManager.updateStatus(_sessionId, TermSessionStatus.connected);
+    _setConnectionStatus(TermSessionStatus.connected);
     _setupDiscontinuityTimer();
   }
 
@@ -465,7 +476,7 @@ extension _Init on SSHPageState {
     // Tear down the stale SSH session/client first.
     _sess.closeBackend();
 
-    TermSessionManager.updateStatus(_sessionId, TermSessionStatus.connecting);
+    _setConnectionStatus(TermSessionStatus.connecting);
 
     const maxAttempts = 10;
     const baseInterval = Duration(milliseconds: 200);
@@ -1022,7 +1033,7 @@ final class _TmuxClientCandidate {
 extension on SSHPageState {
   void _disconnectFromNotification() {
     // Mark as disconnected in session manager for immediate UI/notification feedback
-    TermSessionManager.updateStatus(_sessionId, TermSessionStatus.disconnected);
+    _setConnectionStatus(TermSessionStatus.disconnected);
 
     // Try to close the running SSH session, if any
     try {

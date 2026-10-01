@@ -80,6 +80,8 @@ final class SshPageArgs {
   final GlobalKey<TerminalViewState>? terminalKey;
   final FocusNode? focusNode;
   final ValueListenable<bool>? visibleListenable;
+  final ValueListenable<bool>? controlsHidden;
+  final VoidCallback? onStatusChanged;
   final String? tmuxSession;
   final int? tmuxWindow;
   final VoidCallback? onTmuxStateChanged;
@@ -101,6 +103,8 @@ final class SshPageArgs {
     this.terminalKey,
     this.focusNode,
     this.visibleListenable,
+    this.controlsHidden,
+    this.onStatusChanged,
     this.tmuxSession,
     this.tmuxWindow,
     this.onTmuxStateChanged,
@@ -168,6 +172,25 @@ class SSHPageState extends ConsumerState<SSHPage>
   /// The floating window is the only caller: it draws this session while this
   /// page stands its own view down — see [terminalShellProvider].
   TerminalSession get session => _sess;
+
+  TermSessionStatus _connectionStatus = TermSessionStatus.connecting;
+  TermSessionStatus get connectionStatus => _connectionStatus;
+
+  void _setConnectionStatus(TermSessionStatus status) {
+    if (!mounted) return;
+    _connectionStatus = status;
+    TermSessionManager.updateStatus(_sessionId, status);
+    widget.args.onStatusChanged?.call();
+  }
+
+  Widget _buildManagedBottom() {
+    final hidden = widget.args.controlsHidden;
+    if (hidden == null) return _buildBottom();
+    return ValueListenableBuilder<bool>(
+      valueListenable: hidden,
+      builder: (_, hide, _) => hide ? const SizedBox.shrink() : _buildBottom(),
+    );
+  }
 
   /// Held from `initState` rather than read where it is used, because
   /// [dispose] is one of the places that uses it and `ref` is not usable by
@@ -484,7 +507,7 @@ class SSHPageState extends ConsumerState<SSHPage>
               )
             : null,
         body: _buildBody(hasBg),
-        bottomNavigationBar: isDesktop ? null : _buildBottom(),
+        bottomNavigationBar: isDesktop ? null : _buildManagedBottom(),
       ),
     );
 
@@ -586,7 +609,14 @@ class SSHPageState extends ConsumerState<SSHPage>
     final terminalView = SizedBox(
       height: double.infinity,
       child: Padding(
-        padding: EdgeInsets.only(left: _horizonPadding, right: _horizonPadding),
+        padding:
+            widget.args.controlsHidden != null &&
+                _media.size.width < AdaptivePanes.kSplitWidth
+            ? const EdgeInsets.fromLTRB(16, 12, 16, 0)
+            : const EdgeInsets.only(
+                left: _horizonPadding,
+                right: _horizonPadding,
+              ),
         child: TerminalView(
           _terminal,
           key: _termKey,

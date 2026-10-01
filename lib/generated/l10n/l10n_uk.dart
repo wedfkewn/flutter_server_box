@@ -2422,6 +2422,15 @@ class AppLocalizationsUk extends AppLocalizations {
   String get settingsOpenCategory => 'View settings in this category';
 
   @override
+  String get settingsCategoryIntro => 'Manage your preferences by category';
+
+  @override
+  String get settingsTerminalTitle => 'Terminal settings';
+
+  @override
+  String get settingsKnownHostsTitle => 'Known host keys';
+
+  @override
   String get openSourceTitle => 'Open-source project';
 
   @override
@@ -2693,4 +2702,29 @@ class AppLocalizationsUk extends AppLocalizations {
   @override
   String get ipLookupDisclaimer =>
       'The organization shown is the registrant or operator of the IP range and may not be the server owner.';
+
+  @override
+  String get warmTerminalConnections => 'Connections & sessions';
+
+  @override
+  String get warmTerminalCurrentSessions => 'Open sessions';
+
+  @override
+  String get warmTerminalNewConnection => 'New connection';
+
+  @override
+  String get warmTerminalPickConnection =>
+      'Choose a connection to start a terminal session';
+
+  @override
+  String get warmTerminalConnected => 'Connected';
+
+  @override
+  String get warmTerminalConnecting => 'Connecting';
+
+  @override
+  String get warmTerminalDisconnected => 'Disconnected';
+
+  @override
+  String get warmTerminalNoSessions => 'No open sessions';
 }

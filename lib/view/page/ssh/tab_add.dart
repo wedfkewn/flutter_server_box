@@ -9,6 +9,8 @@ part of 'tab.dart';
 /// arrange.
 class _AddPage extends ConsumerStatefulWidget {
   const _AddPage({
+    this.compact = false,
+    this.prefix = const [],
     required this.sortVersion,
     required this.search,
     required this.onTap,
@@ -21,6 +23,8 @@ class _AddPage extends ConsumerStatefulWidget {
 
   /// Bumped when the sort changes. The order lives in the settings store, not
   /// in a provider, so nothing else would tell this page to rebuild.
+  final bool compact;
+  final List<Widget> prefix;
   final Listenable sortVersion;
 
   /// The bar's search. Read rather than listened to: [sortVersion] carries it.
@@ -90,9 +94,11 @@ class _AddPageState extends ConsumerState<_AddPage> {
 
     // Not "empty" while this device is on the list: with no servers
     // configured, a shell here is still something this page can open.
-    if (order.isEmpty &&
+    final empty =
+        order.isEmpty &&
         (needle.isNotEmpty ||
-            (!LocalShellBackend.isSupported && !Rootfs.isAvailable))) {
+            (!LocalShellBackend.isSupported && !Rootfs.isAvailable));
+    if (empty && !widget.compact) {
       return EmptyPane(
         icon: needle.isEmpty ? Icons.dns_outlined : Icons.search_off,
         label: needle.isEmpty ? null : needle,
@@ -110,15 +116,27 @@ class _AddPageState extends ConsumerState<_AddPage> {
     // for a rail — so between 600 and 800 the picker answered with two columns
     // of cards on a screen that was not getting a second column anywhere else.
     return ListView(
-      padding: context.padBottom(UIs.roundRectCardPadding),
+      padding: widget.compact
+          ? const EdgeInsets.fromLTRB(14, 0, 14, 12)
+          : context.padBottom(UIs.roundRectCardPadding),
       children: [
+        ...widget.prefix,
+        if (empty && widget.compact) ...[
+          _WarmConnectionSection(l10n.warmTerminalNewConnection),
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Text(libL10n.empty),
+          ),
+        ],
         // First, and for the same reason the file tab lists it first: it is
         // always reachable, and it needs no credential to be.
         //
         // Both this and the systems below are dropped while a search is on:
         // they are rows with fixed names, and leaving them under a query that
         // does not match them makes them read as results.
-        if (LocalShellBackend.isSupported && needle.isEmpty) ...[
+        if (!widget.compact &&
+            LocalShellBackend.isSupported &&
+            needle.isEmpty) ...[
           CenterGreyTitle(libL10n.device),
           CardTile(
             icon: Icons.smartphone,
@@ -149,15 +167,39 @@ class _AddPageState extends ConsumerState<_AddPage> {
           ),
         ],
         if (order.isNotEmpty) ...[
-          CenterGreyTitle(libL10n.servers),
+          if (widget.compact)
+            _WarmConnectionSection(l10n.warmTerminalNewConnection)
+          else
+            CenterGreyTitle(libL10n.servers),
           for (final id in order)
             if (state.servers[id] case final spi?)
-              _ServerTile(
-                key: ValueKey(id),
-                spi: spi,
-                onTap: () => widget.onTap(spi),
-                onLongPress: () => widget.onLongPress(spi),
-              ),
+              if (widget.compact)
+                _WarmConnectionRow(
+                  key: ValueKey('terminal-connect-$id'),
+                  connection: true,
+                  title: spi.name,
+                  subtitle: spi.displayAddr,
+                  onTap: () => widget.onTap(spi),
+                  onLongPress: () => widget.onLongPress(spi),
+                )
+              else
+                _ServerTile(
+                  key: ValueKey(id),
+                  spi: spi,
+                  onTap: () => widget.onTap(spi),
+                  onLongPress: () => widget.onLongPress(spi),
+                ),
+        ],
+        if (widget.compact &&
+            LocalShellBackend.isSupported &&
+            needle.isEmpty) ...[
+          _WarmConnectionSection(libL10n.device),
+          _WarmConnectionRow(
+            title: libL10n.device,
+            subtitle: LocalShellBackend.shellPath,
+            onTap: widget.onLocal,
+            connection: true,
+          ),
         ],
       ],
     );
@@ -403,7 +445,12 @@ class _ServerTile extends StatelessWidget {
     return CardX(
       child: ListTile(
         leading: distIcon(spi.id, size: 26),
-        title: Text(spi.name, style: UIs.text18, maxLines: 2, overflow: TextOverflow.ellipsis),
+        title: Text(
+          spi.name,
+          style: UIs.text18,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
         subtitle: Text(
           spi.displayAddr,
           style: UIs.text12Grey,
