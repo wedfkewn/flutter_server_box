@@ -1,72 +1,62 @@
-**Findings**
+# 首页服务器数据接入验收
 
-- No actionable P0, P1, or P2 visual mismatches remain in the implemented mobile surfaces.
-- [P3] The dashboard fixture is disconnected and therefore has fewer metadata and network-ownership badges than the connected reference server. This is an expected data-state difference; the hierarchy, wrapping, status colors, and actions remain aligned.
-- [P3] Widget captures exclude the iOS device bezel, status bar, and Home-owned bottom navigation. Production retains the fixed “控制台 / 终端 / 设置” navigation.
+日期：2026-10-01。范围：用户确认的手机首页布局，以及现有 SSH / Monitor 服务器信息和 ChatGPT / Netflix 可访问性接入。
 
-**Open Questions**
+## Findings
 
-- None. A connected server and an approved IP lookup will populate the live ISP, organization, domain, and ASN chips.
+- 当前范围没有未解决的 P0、P1 或 P2 布局或数据接入问题。
+- [P3] Windows 测试字体不能绘制国家旗帜 emoji；国家代码 CN 和其余中文、英文、图标均可读。手机端使用平台字体，仍需实机确认。
+- [P3] Widget 截图只包含 ServerPage 内容，不包含 iOS 状态栏、系统安全区域和 Home 提供的底部导航。底部导航仍由现有 Home 实现提供。
 
-**Comparison Target**
+## Comparison target
 
-- Source visual truth:
-  - Phone dashboard: `/tmp/codex-clipboard-12930719-bda7-48ed-93e6-8d8f2e84d242.png` (493 x 998 px)
-  - Chinese wide/mobile dashboard: `/home/k/下载/Screenshot_20260912-175121.png` (1600 x 2560 px)
-  - Alert: `/tmp/codex-clipboard-f16ad92f-a66e-41ee-ad46-f0b3d795b3d2.png` (1190 x 2505 px)
-  - Terminal: `/tmp/codex-clipboard-97703e9a-85eb-43b0-a585-4c4f5130782a.png` (1190 x 2505 px)
-  - Settings: `/tmp/codex-clipboard-129a44c4-ad99-4b36-afc3-8ef2cdad4b80.png` (1190 x 2505 px)
-- Rendered implementation:
-  - `design-qa/implementation-dashboard.png` (393 x 852 px)
-  - `design-qa/implementation-alert.png` (393 x 852 px)
-  - `design-qa/implementation-terminal.png` (393 x 852 px)
-  - `design-qa/implementation-settings.png` (393 x 852 px)
-- Viewport: 393 x 852 logical pixels, device pixel ratio 1 in the Flutter widget harness.
-- State: simplified Chinese, light theme, one disconnected `STD20` fixture, alert enabled at 90%, settings root, and terminal component with ANSI-colored C source.
-- Density normalization: device chrome was cropped from the references. The dashboard source content and implementation were normalized to 393 x 852 for the final side-by-side comparison. Earlier alert/settings and focused terminal normalization remain at the same 393 px content width.
+用户选定的首页设计：
 
-**Full-view Comparison Evidence**
+`C:\Users\17641\.codex\generated_images\01a0f2ee-b489-7f43-9e9d-4752ff0ab854\exec-8cbc1968-2693-4319-99ee-6113a4032cb2.png`
 
-- `design-qa/comparison-dashboard-ip-zh.png` (final dashboard pass)
-- `design-qa/comparison-alert.png`
-- `design-qa/comparison-settings.png`
+实际 Flutter 渲染：
 
-The full views confirm the warm cream canvas, peach cards, copper accents, rounded geometry, typography hierarchy, grouped settings structure, dimmed alert backdrop, and persistent action placement. The final dashboard comparison also confirms that the single blue IP-detection entry fits beside the monitoring state without introducing a second card or button.
+- `design-qa/implementation-dashboard-data.png`：检测开关关闭。
+- `design-qa/implementation-dashboard-checks.png`：ChatGPT 可访问、Netflix 不可访问的缓存状态。
 
-**Focused Region Comparison Evidence**
+截图视口为 393 × 852 逻辑像素，DPR 1，简体中文、浅色主题。截图中的 123、ubuntu、43.138.167.180、腾讯网络信息及 CPU 1% / 内存 36% / 磁盘 45% 均为测试夹具，不是生产默认值或真实联调结果。
 
-- `design-qa/comparison-terminal.png`
+## Full-view and focused comparison
 
-The terminal remains the only focused crop because its small monospace text and ANSI colors are not reliably judgeable in the full device view. Dashboard, alert, and settings labels and controls are legible in the full-view evidence.
+已直接查看完整设计图及两张实际渲染图。以内容区 393 像素宽比较，排除设计图的底部设备区域。
 
-**Required Fidelity Surfaces**
+- 保留奶油色背景、桃色圆角服务器卡片、铜色操作按钮和三列资源指标。
+- 总览保持紧凑，在线/离线计数在列表上方。
+- 服务器信息位于卡片标题下方，包含系统、连接地址和网络归属信息；较长字段截断后可在报告中查看。
+- 服务检测位于服务器信息与 CPU/内存/磁盘之间，有独立检测报告入口。
+- 实际渲染使用 Material 控件的点击区域；报告入口放在各小节标题右侧。生产/测试筛选仅在服务器具有对应标签时出现。
+- 专项检查信息标签换行、检测状态颜色、三列指标、CPU 型号和底部操作布局，未发现溢出。Windows 字体及原生控件字形与设计图有轻微差异。
 
-- Fonts and typography: iOS uses the platform font; hierarchy, weights, wrapping, truncation, and the 12 pt terminal default align with the references. The capture harness uses Noto Sans CJK to verify Chinese glyph coverage.
-- Spacing and layout rhythm: 16 px page margins, 24 px card/dialog radii, compact settings rows, balanced section gaps, and stable action rows match the reference rhythm without overflow.
-- Colors and visual tokens: warm canvas/surface/peach/copper/olive/lemon/danger tokens are applied globally and to terminal light mode; IP detection uses the reference blue accent.
-- Image quality and asset fidelity: the references contain no app-owned photographs, logos, or illustrations. Production Material icons are used consistently; device frames are excluded from implementation captures.
-- Copy and content: the warm dashboard, alert dialog, settings page, navigation, errors, privacy disclosure, and new IP lookup strings are simplified Chinese. Technical names such as ServerBox, Linux versions, ISP, and ASN stay unchanged.
+## Data and interaction validation
 
-**Comparison History**
+- 指标读取现有 ServerStatus；缺失观测值显示破折号，不将初始占位数据显示为 0%。
+- 国家、组织、域名、ASN、ISP 使用现有 IP 查询及缓存，保留查询授权和显示开关。
+- SSH 检测通过服务器上的固定 curl / wget / PowerShell 命令执行；Monitor 通过已存在的专用 service-reachability 接口执行。
+- 官网检测区分可访问、不可访问和暂不可用；另显示未开启、未检测和检测中。
+- 缓存结果保留既有有效期；新检测等待服务器连接完成。切换端点、凭据、关闭开关及卸载卡片后，旧请求不能更新卡片或写入缓存。
+- 检测报告显示独立结果和时间，并可进入现有设置启用检测。
+- 官网可访问性不代表 ChatGPT 账号/API 或 Netflix 地区内容解锁。
 
-1. The original warm-interface pass found two P2 issues: the alert dialog was too tall and settings typography/row density exceeded the reference.
-2. Padding, slider tracks, settings type sizes, row gaps, dashboard headings, and server-name sizing were tightened; the earlier comparison images record the post-fix evidence.
-3. The IP/localization pass added the single blue IP-detection entry and translated the warm surfaces. The first Chinese capture exposed a P2 issue: shared edit/delete strings still used a global English localization instance.
-4. Those labels and dialog actions now resolve from the active `BuildContext`. `design-qa/comparison-dashboard-ip-zh.png` is the post-fix visual evidence; the Chinese widget assertions pass.
+## Verification evidence
 
-**Implementation Checklist**
+35 个测试通过：
 
-- [x] Warm Material 3 theme and terminal palette
-- [x] Simplified-Chinese warm dashboard, alert dialog, settings, and navigation
-- [x] One IP-detection entry on mobile; no duplicate globe entry
-- [x] Responsive server metadata and IP-ownership badge wrapping
-- [x] Functional filters, refresh, terminal, edit, delete, and alert actions
-- [x] Functional IP consent, IPv4/IPv6 discovery, domain query, copy, and refresh
-- [x] Desktop/classic globe behavior retained
-- [x] Widget regression coverage and screenshot capture at 393 x 852
+- `test/service_reachability_test.dart`（9）：解析以及实际生成的 Unix / Windows 检测命令的本地模拟响应。
+- `test/monitor_service_reachability_test.dart`（8）：专用接口、认证、独立状态、异常响应、429/404 和 401 token 刷新。
+- `test/warm_dashboard_data_test.dart`（12）：数据展示、初始占位、开关、连接生命周期、缓存、过期异步响应，以及 320/393 像素宽、1.0/1.3 文字比例。
+- `test/warm_mobile_shell_test.dart`、`test/ip_lookup_cache_test.dart`（合计 6）：现有首页交互及 IP 缓存回归。
 
-**Follow-up Polish**
+新增开启检测后的截图断言后，12 个首页数据测试再次通过。修改的生产文件和新增/修改测试通过 Dart 静态分析，结果为 No issues found。格式与 git diff --check 已检查。
 
-- Validate native SF typography and safe-area spacing on a physical iPhone after the unsigned IPA is signed for installation.
+Windows 原目录包含空格，第三方原生 hook 的依赖路径解析失败。测试在临时无空格目录运行同一份源代码；修改文件及 pubspec.lock 的 SHA-256 与工作区逐项一致。未修改产品代码以绕过 hook，未安装系统级 Flutter 或开启 Windows 开发者模式。
+
+## Remaining validation
+
+Android / iOS 实机显示及真实服务器联调尚未执行。本次通过范围为首页实现、模拟数据渲染和本地回归验证。
 
 final result: passed

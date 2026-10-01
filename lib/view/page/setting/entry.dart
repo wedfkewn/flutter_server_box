@@ -93,6 +93,14 @@ class SettingsPage extends ConsumerStatefulWidget {
 
   static const route = AppRouteNoArg(page: SettingsPage.new, path: '/settings');
 
+  static Future<void> showServerInfo(BuildContext context) =>
+      showModalBottomSheet<void>(
+        context: context,
+        showDragHandle: true,
+        isScrollControlled: true,
+        builder: (_) => const _WarmServerInfoSheet(),
+      );
+
   @override
   ConsumerState<SettingsPage> createState() => _SettingsPageState();
 }

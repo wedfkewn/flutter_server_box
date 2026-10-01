@@ -3952,6 +3952,60 @@ abstract class AppLocalizations {
   /// **'My servers'**
   String get warmMyServers;
 
+  /// No description provided for @warmAddServer.
+  ///
+  /// In en, this message translates to:
+  /// **'Add server'**
+  String get warmAddServer;
+
+  /// No description provided for @warmServerInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Server information'**
+  String get warmServerInfo;
+
+  /// No description provided for @warmServiceChecks.
+  ///
+  /// In en, this message translates to:
+  /// **'Service checks'**
+  String get warmServiceChecks;
+
+  /// No description provided for @warmReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Report'**
+  String get warmReport;
+
+  /// No description provided for @warmDetectionReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Check report'**
+  String get warmDetectionReport;
+
+  /// No description provided for @serviceProbeDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get serviceProbeDisabled;
+
+  /// No description provided for @serviceProbePending.
+  ///
+  /// In en, this message translates to:
+  /// **'Not checked'**
+  String get serviceProbePending;
+
+  /// No description provided for @serviceProbeChecking.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking'**
+  String get serviceProbeChecking;
+
+  /// No description provided for @serviceProbeUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Unavailable'**
+  String get serviceProbeUnavailable;
+
   /// No description provided for @warmAll.
   ///
   /// In en, this message translates to:
@@ -4123,7 +4177,7 @@ abstract class AppLocalizations {
   /// No description provided for @serviceProbeTip.
   ///
   /// In en, this message translates to:
-  /// **'Show on the server card when the check succeeds'**
+  /// **'Show reachability and check status on the server card'**
   String get serviceProbeTip;
 
   /// No description provided for @serviceProbeDisclaimer.

@@ -17,9 +17,10 @@ extension _WarmDashboard on _ServerPageState {
           final filtered = _filterServers(order);
 
           return RefreshIndicator(
-            onRefresh: _refreshAll,
+            onRefresh: _refreshWarmDashboard,
             child: CustomScrollView(
               controller: _scrollController,
+              physics: const AlwaysScrollableScrollPhysics(),
               slivers: [
                 SliverPadding(
                   padding: const EdgeInsets.fromLTRB(
@@ -110,103 +111,104 @@ extension _WarmDashboard on _ServerPageState {
     );
   }
 
+  Future<void> _refreshWarmDashboard() async {
+    Stores.ipLookupCache.clear();
+    Stores.serviceReachabilityCache.clear();
+    _ipLookupRevision.value++;
+    await _refreshAll();
+  }
+
+  void _refreshWarmServer(ServerState server) {
+    Stores.ipLookupCache.forgetServer(server.spi.id);
+    Stores.serviceReachabilityCache.forgetServer(server.spi.id);
+    _ipLookupRevision.value++;
+    unawaited(ref.read(serversProvider.notifier).refresh(spi: server.spi));
+  }
+
   Widget _warmOverview({required int online, required int offline}) {
     final l10n = context.l10n;
-    return Container(
-      padding: const EdgeInsets.fromLTRB(
-        WarmTheme.cardPadding,
-        18,
-        WarmTheme.cardPadding,
-        20,
-      ),
-      decoration: BoxDecoration(
-        color: WarmTheme.surface,
-        borderRadius: BorderRadius.circular(WarmTheme.cardRadius),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.warmOverview,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w800,
-                      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.warmOverview,
+                    style: const TextStyle(
+                      fontSize: 30,
+                      fontWeight: FontWeight.w800,
                     ),
-                    Text(
-                      l10n.warmDataMonitoring,
-                      style: const TextStyle(color: WarmTheme.muted),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              IconButton.filledTonal(
-                tooltip: l10n.ipLookupTitle,
-                onPressed: () async {
-                  await Navigator.of(context).push<void>(
-                    isMobile
-                        ? WarmPageRoute<void>(
-                            builder: (_) => const IpLookupPage(),
-                            reduceMotion: MediaQuery.of(
-                              context,
-                            ).disableAnimations,
-                          )
-                        : MaterialPageRoute<void>(
-                            builder: (_) => const IpLookupPage(),
-                          ),
-                  );
-                  _ipLookupRevision.value++;
-                },
-                style: IconButton.styleFrom(
-                  backgroundColor: WarmTheme.surfaceStrong,
-                  foregroundColor: WarmTheme.copper,
-                ),
-                icon: const Icon(Icons.travel_explore),
-              ),
-              const SizedBox(width: 6),
-              _WarmPill(
-                icon: Icons.circle,
-                label: l10n.warmMonitoring,
-                color: WarmTheme.lemon,
-                foreground: WarmTheme.olive,
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Text(
-            l10n.warmServerStatus,
-            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _WarmStatusTile(
-                  icon: Icons.check_circle,
-                  value: online,
-                  label: l10n.warmOnline,
-                  color: WarmTheme.olive,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _WarmStatusTile(
-                  icon: Icons.cloud_off_outlined,
-                  value: offline,
-                  label: l10n.warmOffline,
-                  color: WarmTheme.muted,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
+            ),
+            IconButton(
+              tooltip: context.libL10n.refresh,
+              onPressed: _refreshWarmDashboard,
+              icon: const Icon(Icons.refresh),
+            ),
+            TextButton.icon(
+              onPressed: () async {
+                await Navigator.of(context).push<void>(
+                  isMobile
+                      ? WarmPageRoute<void>(
+                          builder: (_) => const IpLookupPage(),
+                          reduceMotion: MediaQuery.of(
+                            context,
+                          ).disableAnimations,
+                        )
+                      : MaterialPageRoute<void>(
+                          builder: (_) => const IpLookupPage(),
+                        ),
+                );
+                _ipLookupRevision.value++;
+              },
+              icon: const Icon(Icons.travel_explore),
+              label: Text(l10n.ipLookupTitle),
+            ),
+          ],
+        ),
+        Wrap(
+          spacing: 16,
+          runSpacing: 6,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            Text(
+              l10n.warmDataMonitoring,
+              style: const TextStyle(color: WarmTheme.muted),
+            ),
+            _WarmPill(
+              icon: Icons.circle,
+              label: l10n.warmMonitoring,
+              color: Colors.transparent,
+              foreground: WarmTheme.olive,
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Wrap(
+          spacing: 12,
+          runSpacing: 6,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            _WarmStatusCount(
+              value: online,
+              label: l10n.warmOnline,
+              color: WarmTheme.olive,
+            ),
+            const Text('/', style: TextStyle(color: WarmTheme.muted)),
+            _WarmStatusCount(
+              value: offline,
+              label: l10n.warmOffline,
+              color: WarmTheme.muted,
+            ),
+          ],
+        ),
+      ],
     );
   }
 
@@ -220,14 +222,10 @@ extension _WarmDashboard on _ServerPageState {
             style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
           ),
         ),
-        IconButton.filledTonal(
-          tooltip: context.libL10n.add,
+        FilledButton.icon(
           onPressed: _onTapAddServer,
-          style: IconButton.styleFrom(
-            backgroundColor: WarmTheme.peach,
-            foregroundColor: WarmTheme.ink,
-          ),
           icon: const Icon(Icons.add),
+          label: Text(l10n.warmAddServer),
         ),
       ],
     );
@@ -236,7 +234,7 @@ extension _WarmDashboard on _ServerPageState {
   Widget _warmFilters(List<String> tags) {
     final shown = ['', ...tags];
     return SizedBox(
-      height: 40,
+      height: math.max(40, MediaQuery.textScalerOf(context).scale(14) + 24),
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: shown.length,
@@ -246,11 +244,15 @@ extension _WarmDashboard on _ServerPageState {
           final selected = tag == _tag.value;
           return ChoiceChip(
             selected: selected,
-            showCheckmark: selected,
+            showCheckmark: false,
             label: Text(tag.isEmpty ? context.l10n.warmAll : tag),
             onSelected: (_) => _tag.value = tag,
-            selectedColor: WarmTheme.peach,
-            backgroundColor: WarmTheme.canvas,
+            labelStyle: TextStyle(
+              color: selected ? Colors.white : WarmTheme.ink,
+              fontWeight: FontWeight.w600,
+            ),
+            selectedColor: WarmTheme.copper,
+            backgroundColor: WarmTheme.surface,
           );
         },
       ),
@@ -296,15 +298,16 @@ extension _WarmDashboard on _ServerPageState {
     final l10n = context.l10n;
     final ss = srv.status;
     final connected = srv.conn == ServerConn.finished;
-    final cpu = (ss.cpu.usedPercent() ?? 0).clamp(0, 100).toDouble();
-    final memory = (ss.mem.usedPercent * 100).clamp(0, 100).toDouble();
-    final disk = (ss.diskUsage?.usedPercent ?? 0).clamp(0, 100).toDouble();
-    final tags = <String>[
-      if (ss.osId?.isNotEmpty == true) ss.osId!,
-      srv.spi.displayAddr,
-      ...?srv.spi.tags,
-    ];
-    final memoryUsed = ss.mem.total - ss.mem.avail;
+    final cpu = ss.cpu.usedPercent();
+    // InitStatus.mem is a denominator placeholder, not a collected reading.
+    final memory = ss.mem.total > 0 && !identical(ss.mem, InitStatus.mem)
+        ? ss.mem.usedPercent * 100
+        : null;
+    final disk = ss.diskUsage?.size != BigInt.zero
+        ? ss.diskUsage?.usedPercent
+        : null;
+    final memoryUsed =
+        ss.mem.total - (ss.mem.avail == 0 ? ss.mem.free : ss.mem.avail);
     final net = ss.netSpeed.cachedVals;
 
     return Material(
@@ -336,52 +339,36 @@ extension _WarmDashboard on _ServerPageState {
                       ),
                     ),
                   ),
-                  IconButton(
-                    tooltip: context.libL10n.terminal,
-                    onPressed: () => _openWarmTerminal(srv.spi),
-                    icon: const Icon(Icons.terminal, color: WarmTheme.copper),
-                  ),
-                  IconButton(
-                    tooltip: context.libL10n.refresh,
-                    onPressed: () {
-                      Stores.ipLookupCache.forgetServer(srv.spi.id);
-                      Stores.serviceReachabilityCache.forgetServer(srv.spi.id);
-                      _ipLookupRevision.value++;
-                      ref.read(serversProvider.notifier).refresh(spi: srv.spi);
-                    },
-                    icon: const Icon(
-                      Icons.monitor_heart_outlined,
-                      color: WarmTheme.copper,
+                  Tooltip(
+                    message: context.libL10n.refresh,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(18),
+                      onTap: () => _refreshWarmServer(srv),
+                      child: _WarmPill(
+                        icon: Icons.circle,
+                        label: connected ? l10n.warmOnline : l10n.warmOffline,
+                        color: connected
+                            ? const Color(0xffe6ead8)
+                            : const Color(0xfff4dddd),
+                        foreground: connected
+                            ? const Color(0xff276b31)
+                            : WarmTheme.danger,
+                      ),
                     ),
                   ),
-                  _WarmPill(
-                    icon: Icons.circle,
-                    label: connected ? l10n.warmOnline : l10n.warmOffline,
-                    color: connected
-                        ? const Color(0xffe6ead8)
-                        : const Color(0xfff4dddd),
-                    foreground: connected
-                        ? const Color(0xff276b31)
-                        : WarmTheme.danger,
+                  const SizedBox(width: 8),
+                  FilledButton.icon(
+                    onPressed: () => _openWarmTerminal(srv.spi),
+                    icon: const Icon(Icons.terminal, size: 18),
+                    label: Text(context.libL10n.terminal),
                   ),
                 ],
               ),
-              if (tags.isNotEmpty) ...[
-                const SizedBox(height: 14),
-                Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
-                  children: [
-                    for (final label in tags.take(6))
-                      _WarmOutlineChip(label: label),
-                  ],
-                ),
-              ],
+              const SizedBox(height: 12),
               _WarmNetworkBadges(
                 key: ValueKey('${srv.spi.id}:${_ipLookupRevision.value}'),
                 server: srv,
               ),
-              const SizedBox(height: 18),
               Row(
                 children: [
                   Expanded(
@@ -414,7 +401,9 @@ extension _WarmDashboard on _ServerPageState {
                 children: [
                   Expanded(
                     child: Text(
-                      l10n.warmCoreCount(ss.cpu.coresCount),
+                      ss.cpu.coresCount > 0
+                          ? l10n.warmCoreCount(ss.cpu.coresCount)
+                          : '—',
                       style: const TextStyle(
                         fontSize: 10,
                         color: WarmTheme.muted,
@@ -423,7 +412,9 @@ extension _WarmDashboard on _ServerPageState {
                   ),
                   Expanded(
                     child: Text(
-                      '${_warmGb(memoryUsed)}/${_warmGb(ss.mem.total)} GB',
+                      memory == null
+                          ? '—'
+                          : '${_warmGb(memoryUsed)}/${_warmGb(ss.mem.total)} GB',
                       style: const TextStyle(
                         fontSize: 10,
                         color: WarmTheme.muted,
@@ -441,36 +432,46 @@ extension _WarmDashboard on _ServerPageState {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 10,
-                ),
-                decoration: BoxDecoration(
-                  color: WarmTheme.surfaceStrong,
-                  borderRadius: BorderRadius.circular(WarmTheme.controlRadius),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.memory, size: 16, color: WarmTheme.muted),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        ss.cpu.brand.keys.firstOrNull ?? srv.spi.displayAddr,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 11,
-                          color: WarmTheme.muted,
+              if (ss.cpu.brand.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: WarmTheme.surfaceStrong,
+                    borderRadius: BorderRadius.circular(
+                      WarmTheme.controlRadius,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.memory,
+                        size: 16,
+                        color: WarmTheme.muted,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          ss.cpu.brand.keys.first,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: WarmTheme.muted,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
+              ],
               const SizedBox(height: 14),
+              const Divider(height: 1),
+              const SizedBox(height: 12),
               Row(
                 children: [
                   Expanded(
@@ -495,35 +496,39 @@ extension _WarmDashboard on _ServerPageState {
               const SizedBox(height: 16),
               const Divider(height: 1),
               const SizedBox(height: 10),
-              Row(
-                children: [
-                  _WarmAction(
-                    icon: Icons.notifications,
-                    label: l10n.warmAlert,
-                    background: WarmTheme.lemon,
-                    foreground: WarmTheme.olive,
-                    onTap: () => _showWarmAlert(srv),
-                  ),
-                  const Spacer(),
-                  _WarmAction(
-                    icon: Icons.edit,
-                    label: context.libL10n.edit,
-                    background: WarmTheme.peach,
-                    foreground: WarmTheme.ink,
-                    onTap: () => ServerEditPage.route.go(
-                      context,
-                      args: SpiRequiredArgs(srv.spi),
+              SizedBox(
+                width: double.infinity,
+                child: Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    _WarmAction(
+                      icon: Icons.notifications,
+                      label: l10n.warmAlert,
+                      background: Colors.transparent,
+                      foreground: WarmTheme.olive,
+                      onTap: () => _showWarmAlert(srv),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  _WarmAction(
-                    icon: Icons.delete,
-                    label: context.libL10n.delete,
-                    background: const Color(0xfff7dfe1),
-                    foreground: WarmTheme.danger,
-                    onTap: () => _deleteWarmServer(srv),
-                  ),
-                ],
+                    _WarmAction(
+                      icon: Icons.edit,
+                      label: context.libL10n.edit,
+                      background: Colors.transparent,
+                      foreground: WarmTheme.ink,
+                      onTap: () => ServerEditPage.route.go(
+                        context,
+                        args: SpiRequiredArgs(srv.spi),
+                      ),
+                    ),
+                    _WarmAction(
+                      icon: Icons.delete,
+                      label: context.libL10n.delete,
+                      background: Colors.transparent,
+                      foreground: WarmTheme.danger,
+                      onTap: () => _deleteWarmServer(srv),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -702,7 +707,7 @@ extension _WarmDashboard on _ServerPageState {
   String _warmGb(int kib) => (kib / 1024 / 1024).toStringAsFixed(1);
 
   String _warmDisk(DiskUsage? usage) {
-    if (usage == null || usage.size == BigInt.zero) return '--';
+    if (usage == null || usage.size == BigInt.zero) return '—';
     final used = usage.used.toDouble() / 1024 / 1024;
     final total = usage.size.toDouble() / 1024 / 1024;
     return '${used.toStringAsFixed(0)}/${total.toStringAsFixed(0)} GB';
@@ -721,13 +726,33 @@ class _WarmNetworkBadges extends ConsumerStatefulWidget {
 class _WarmNetworkBadgesState extends ConsumerState<_WarmNetworkBadges> {
   IpLookupResult? _result;
   final Map<ServiceKind, ServiceReachabilityResult> _services = {};
+  Set<ServiceKind> _observedServices = {};
   bool _serviceLoading = false;
+  int _lookupGeneration = 0;
+  int _probeGeneration = 0;
+  late String _target;
+  String? _publicIp;
+  DateTime? _lastProbeAttempt;
   late final List<Listenable> _settingListenables;
+
+  static const _serviceNames = {
+    ServiceKind.chatGpt: 'ChatGPT',
+    ServiceKind.netflix: 'Netflix',
+    ServiceKind.gemini: 'Gemini',
+  };
+
+  String get _currentTarget => widget.server.spi.displayAddr;
+
+  String? get _currentPublicIp =>
+      SelfAddr.pick(widget.server.status.ips)?.address;
 
   @override
   void initState() {
     super.initState();
+    _target = _currentTarget;
+    _publicIp = _currentPublicIp;
     _settingListenables = [
+      Stores.setting.ipLookupConsent.listenable(),
       Stores.setting.showServerNetworkInfo.listenable(),
       Stores.setting.probeChatGpt.listenable(),
       Stores.setting.probeNetflix.listenable(),
@@ -736,11 +761,47 @@ class _WarmNetworkBadgesState extends ConsumerState<_WarmNetworkBadges> {
     for (final listenable in _settingListenables) {
       listenable.addListener(_settingsChanged);
     }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     _settingsChanged();
   }
 
   @override
+  void didUpdateWidget(covariant _WarmNetworkBadges oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final targetChanged =
+        _target != _currentTarget ||
+        widget.server.spi.shouldReconnect(oldWidget.server.spi);
+    final ipChanged = _publicIp != _currentPublicIp;
+    if (targetChanged) {
+      _target = _currentTarget;
+      _probeGeneration++;
+      _serviceLoading = false;
+      _lastProbeAttempt = null;
+      _services.clear();
+      Stores.serviceReachabilityCache.forgetServer(widget.server.spi.id);
+    }
+    if (targetChanged || ipChanged) {
+      _publicIp = _currentPublicIp;
+      _lookupGeneration++;
+      _result = null;
+      if (Stores.setting.showServerNetworkInfo.fetch() &&
+          Stores.setting.ipLookupConsent.fetch()) {
+        unawaited(_load());
+      }
+    }
+    if (targetChanged || widget.server.conn == ServerConn.finished) {
+      unawaited(_loadServices(_enabledServices()));
+    }
+  }
+
+  @override
   void dispose() {
+    _lookupGeneration++;
+    _probeGeneration++;
     for (final listenable in _settingListenables) {
       listenable.removeListener(_settingsChanged);
     }
@@ -754,21 +815,30 @@ class _WarmNetworkBadgesState extends ConsumerState<_WarmNetworkBadges> {
   };
 
   void _settingsChanged() {
-    if (!Stores.setting.showServerNetworkInfo.fetch()) {
+    _lookupGeneration++;
+    if (!Stores.setting.showServerNetworkInfo.fetch() ||
+        !Stores.setting.ipLookupConsent.fetch()) {
       _result = null;
     } else if (Stores.setting.ipLookupConsent.fetch()) {
       unawaited(_load());
     }
     final enabled = _enabledServices();
+    if (enabled.length != _observedServices.length ||
+        !enabled.containsAll(_observedServices)) {
+      _observedServices = enabled;
+      _probeGeneration++;
+      _serviceLoading = false;
+    }
     _services.removeWhere((key, _) => !enabled.contains(key));
     if (enabled.isNotEmpty) unawaited(_loadServices(enabled));
     if (mounted) setState(() {});
   }
 
   Future<void> _loadServices(Set<ServiceKind> enabled) async {
-    if (_serviceLoading) return;
+    if (_serviceLoading || enabled.isEmpty) return;
     final server = widget.server;
-    final target = server.spi.displayAddr;
+    final target = _target;
+    final generation = _probeGeneration;
     final missing = <ServiceKind>{};
     for (final service in enabled) {
       final cached = Stores.serviceReachabilityCache.fresh(
@@ -783,14 +853,25 @@ class _WarmNetworkBadgesState extends ConsumerState<_WarmNetworkBadges> {
       }
     }
     if (mounted) setState(() {});
-    if (missing.isEmpty) return;
+    // An optional badge must not reconnect a server the user disconnected.
+    // Cached readings can still be shown, but new probes wait for monitoring.
+    if (missing.isEmpty || server.conn != ServerConn.finished) return;
+    final now = DateTime.now();
+    if (_lastProbeAttempt != null &&
+        now.difference(_lastProbeAttempt!) < const Duration(minutes: 1)) {
+      return;
+    }
+    _lastProbeAttempt = now;
     _serviceLoading = true;
+    if (mounted) setState(() {});
     try {
       final results = await ref
           .read(serverProvider(server.spi.id).notifier)
           .probeServices(missing);
+      if (!mounted || generation != _probeGeneration) return;
       final now = DateTime.now();
       for (final service in missing) {
+        if (!_enabledServices().contains(service)) continue;
         final result =
             results[service] ??
             ServiceReachabilityResult(
@@ -799,29 +880,31 @@ class _WarmNetworkBadgesState extends ConsumerState<_WarmNetworkBadges> {
               checkedAt: now,
             );
         Stores.serviceReachabilityCache.put(server.spi.id, target, result);
-        if (_enabledServices().contains(service)) _services[service] = result;
+        _services[service] = result;
       }
     } catch (_) {
+      if (!mounted || generation != _probeGeneration) return;
       final now = DateTime.now();
       for (final service in missing) {
-        Stores.serviceReachabilityCache.put(
-          server.spi.id,
-          target,
-          ServiceReachabilityResult(
+        if (_enabledServices().contains(service)) {
+          _services[service] = ServiceReachabilityResult(
             service: service,
             state: ServiceReachabilityState.unknown,
             checkedAt: now,
-          ),
-        );
+          );
+        }
       }
     } finally {
-      _serviceLoading = false;
-      if (mounted) setState(() {});
+      if (mounted && generation == _probeGeneration) {
+        setState(() => _serviceLoading = false);
+      }
     }
   }
 
   Future<void> _load() async {
+    final generation = ++_lookupGeneration;
     final server = widget.server;
+    final languageCode = Localizations.localeOf(context).languageCode;
     InternetAddress? address = SelfAddr.pick(server.status.ips);
     if (address == null) {
       final host = IpGeo.geoHostOf(server.spi);
@@ -832,22 +915,23 @@ class _WarmNetworkBadgesState extends ConsumerState<_WarmNetworkBadges> {
         return;
       }
     }
-    if (address == null) return;
+    if (address == null || !mounted || generation != _lookupGeneration) return;
 
     Stores.ipLookupCache.forgetServerExcept(server.spi.id, address.address);
     final cached = Stores.ipLookupCache.fresh(server.spi.id, address.address);
     if (cached != null) {
-      if (mounted) setState(() => _result = cached);
+      setState(() => _result = cached);
       return;
     }
 
     try {
       final result = await IpLookupService().lookup(
         address,
-        languageCode: Localizations.localeOf(context).languageCode,
+        languageCode: languageCode,
       );
+      if (!mounted || generation != _lookupGeneration) return;
       Stores.ipLookupCache.putResult(server.spi.id, result);
-      if (mounted) setState(() => _result = result);
+      setState(() => _result = result);
     } on IpLookupFailure {
       // Enrichment is optional. A failed third-party lookup must never make
       // the server card or its primary monitoring data look failed.
@@ -856,8 +940,14 @@ class _WarmNetworkBadgesState extends ConsumerState<_WarmNetworkBadges> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final result = _result;
-    final labels = <(String, String)>[];
+    final labels = <String>[
+      if (widget.server.status.osId?.isNotEmpty == true)
+        widget.server.status.osId!,
+      widget.server.spi.displayAddr,
+      ...?widget.server.spi.tags,
+    ];
     if (Stores.setting.showServerNetworkInfo.fetch() && result != null) {
       final country = [
         result.flagEmoji,
@@ -870,48 +960,99 @@ class _WarmNetworkBadgesState extends ConsumerState<_WarmNetworkBadges> {
         result.asnLabel,
         if (result.isp != result.organization) result.isp,
       ].whereType<String>().where((value) => value.trim().isNotEmpty);
-      labels.addAll(network.map((value) => (value, value)));
+      labels.addAll(network);
     }
-    const names = {
-      ServiceKind.chatGpt: 'ChatGPT',
-      ServiceKind.netflix: 'Netflix',
-      ServiceKind.gemini: 'Gemini',
-    };
     final enabled = _enabledServices();
-    for (final service in ServiceKind.values) {
-      if (enabled.contains(service) && _services[service]?.reachable == true) {
-        labels.add((names[service]!, context.l10n.serviceProbeDisclaimer));
-      }
-    }
-    if (labels.isEmpty) return const SizedBox.shrink();
-    return Padding(
-      padding: const EdgeInsets.only(top: 6),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(14),
-        onTap: () => _showReport(result),
-        child: Wrap(
+    // Keep the two requested checks discoverable before they are enabled.
+    // Their switches still control whether any outbound request is made.
+    final shown = {ServiceKind.chatGpt, ServiceKind.netflix, ...enabled};
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _WarmSectionTitle(
+          title: l10n.warmServerInfo,
+          reportLabel: l10n.warmReport,
+          onReport: () => _showReport(result),
+        ),
+        Wrap(
           spacing: 6,
           runSpacing: 6,
           children: [
-            for (final label in labels)
+            for (final label in labels.toSet())
               Tooltip(
-                message: label.$2,
-                child: _WarmOutlineChip(label: label.$1),
+                message: label,
+                child: _WarmOutlineChip(label: label),
               ),
           ],
         ),
-      ),
+        const Divider(height: 24),
+        _WarmSectionTitle(
+          title: l10n.warmServiceChecks,
+          reportLabel: l10n.warmDetectionReport,
+          onReport: () => _showReport(result),
+        ),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final service in shown)
+              InkWell(
+                borderRadius: BorderRadius.circular(18),
+                onTap: () => _showReport(result),
+                child: _WarmPill(
+                  icon: _serviceIcon(service),
+                  iconSize: 14,
+                  label:
+                      '${_serviceNames[service]} · ${_serviceStateText(service)}',
+                  color: _services[service]?.reachable == true
+                      ? const Color(0xffe6ead8)
+                      : const Color(0xfff0e5dd),
+                  foreground: _serviceColor(service),
+                ),
+              ),
+          ],
+        ),
+        const Divider(height: 24),
+      ],
     );
+  }
+
+  IconData _serviceIcon(ServiceKind service) {
+    if (!_enabledServices().contains(service)) {
+      return Icons.radio_button_unchecked;
+    }
+    return switch (_services[service]?.state) {
+      ServiceReachabilityState.reachable => Icons.check_circle_outline,
+      ServiceReachabilityState.unreachable => Icons.cancel_outlined,
+      ServiceReachabilityState.unknown || null => Icons.radio_button_unchecked,
+    };
+  }
+
+  Color _serviceColor(ServiceKind service) {
+    if (!_enabledServices().contains(service)) return WarmTheme.muted;
+    return switch (_services[service]?.state) {
+      ServiceReachabilityState.reachable => const Color(0xff276b31),
+      ServiceReachabilityState.unreachable => WarmTheme.danger,
+      ServiceReachabilityState.unknown || null => WarmTheme.muted,
+    };
   }
 
   Future<void> _showReport(IpLookupResult? result) async {
     final l10n = context.l10n;
-    final services = {
-      ServiceKind.chatGpt: 'ChatGPT',
-      ServiceKind.netflix: 'Netflix',
-      ServiceKind.gemini: 'Gemini',
+    final shown = {
+      ServiceKind.chatGpt,
+      ServiceKind.netflix,
+      ..._enabledServices(),
     };
     final rows = <(String, String)>[
+      (context.libL10n.name, widget.server.spi.name),
+      (context.libL10n.host, widget.server.spi.displayAddr),
+      (
+        l10n.warmSystem,
+        widget.server.status.more[StatusCmdType.sys] ??
+            widget.server.status.osId ??
+            '',
+      ),
       if (result != null) ...[
         (result.type, result.ip),
         (
@@ -924,7 +1065,7 @@ class _WarmNetworkBadgesState extends ConsumerState<_WarmNetworkBadges> {
         (l10n.ipLookupDomain, result.networkDomain ?? ''),
       ],
     ].where((row) => row.$2.trim().isNotEmpty).toList(growable: false);
-    await showModalBottomSheet<void>(
+    final openSettings = await showModalBottomSheet<bool>(
       context: context,
       showDragHandle: true,
       builder: (context) => SafeArea(
@@ -971,85 +1112,125 @@ class _WarmNetworkBadgesState extends ConsumerState<_WarmNetworkBadges> {
               style: const TextStyle(fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 6),
-            for (final entry in services.entries)
-              if (_enabledServices().contains(entry.key))
-                ListTile(
-                  dense: true,
-                  contentPadding: EdgeInsets.zero,
-                  leading: Icon(
-                    _services[entry.key]?.reachable == true
-                        ? Icons.check_circle_outline
-                        : Icons.info_outline,
-                    color: _services[entry.key]?.reachable == true
-                        ? Colors.green
-                        : WarmTheme.muted,
-                  ),
-                  title: Text(entry.value),
-                  subtitle: Text(_serviceStateText(_services[entry.key])),
+            for (final service in shown)
+              ListTile(
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                leading: Icon(
+                  _serviceIcon(service),
+                  color: _serviceColor(service),
                 ),
+                title: Text(_serviceNames[service]!),
+                subtitle: Text(
+                  [
+                    _serviceStateText(service),
+                    if (_services[service] != null)
+                      _services[service]!.checkedAt
+                          .toLocal()
+                          .toString()
+                          .split('.')
+                          .first,
+                  ].join(' · '),
+                ),
+              ),
             Text(
               l10n.serviceProbeDisclaimer,
               style: const TextStyle(color: WarmTheme.muted, fontSize: 12),
+            ),
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              onPressed: () => Navigator.pop(context, true),
+              icon: const Icon(Icons.tune),
+              label: Text(l10n.warmCardBadges),
             ),
           ],
         ),
       ),
     );
+    if (openSettings == true && mounted) {
+      await SettingsPage.showServerInfo(context);
+    }
   }
 
-  String _serviceStateText(ServiceReachabilityResult? result) {
-    return switch (result?.state) {
+  String _serviceStateText(ServiceKind service) {
+    if (!_enabledServices().contains(service)) {
+      return context.l10n.serviceProbeDisabled;
+    }
+    final result = _services[service];
+    if (result == null) {
+      return _serviceLoading
+          ? context.l10n.serviceProbeChecking
+          : context.l10n.serviceProbePending;
+    }
+    return switch (result.state) {
       ServiceReachabilityState.reachable => context.l10n.networkCheckReachable,
       ServiceReachabilityState.unreachable =>
         context.l10n.networkCheckUnreachable,
-      ServiceReachabilityState.unknown ||
-      null => context.l10n.networkCheckUnknown,
+      ServiceReachabilityState.unknown => context.l10n.serviceProbeUnavailable,
     };
   }
 }
 
-class _WarmStatusTile extends StatelessWidget {
-  const _WarmStatusTile({
-    required this.icon,
+class _WarmSectionTitle extends StatelessWidget {
+  const _WarmSectionTitle({
+    required this.title,
+    required this.reportLabel,
+    required this.onReport,
+  });
+
+  final String title;
+  final String reportLabel;
+  final VoidCallback onReport;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    children: [
+      Expanded(
+        child: Text(
+          title,
+          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+        ),
+      ),
+      TextButton(
+        onPressed: onReport,
+        style: TextButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          visualDensity: VisualDensity.compact,
+        ),
+        child: Text('$reportLabel ›', style: const TextStyle(fontSize: 11)),
+      ),
+    ],
+  );
+}
+
+class _WarmStatusCount extends StatelessWidget {
+  const _WarmStatusCount({
     required this.value,
     required this.label,
     required this.color,
   });
-  final IconData icon;
   final int value;
   final String label;
   final Color color;
 
   @override
-  Widget build(BuildContext context) => Container(
-    height: 96,
-    decoration: BoxDecoration(
-      color: const Color(0xfff6e6da),
-      borderRadius: BorderRadius.circular(20),
-    ),
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(icon, color: color, size: 22),
-        const SizedBox(height: 5),
-        Text(
-          '$value',
-          style: TextStyle(
-            color: color,
-            fontSize: 25,
-            fontWeight: FontWeight.w800,
-          ),
+  Widget build(BuildContext context) => Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Text(
+        label,
+        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+      ),
+      const SizedBox(width: 8),
+      Text(
+        '$value',
+        style: TextStyle(
+          color: color,
+          fontSize: 23,
+          fontWeight: FontWeight.w800,
         ),
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 11,
-            height: 1.15,
-            color: WarmTheme.muted,
-          ),
-        ),
-      ],
-    ),
+      ),
+    ],
   );
 }
 
@@ -1059,11 +1240,13 @@ class _WarmPill extends StatelessWidget {
     required this.label,
     required this.color,
     required this.foreground,
+    this.iconSize = 9,
   });
   final IconData icon;
   final String label;
   final Color color;
   final Color foreground;
+  final double iconSize;
 
   @override
   Widget build(BuildContext context) => Container(
@@ -1075,14 +1258,18 @@ class _WarmPill extends StatelessWidget {
     child: Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 9, color: foreground),
+        Icon(icon, size: iconSize, color: foreground),
         const SizedBox(width: 7),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.w700,
-            color: foreground,
+        Flexible(
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              color: foreground,
+            ),
           ),
         ),
       ],
@@ -1123,43 +1310,49 @@ class _WarmMetric extends StatelessWidget {
     required this.color,
   });
   final String label;
-  final double value;
+  final double? value;
   final Color color;
 
   @override
-  Widget build(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Row(
-        children: [
-          Expanded(
-            child: Text(
-              label,
-              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700),
+  Widget build(BuildContext context) {
+    final reading = value?.isFinite == true ? value!.clamp(0, 100) : null;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ),
-          ),
-          Text(
-            '${value.round()}%',
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              color: color,
+            Text(
+              reading == null ? '—' : '${reading.round()}%',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: color,
+              ),
             ),
-          ),
-        ],
-      ),
-      const SizedBox(height: 6),
-      ClipRRect(
-        borderRadius: BorderRadius.circular(6),
-        child: LinearProgressIndicator(
-          minHeight: 6,
-          value: value / 100,
-          backgroundColor: const Color(0xffefded1),
-          valueColor: AlwaysStoppedAnimation(color),
+          ],
         ),
-      ),
-    ],
-  );
+        const SizedBox(height: 6),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(6),
+          child: LinearProgressIndicator(
+            minHeight: 6,
+            value: (reading ?? 0) / 100,
+            backgroundColor: const Color(0xffefded1),
+            valueColor: AlwaysStoppedAnimation(color),
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 class _WarmTransfer extends StatelessWidget {
@@ -1175,46 +1368,37 @@ class _WarmTransfer extends StatelessWidget {
   final String total;
 
   @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
-    decoration: BoxDecoration(
-      color: const Color(0xfff3e3d6),
-      border: Border.all(color: const Color(0xffc9aa92)),
-      borderRadius: BorderRadius.circular(18),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Icon(icon, size: 16, color: WarmTheme.copper),
-            const SizedBox(width: 6),
-            Expanded(
-              child: Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Row(
+        children: [
+          Icon(icon, size: 16, color: WarmTheme.copper),
+          const SizedBox(width: 6),
+          Text(
+            title,
+            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              speed == '--' ? '—' : speed,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
             ),
-            Text(
-              total,
-              style: const TextStyle(fontSize: 9, color: WarmTheme.muted),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Text(
-          speed,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w800,
-            color: WarmTheme.copper,
+          ),
+        ],
+      ),
+      if (total != '--')
+        Padding(
+          padding: const EdgeInsets.only(left: 22, top: 4),
+          child: Text(
+            total,
+            style: const TextStyle(fontSize: 9, color: WarmTheme.muted),
           ),
         ),
-      ],
-    ),
+    ],
   );
 }
 

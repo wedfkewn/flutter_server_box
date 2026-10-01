@@ -299,11 +299,23 @@ class MonitorHttpClient {
         '/api/v1/service-reachability',
         post: {'services': services.map((e) => e.name).toList()},
       );
+      final rawCheckedAt = raw['checked_at'];
+      if (rawCheckedAt != null && rawCheckedAt is! String) {
+        throw const MonitorHttpErr(
+          type: MonitorHttpErrType.invalidResponse,
+          message:
+              'Invalid checked_at in /api/v1/service-reachability response',
+        );
+      }
       final checkedAt =
-          DateTime.tryParse(raw['checked_at'] as String? ?? '') ??
-          DateTime.now();
+          DateTime.tryParse(rawCheckedAt as String? ?? '') ?? DateTime.now();
       final states = raw['results'];
-      if (states is! Map) return const {};
+      if (states is! Map) {
+        throw const MonitorHttpErr(
+          type: MonitorHttpErrType.invalidResponse,
+          message: 'Invalid results in /api/v1/service-reachability response',
+        );
+      }
       return {
         for (final service in services)
           service: ServiceReachabilityResult(

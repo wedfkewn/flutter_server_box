@@ -2085,6 +2085,33 @@ class AppLocalizationsZh extends AppLocalizations {
   String get warmMyServers => '我的服务器';
 
   @override
+  String get warmAddServer => '添加服务器';
+
+  @override
+  String get warmServerInfo => '服务器信息';
+
+  @override
+  String get warmServiceChecks => '服务检测';
+
+  @override
+  String get warmReport => '报告';
+
+  @override
+  String get warmDetectionReport => '检测报告';
+
+  @override
+  String get serviceProbeDisabled => '未开启';
+
+  @override
+  String get serviceProbePending => '未检测';
+
+  @override
+  String get serviceProbeChecking => '检测中';
+
+  @override
+  String get serviceProbeUnavailable => '暂不可用';
+
+  @override
   String get warmAll => '全部';
 
   @override
@@ -2174,7 +2201,7 @@ class AppLocalizationsZh extends AppLocalizations {
       '开启后，目标服务器会直接访问 ChatGPT、Netflix 或 Gemini 官网以检查网络可访问性。不会发送账号、Cookie 或 SSH 密钥。';
 
   @override
-  String get serviceProbeTip => '检测成功时在服务器卡片显示';
+  String get serviceProbeTip => '在服务器卡片显示可访问性和检测状态';
 
   @override
   String get serviceProbeDisclaimer => '仅表示官网可访问，不代表账号、API 或地区内容权限。';

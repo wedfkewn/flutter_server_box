@@ -2281,6 +2281,33 @@ class AppLocalizationsIt extends AppLocalizations {
   String get warmMyServers => 'My servers';
 
   @override
+  String get warmAddServer => 'Add server';
+
+  @override
+  String get warmServerInfo => 'Server information';
+
+  @override
+  String get warmServiceChecks => 'Service checks';
+
+  @override
+  String get warmReport => 'Report';
+
+  @override
+  String get warmDetectionReport => 'Check report';
+
+  @override
+  String get serviceProbeDisabled => 'Off';
+
+  @override
+  String get serviceProbePending => 'Not checked';
+
+  @override
+  String get serviceProbeChecking => 'Checking';
+
+  @override
+  String get serviceProbeUnavailable => 'Unavailable';
+
+  @override
   String get warmAll => 'All';
 
   @override
@@ -2375,7 +2402,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get serviceProbeTip =>
-      'Show on the server card when the check succeeds';
+      'Show reachability and check status on the server card';
 
   @override
   String get serviceProbeDisclaimer =>

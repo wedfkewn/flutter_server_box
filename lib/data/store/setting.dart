@@ -135,7 +135,8 @@ class SettingStore extends SqliteStore {
     false,
   );
 
-  /// Optional server-card enrichments. Off means both hidden and no request.
+  /// Optional server-card enrichments. Off means no lookup or probe request.
+  /// The dashboard can still offer a disabled slot that opens these settings.
   late final showServerNetworkInfo = propertyDefault(
     'showServerNetworkInfo',
     false,
