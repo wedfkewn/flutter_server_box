@@ -33,7 +33,9 @@ import 'package:server_box/view/widget/edge_fade_scroll.dart';
 import 'package:server_box/view/widget/server_power.dart';
 
 class ServerFuncBtns extends StatelessWidget {
-  const ServerFuncBtns({super.key, required this.spi, this.granted});
+  const ServerFuncBtns({super.key, required this.spi, this.granted, this.menu = false});
+
+  final bool menu;
 
   final Spi spi;
 
@@ -45,6 +47,41 @@ class ServerFuncBtns extends StatelessWidget {
   Widget build(BuildContext context) {
     final btns = btnsWith(granted);
     if (btns.isEmpty) return UIs.placeholder;
+
+    if (menu) {
+      return Consumer(builder: (context, ref, _) => Wrap(
+      spacing: 8,
+      runSpacing: 6,
+      children: [
+        if (btns.contains(ServerFuncBtn.terminal)) OutlinedButton.icon(
+          onPressed: () => _onTapMoreBtns(ServerFuncBtn.terminal, context, ref),
+          icon: const Icon(Icons.terminal, size: 18),
+          label: Text(libL10n.terminal),
+        ),
+        PopupMenuButton<ServerFuncBtn>(
+          tooltip: l10n.warmTools,
+          onSelected: (value) => _onTapMoreBtns(value, context, ref),
+          itemBuilder: (_) => [
+            for (final btn in btns) PopupMenuItem(value: btn, child: Row(children: [
+              Icon(btn.icon, size: 20), const SizedBox(width: 12), Text(btn.toStr),
+            ])),
+          ],
+          child: Container(
+            constraints: const BoxConstraints(minHeight: 44),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              border: Border.all(color: Theme.of(context).colorScheme.outline),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(mainAxisSize: MainAxisSize.min, children: [
+              const Icon(Icons.apps, size: 18), const SizedBox(width: 6),
+              Text(l10n.warmTools), const Icon(Icons.expand_more, size: 18),
+            ]),
+          ),
+        ),
+      ],
+      ));
+    }
 
     final items = [
       for (final value in btns)

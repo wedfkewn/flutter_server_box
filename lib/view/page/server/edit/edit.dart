@@ -34,10 +34,12 @@ import 'package:server_box/data/store/entity_store.dart';
 import 'package:server_box/view/page/bmc_credential/edit.dart';
 import 'package:server_box/view/page/private_key/edit.dart';
 import 'package:server_box/view/page/server/custom_cmds.dart';
+import 'package:server_box/view/widget/server_group.dart';
 import 'package:server_box/view/widget/ssh_discovery/dialog.dart';
 
 part 'actions.dart';
 part 'widget.dart';
+part 'warm_editor.dart';
 
 class ServerEditPage extends ConsumerStatefulWidget {
   final SpiRequiredArgs? args;
@@ -58,6 +60,7 @@ class _ServerEditPageState extends ConsumerState<ServerEditPage>
   late final spi = widget.args?.spi;
   late final String _serverId;
   final _nameController = TextEditingController();
+  final _warmPasswordShown = ValueNotifier(false);
   final _ipController = TextEditingController();
   final _altUrlController = TextEditingController();
   final _proxyCommandCtrl = TextEditingController();
@@ -183,6 +186,7 @@ class _ServerEditPageState extends ConsumerState<ServerEditPage>
 
   @override
   void dispose() {
+    _warmPasswordShown.dispose();
     _nameController.dispose();
     _ipController.dispose();
     _altUrlController.dispose();
@@ -254,6 +258,8 @@ class _ServerEditPageState extends ConsumerState<ServerEditPage>
       _buildWriteScriptTip(),
       if (spi != null) _buildDelBtn(),
     ];
+
+    if (MediaQuery.sizeOf(context).width < 700) return _buildWarmEditor(actions);
 
     return Scaffold(
       appBar: CustomAppBar(title: Text(libL10n.edit), actions: actions),

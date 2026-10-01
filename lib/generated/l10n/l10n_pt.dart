@@ -2721,4 +2721,65 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get warmTerminalNoSessions => 'No open sessions';
+
+  @override
+  String get warmBasicInfo => 'Basic information';
+
+  @override
+  String get warmAuthentication => 'Authentication';
+
+  @override
+  String get warmAdvancedOptions => 'Advanced options';
+
+  @override
+  String get warmTools => 'Tools';
+
+  @override
+  String get warmCpuUsage => 'CPU usage';
+
+  @override
+  String get warmMemoryUsage => 'Memory usage';
+
+  @override
+  String get warmSshHint => 'Connect to the server using SSH';
+
+  @override
+  String get warmMonitorHint => 'Monitor the server using HTTP';
+
+  @override
+  String get warmNoPortRules => 'No port forwarding configured';
+
+  @override
+  String get warmPortRulesTip =>
+      'Forward a local port to the server, or expose a remote port locally to access network services.';
+
+  @override
+  String get warmAddRule => 'Add rule';
+
+  @override
+  String get warmForwardTypes => 'Supported forwarding types';
+
+  @override
+  String get warmLocalForwardTip =>
+      'Forward a local port to a destination reached through the server.';
+
+  @override
+  String get warmRemoteForwardTip =>
+      'Forward a server port to a destination reached through this device.';
+
+  @override
+  String get warmDynamicForwardTip =>
+      'Use a local SOCKS5 proxy to reach destinations through the server.';
+
+  @override
+  String get warmEditServer => 'Edit server';
+
+  @override
+  String get warmLocalForward => 'Local forwarding';
+
+  @override
+  String get warmRemoteForward => 'Remote forwarding';
+
+  @override
+  String get warmDynamicForward => 'Dynamic forwarding';
 }

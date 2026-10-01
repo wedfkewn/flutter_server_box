@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:ui' as ui;
 
@@ -88,6 +89,11 @@ void main() {
             ],
             supportedLocales: AppLocalizations.supportedLocales,
             theme: theme.copyWith(
+              appBarTheme: theme.appBarTheme.copyWith(
+                titleTextStyle: theme.appBarTheme.titleTextStyle?.copyWith(fontFamily: 'SettingsSans')),
+              listTileTheme: theme.listTileTheme.copyWith(
+                titleTextStyle: theme.listTileTheme.titleTextStyle?.copyWith(fontFamily: 'SettingsSans'),
+                subtitleTextStyle: theme.listTileTheme.subtitleTextStyle?.copyWith(fontFamily: 'SettingsSans')),
               textTheme: theme.textTheme.apply(fontFamily: 'SettingsSans'),
               primaryTextTheme: theme.primaryTextTheme.apply(
                 fontFamily: 'SettingsSans',
@@ -216,6 +222,7 @@ void main() {
     await tester.tap(find.text('服务器信息显示'));
     await settle(tester);
     expect(find.byType(SwitchListTile), findsNWidgets(4));
+    expect(find.byKey(const ValueKey('server-info-back')), findsNothing);
     Stores.setting.probeNetflix.put(true);
     await tester.tap(find.widgetWithText(SwitchListTile, 'ChatGPT'));
     await settle(tester);
@@ -226,6 +233,27 @@ void main() {
     expect(find.byType(BackButton), findsNothing);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets(
+    'dashboard information sheet has its own back button and preserves switches',
+    (tester) async {
+      await pump(tester);
+      Stores.setting.probeNetflix.put(true);
+      unawaited(SettingsPage.showServerInfo(tester.element(find.byType(SettingsPage))));
+      await settle(tester);
+      final back = find.byKey(const ValueKey('server-info-back'));
+      expect(back.hitTestable(), findsOneWidget);
+      expect(find.byType(BackButton), findsOneWidget);
+      expect(find.byType(SwitchListTile), findsNWidgets(4));
+      await capture(tester, 'server-info-back-button.png');
+      await tester.tap(back);
+      await settle(tester);
+      expect(find.byType(SwitchListTile), findsNothing);
+      expect(Stores.setting.probeNetflix.fetch(), isTrue);
+      expect(find.text('按分类管理应用偏好'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets(
     'small screen, landscape, large text and dark mode remain usable',

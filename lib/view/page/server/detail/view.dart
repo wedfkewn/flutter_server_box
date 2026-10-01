@@ -34,9 +34,11 @@ import 'package:server_box/data/res/store.dart';
 import 'package:server_box/view/page/pve.dart';
 import 'package:server_box/view/page/server/edit/edit.dart';
 import 'package:server_box/view/widget/server_func_btns.dart';
+import 'package:server_box/view/widget/server_group.dart';
 import 'package:server_box/view/widget/server_share.dart';
 
 part 'misc.dart';
+part 'warm_detail.dart';
 
 class ServerDetailPage extends ConsumerStatefulWidget {
   final SpiRequiredArgs args;
@@ -339,6 +341,7 @@ ${err.message ?? 'null'}
   }
 
   Widget _buildMainPage(ServerState si) {
+    if (MediaQuery.sizeOf(context).width < 700) return _buildWarmDetail(si);
     // Every ServerFuncBtn (terminal / sftp / container / process / snippet /
     // iperf / services / portForward) needs a shell. Hide the whole row on
     // transports without one instead of offering buttons that can only fail.
@@ -591,11 +594,12 @@ ${err.message ?? 'null'}
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: UIs.text13, overflow: TextOverflow.ellipsis),
+          Flexible(child: Text(label, style: UIs.text13, overflow: TextOverflow.ellipsis)),
+          const SizedBox(width: 12),
           if (secret)
             _SecretText(value)
           else
-            Text(value, style: UIs.text13Grey, overflow: TextOverflow.ellipsis),
+            Flexible(flex: 2, child: Text(value, style: UIs.text13Grey, textAlign: TextAlign.end)),
         ],
       ),
     );

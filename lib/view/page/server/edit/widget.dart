@@ -458,6 +458,7 @@ extension _Widgets on _ServerEditPageState {
           children: [
             SwitchListTile(
               title: const Text('SSH'),
+              subtitle: MediaQuery.sizeOf(context).width < 700 ? Text(l10n.warmSshHint) : null,
               secondary: const Icon(Icons.terminal),
               value: useSsh,
               // Turning the last one off would leave a server with no way in
@@ -482,6 +483,7 @@ extension _Widgets on _ServerEditPageState {
                 isMarkdown: true,
               ),
               secondary: const Icon(MingCute.web_line),
+              subtitle: MediaQuery.sizeOf(context).width < 700 ? Text(l10n.warmMonitorHint) : null,
               value: useHttp,
               onChanged: (val) {
                 if (!val && !_useSsh.value) {

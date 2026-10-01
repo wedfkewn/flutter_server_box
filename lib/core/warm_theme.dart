@@ -285,6 +285,11 @@ abstract final class WarmTheme {
           fontSize: 16,
           fontWeight: FontWeight.w700,
         ),
+        titleSmall: TextStyle(
+          color: ink,
+          fontSize: 14,
+          fontWeight: FontWeight.w700,
+        ),
         bodyLarge: TextStyle(color: ink, fontSize: 16),
         bodyMedium: TextStyle(color: ink, fontSize: 14),
         bodySmall: TextStyle(color: muted, fontSize: 12),
@@ -293,13 +298,44 @@ abstract final class WarmTheme {
   }
 
   static ThemeData dark() {
-    final base = light();
+    final geometry = light();
+    final scheme = ColorScheme.fromSeed(seedColor: copper, brightness: Brightness.dark);
+    final base = ThemeData(useMaterial3: true, colorScheme: scheme);
     return base.copyWith(
-      brightness: Brightness.dark,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: copper,
-        brightness: Brightness.dark,
+      scaffoldBackgroundColor: scheme.surface,
+      canvasColor: scheme.surface,
+      textTheme: geometry.textTheme.apply(bodyColor: scheme.onSurface, displayColor: scheme.onSurface).copyWith(
+        bodySmall: geometry.textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
       ),
+      appBarTheme: geometry.appBarTheme.copyWith(
+        backgroundColor: scheme.surface, foregroundColor: scheme.onSurface,
+        titleTextStyle: geometry.appBarTheme.titleTextStyle?.copyWith(color: scheme.onSurface)),
+      cardTheme: geometry.cardTheme.copyWith(color: scheme.surfaceContainerLow),
+      navigationBarTheme: geometry.navigationBarTheme.copyWith(
+        backgroundColor: scheme.surfaceContainer, indicatorColor: scheme.primaryContainer,
+        labelTextStyle: WidgetStateProperty.resolveWith((states) => TextStyle(
+          color: scheme.onSurface, fontSize: 11,
+          fontWeight: states.contains(WidgetState.selected) ? FontWeight.w700 : FontWeight.w500)),
+        iconTheme: WidgetStateProperty.resolveWith((states) => IconThemeData(size: 24,
+          color: states.contains(WidgetState.selected) ? scheme.onPrimaryContainer : scheme.onSurfaceVariant))),
+      navigationRailTheme: geometry.navigationRailTheme.copyWith(
+        backgroundColor: scheme.surfaceContainer, indicatorColor: scheme.primaryContainer,
+        selectedIconTheme: IconThemeData(color: scheme.onPrimaryContainer),
+        unselectedIconTheme: IconThemeData(color: scheme.onSurfaceVariant)),
+      dialogTheme: geometry.dialogTheme.copyWith(backgroundColor: scheme.surfaceContainerHigh),
+      bottomSheetTheme: geometry.bottomSheetTheme.copyWith(backgroundColor: scheme.surfaceContainerLow),
+      listTileTheme: geometry.listTileTheme.copyWith(
+        titleTextStyle: geometry.listTileTheme.titleTextStyle?.copyWith(color: scheme.onSurface),
+        subtitleTextStyle: geometry.listTileTheme.subtitleTextStyle?.copyWith(color: scheme.onSurfaceVariant)),
+      chipTheme: geometry.chipTheme.copyWith(
+        backgroundColor: scheme.surfaceContainerLow, selectedColor: scheme.primaryContainer,
+        side: BorderSide(color: scheme.outline),
+        labelStyle: geometry.chipTheme.labelStyle?.copyWith(color: scheme.onSurface),
+        secondaryLabelStyle: TextStyle(color: scheme.onPrimaryContainer, fontSize: 11)),
+      dividerTheme: geometry.dividerTheme.copyWith(color: scheme.outlineVariant),
+      sliderTheme: geometry.sliderTheme.copyWith(
+        activeTrackColor: scheme.primary, inactiveTrackColor: scheme.primaryContainer,
+        thumbColor: scheme.primary, overlayColor: scheme.primary.withValues(alpha: .12)),
     );
   }
 }

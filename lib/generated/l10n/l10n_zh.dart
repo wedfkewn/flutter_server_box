@@ -2516,6 +2516,64 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get warmTerminalNoSessions => '暂无会话';
+
+  @override
+  String get warmBasicInfo => '基本信息';
+
+  @override
+  String get warmAuthentication => '认证方式';
+
+  @override
+  String get warmAdvancedOptions => '高级选项';
+
+  @override
+  String get warmTools => '工具';
+
+  @override
+  String get warmCpuUsage => 'CPU 使用率';
+
+  @override
+  String get warmMemoryUsage => '内存使用率';
+
+  @override
+  String get warmSshHint => '通过 SSH 连接服务器';
+
+  @override
+  String get warmMonitorHint => '通过 HTTP 监控服务器';
+
+  @override
+  String get warmNoPortRules => '尚未配置端口映射';
+
+  @override
+  String get warmPortRulesTip =>
+      '添加端口映射规则后，可以将本地端口转发到服务器，或将服务器端口映射到本地，便于访问网络服务。';
+
+  @override
+  String get warmAddRule => '添加规则';
+
+  @override
+  String get warmForwardTypes => '支持的映射类型';
+
+  @override
+  String get warmLocalForwardTip => '将本地端口转发到服务器可访问的目标地址。';
+
+  @override
+  String get warmRemoteForwardTip => '将服务器端口转发到本机可访问的目标地址。';
+
+  @override
+  String get warmDynamicForwardTip => '通过本地 SOCKS5 代理，访问服务器可达的目标地址。';
+
+  @override
+  String get warmEditServer => '编辑服务器';
+
+  @override
+  String get warmLocalForward => '本地映射';
+
+  @override
+  String get warmRemoteForward => '远程映射';
+
+  @override
+  String get warmDynamicForward => '动态映射';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -4566,4 +4624,61 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get scheduledTaskScheduleHint => '例如：0 2 * * * 或 @reboot';
+
+  @override
+  String get warmBasicInfo => '基本資訊';
+
+  @override
+  String get warmAuthentication => '驗證方式';
+
+  @override
+  String get warmAdvancedOptions => '進階選項';
+
+  @override
+  String get warmTools => '工具';
+
+  @override
+  String get warmCpuUsage => 'CPU 使用率';
+
+  @override
+  String get warmMemoryUsage => '記憶體使用率';
+
+  @override
+  String get warmSshHint => '透過 SSH 連線伺服器';
+
+  @override
+  String get warmMonitorHint => '透過 HTTP 監控伺服器';
+
+  @override
+  String get warmNoPortRules => '尚未設定連接埠轉送';
+
+  @override
+  String get warmPortRulesTip => '新增規則後，可以將本機連接埠轉送到伺服器，或將伺服器連接埠對應到本機，方便存取網路服務。';
+
+  @override
+  String get warmAddRule => '新增規則';
+
+  @override
+  String get warmForwardTypes => '支援的轉送類型';
+
+  @override
+  String get warmLocalForwardTip => '將本機連接埠轉送到伺服器可存取的目標位址。';
+
+  @override
+  String get warmRemoteForwardTip => '將伺服器連接埠轉送到本機可存取的目標位址。';
+
+  @override
+  String get warmDynamicForwardTip => '透過本機 SOCKS5 代理，存取伺服器可達的目標位址。';
+
+  @override
+  String get warmEditServer => '編輯伺服器';
+
+  @override
+  String get warmLocalForward => '本機轉送';
+
+  @override
+  String get warmRemoteForward => '遠端轉送';
+
+  @override
+  String get warmDynamicForward => '動態轉送';
 }

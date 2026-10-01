@@ -386,6 +386,7 @@ extension _ProcessPageStateWidgets on _ProcessPageState {
         ),
       );
     }
+    if (layout.compact) return _buildWarmProcessList();
     final scheme = Theme.of(context).colorScheme;
     final columns = _buildColumns(layout);
     final content = Column(
@@ -413,6 +414,77 @@ extension _ProcessPageStateWidgets on _ProcessPageState {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: SizedBox(width: layout.contentWidth, child: content),
+    );
+  }
+
+  Widget _buildWarmProcessList() {
+    final theme = Theme.of(context);
+    final largeText = MediaQuery.textScalerOf(context).scale(14) > 20;
+    Widget metric(String text, {bool emphasize = false}) => Text(text, textAlign: TextAlign.end,
+      style: theme.textTheme.bodySmall?.copyWith(
+        fontWeight: emphasize ? FontWeight.w600 : null,
+        fontFeatures: const [FontFeature.tabularFigures()]));
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 18),
+      child: Column(children: [
+        if (!largeText) Container(
+          color: theme.colorScheme.surfaceContainerLow,
+          padding: const EdgeInsets.fromLTRB(8, 12, 4, 12),
+          child: Row(children: [
+            Expanded(child: Text(libL10n.name, style: theme.textTheme.bodySmall)),
+            SizedBox(width: 42, child: metric('PID')),
+            if (_capabilities.hasCpu) SizedBox(width: 50, child: metric('CPU')),
+            if (_capabilities.hasMem) SizedBox(width: 50, child: metric('MEM')),
+            const SizedBox(width: 44),
+          ]),
+        ),
+        Expanded(child: RefreshIndicator(
+          onRefresh: () => _refresh(userTriggered: true),
+          child: ListView.separated(
+            physics: const AlwaysScrollableScrollPhysics(),
+            itemCount: _result.procs.length,
+            separatorBuilder: (_, _) => const Divider(height: 1),
+            itemBuilder: (context, index) {
+              final proc = _result.procs[index];
+              final name = Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(proc.command.isEmpty ? '—' : proc.command, maxLines: 1,
+                  overflow: TextOverflow.ellipsis, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
+                if (proc.user != null) Text(proc.user!, maxLines: 1, overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodySmall),
+                if (largeText) Wrap(spacing: 12, runSpacing: 4, children: [
+                  Text('PID ${proc.pid}', style: theme.textTheme.bodySmall),
+                  if (proc.cpu != null) Text('CPU ${_formatCpu(proc.cpu)}', style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600)),
+                  if (proc.mem != null) Text('MEM ${_formatPercent(proc.mem)}', style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600)),
+                ]),
+              ]);
+              return InkWell(
+                onTap: () => _showProcessDetails(proc),
+                child: Padding(padding: const EdgeInsets.fromLTRB(8, 12, 4, 12),
+                  child: Row(children: [
+                    Icon(Icons.terminal, size: 20, color: theme.colorScheme.onSurfaceVariant),
+                    const SizedBox(width: 8),
+                    Expanded(child: name),
+                    if (!largeText) ...[
+                      SizedBox(width: 42, child: metric('${proc.pid}')),
+                      if (_capabilities.hasCpu) SizedBox(width: 50, child: metric(_formatCpu(proc.cpu), emphasize: true)),
+                      if (_capabilities.hasMem) SizedBox(width: 50, child: metric(_formatPercent(proc.mem), emphasize: true)),
+                    ],
+                    SizedBox(width: 44, child: PopupMenuButton<bool>(
+                      tooltip: libL10n.more,
+                      onSelected: (kill) => kill ? _confirmKill(proc) : _showProcessDetails(proc),
+                      itemBuilder: (_) => [
+                        PopupMenuItem(value: false, child: Text(libL10n.view)),
+                        PopupMenuItem(value: true, enabled: !_isRefreshing,
+                          child: Text(libL10n.stop, style: TextStyle(color: theme.colorScheme.error))),
+                      ],
+                    )),
+                  ]),
+                ),
+              );
+            },
+          ),
+        )),
+      ]),
     );
   }
 

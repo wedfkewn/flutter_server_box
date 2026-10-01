@@ -122,6 +122,15 @@ final class _ServicesPageState extends ConsumerState<ServicesPage> {
   }
 
   Widget _buildManagerTag(ServiceManagerType manager) {
+    if (MediaQuery.sizeOf(context).width < 700) {
+      return Padding(padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        child: Row(children: [
+          const Icon(Icons.settings_suggest, size: 20), const SizedBox(width: 12),
+          Expanded(child: Text(l10n.serviceManagerFmt(manager.displayName),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600))),
+        ]),
+      );
+    }
     return Align(
       alignment: Alignment.centerLeft,
       child: Chip(
@@ -181,6 +190,42 @@ final class _ServicesPageState extends ConsumerState<ServicesPage> {
     if (filteredUnits.isEmpty) {
       return SliverToBoxAdapter(
         child: CenterGreyTitle(libL10n.empty).paddingSymmetric(horizontal: 13),
+      );
+    }
+    if (MediaQuery.sizeOf(context).width < 700) {
+      final scheme = Theme.of(context).colorScheme;
+      return SliverPadding(
+        padding: const EdgeInsets.fromLTRB(18, 4, 18, 20),
+        sliver: DecoratedSliver(
+          decoration: BoxDecoration(color: scheme.surfaceContainerLow, borderRadius: BorderRadius.circular(18)),
+          sliver: SliverList(delegate: SliverChildBuilderDelegate((context, index) {
+            final unit = filteredUnits[index];
+            return Column(children: [
+              ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                leading: Icon(unit.type == ServiceUnitType.service ? Icons.miscellaneous_services_outlined : Icons.description_outlined,
+                  size: 22, color: scheme.onSurface),
+                title: unit.description != null ? TipText(unit.name, unit.description!) : Text(unit.name),
+                subtitle: Padding(padding: const EdgeInsets.only(top: 6), child: Wrap(
+                  spacing: 8, runSpacing: 4, crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    Row(mainAxisSize: MainAxisSize.min, children: [
+                      Icon(Icons.circle, size: 7, color: unit.state == ServiceState.running ? scheme.secondary : unit.state.color ?? scheme.onSurfaceVariant), const SizedBox(width: 4),
+                      Text(unit.state.displayName),
+                    ]),
+                    if (manager?.supportsUserScope == true) _buildTag(unit.scope.name.capitalize),
+                    _buildTag(unit.type.name.capitalize),
+                    if (unit.enabled case final enabled?)
+                      _buildTag(enabled ? l10n.serviceEnabled : libL10n.disabled),
+                  ],
+                )),
+                trailing: _buildUnitActions(unit),
+              ),
+              if (index < filteredUnits.length - 1)
+                const Padding(padding: EdgeInsets.symmetric(horizontal: 12), child: Divider(height: 1)),
+            ]);
+          }, childCount: filteredUnits.length)),
+        ),
       );
     }
     return SliverList(

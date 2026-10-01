@@ -4791,6 +4791,120 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No open sessions'**
   String get warmTerminalNoSessions;
+
+  /// No description provided for @warmBasicInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Basic information'**
+  String get warmBasicInfo;
+
+  /// No description provided for @warmAuthentication.
+  ///
+  /// In en, this message translates to:
+  /// **'Authentication'**
+  String get warmAuthentication;
+
+  /// No description provided for @warmAdvancedOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced options'**
+  String get warmAdvancedOptions;
+
+  /// No description provided for @warmTools.
+  ///
+  /// In en, this message translates to:
+  /// **'Tools'**
+  String get warmTools;
+
+  /// No description provided for @warmCpuUsage.
+  ///
+  /// In en, this message translates to:
+  /// **'CPU usage'**
+  String get warmCpuUsage;
+
+  /// No description provided for @warmMemoryUsage.
+  ///
+  /// In en, this message translates to:
+  /// **'Memory usage'**
+  String get warmMemoryUsage;
+
+  /// No description provided for @warmSshHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect to the server using SSH'**
+  String get warmSshHint;
+
+  /// No description provided for @warmMonitorHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Monitor the server using HTTP'**
+  String get warmMonitorHint;
+
+  /// No description provided for @warmNoPortRules.
+  ///
+  /// In en, this message translates to:
+  /// **'No port forwarding configured'**
+  String get warmNoPortRules;
+
+  /// No description provided for @warmPortRulesTip.
+  ///
+  /// In en, this message translates to:
+  /// **'Forward a local port to the server, or expose a remote port locally to access network services.'**
+  String get warmPortRulesTip;
+
+  /// No description provided for @warmAddRule.
+  ///
+  /// In en, this message translates to:
+  /// **'Add rule'**
+  String get warmAddRule;
+
+  /// No description provided for @warmForwardTypes.
+  ///
+  /// In en, this message translates to:
+  /// **'Supported forwarding types'**
+  String get warmForwardTypes;
+
+  /// No description provided for @warmLocalForwardTip.
+  ///
+  /// In en, this message translates to:
+  /// **'Forward a local port to a destination reached through the server.'**
+  String get warmLocalForwardTip;
+
+  /// No description provided for @warmRemoteForwardTip.
+  ///
+  /// In en, this message translates to:
+  /// **'Forward a server port to a destination reached through this device.'**
+  String get warmRemoteForwardTip;
+
+  /// No description provided for @warmDynamicForwardTip.
+  ///
+  /// In en, this message translates to:
+  /// **'Use a local SOCKS5 proxy to reach destinations through the server.'**
+  String get warmDynamicForwardTip;
+
+  /// No description provided for @warmEditServer.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit server'**
+  String get warmEditServer;
+
+  /// No description provided for @warmLocalForward.
+  ///
+  /// In en, this message translates to:
+  /// **'Local forwarding'**
+  String get warmLocalForward;
+
+  /// No description provided for @warmRemoteForward.
+  ///
+  /// In en, this message translates to:
+  /// **'Remote forwarding'**
+  String get warmRemoteForward;
+
+  /// No description provided for @warmDynamicForward.
+  ///
+  /// In en, this message translates to:
+  /// **'Dynamic forwarding'**
+  String get warmDynamicForward;
 }
 
 class _AppLocalizationsDelegate

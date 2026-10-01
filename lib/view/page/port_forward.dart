@@ -101,6 +101,7 @@ final class _PortForwardPageState extends ConsumerState<PortForwardPage> {
   }
 
   Widget _buildEmpty() {
+    if (MediaQuery.sizeOf(context).width < 700) return _buildWarmEmpty();
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -113,6 +114,45 @@ final class _PortForwardPageState extends ConsumerState<PortForwardPage> {
         ],
       ),
     );
+  }
+
+  Widget _buildWarmEmpty() {
+    final theme = Theme.of(context);
+    final loc = context.l10n;
+    Widget type(IconData icon, String title, String tip) => Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Icon(icon, size: 22, color: theme.colorScheme.onSurface), const SizedBox(width: 14),
+        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(title, style: theme.textTheme.titleSmall), const SizedBox(height: 4),
+          Text(tip, style: theme.textTheme.bodySmall),
+        ])),
+      ]),
+    );
+    return SafeArea(child: ListView(
+      padding: const EdgeInsets.fromLTRB(24, 48, 24, 20),
+      children: [
+        Center(child: CircleAvatar(radius: 56, backgroundColor: theme.colorScheme.surfaceContainerLow,
+          child: Icon(Icons.compare_arrows, size: 52, color: theme.colorScheme.primary))),
+        const SizedBox(height: 32),
+        Text(loc.warmNoPortRules, textAlign: TextAlign.center, style: theme.textTheme.titleLarge),
+        const SizedBox(height: 12),
+        Text(loc.warmPortRulesTip, textAlign: TextAlign.center, style: theme.textTheme.bodyLarge?.copyWith(
+          color: theme.colorScheme.onSurfaceVariant, height: 1.6)),
+        const SizedBox(height: 24),
+        Padding(padding: const EdgeInsets.symmetric(horizontal: 28), child: FilledButton(
+          onPressed: _onAdd,
+          style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
+          child: Text(loc.warmAddRule),
+        )),
+        const SizedBox(height: 38), const Divider(), const SizedBox(height: 12),
+        Text(loc.warmForwardTypes, style: theme.textTheme.titleSmall),
+        type(Icons.computer_outlined, loc.warmLocalForward, loc.warmLocalForwardTip),
+        type(Icons.dns_outlined, loc.warmRemoteForward, loc.warmRemoteForwardTip),
+        type(Icons.shuffle, loc.warmDynamicForward, loc.warmDynamicForwardTip),
+      ],
+    ));
   }
 
   Widget _buildConfigTile(PortForwardConfig config, PortForwardStatus? status) {
@@ -297,44 +337,10 @@ class _PortForwardConfigDialogState extends State<_PortForwardConfigDialog> {
             const SizedBox(height: 8),
             _buildTypeSelector(),
             const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: Input(
-                    controller: localHostController,
-                    hint: _localHostHint,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Input(
-                    controller: localPortController,
-                    hint: _localPortHint,
-                    type: TextInputType.number,
-                  ),
-                ),
-              ],
-            ),
+            _buildAddressFields(localHostController, localPortController, _localHostHint, _localPortHint),
             if (_selectedType != PortForwardType.dynamic) ...[
               const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                    child: Input(
-                      controller: remoteHostController,
-                      hint: _remoteHostHint,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Input(
-                      controller: remotePortController,
-                      hint: _remotePortHint,
-                      type: TextInputType.number,
-                    ),
-                  ),
-                ],
-              ),
+              _buildAddressFields(remoteHostController, remotePortController, _remoteHostHint, _remotePortHint),
             ],
           ],
         ),
@@ -348,6 +354,15 @@ class _PortForwardConfigDialogState extends State<_PortForwardConfigDialog> {
 
   String get _localHostHint => context.l10n.portForward_localHost;
 
+  Widget _buildAddressFields(TextEditingController host, TextEditingController port, String hostLabel, String portLabel) {
+    final fields = [Input(controller: host, hint: hostLabel),
+      Input(controller: port, hint: portLabel, type: TextInputType.number)];
+    if (MediaQuery.sizeOf(context).width < 360 || MediaQuery.textScalerOf(context).scale(14) > 20) {
+      return Column(mainAxisSize: MainAxisSize.min, children: [fields.first, const SizedBox(height: 8), fields.last]);
+    }
+    return Row(children: [Expanded(child: fields.first), const SizedBox(width: 8), Expanded(child: fields.last)]);
+  }
+
   String get _localPortHint => context.l10n.portForward_localPort;
 
   String get _remoteHostHint => _selectedType == PortForwardType.dynamic
@@ -359,6 +374,19 @@ class _PortForwardConfigDialogState extends State<_PortForwardConfigDialog> {
       : context.l10n.portForward_remotePort;
 
   Widget _buildTypeSelector() {
+    if (MediaQuery.sizeOf(context).width < 700) {
+      return Wrap(spacing: 8, runSpacing: 8, children: [
+        for (final type in PortForwardType.values) ChoiceChip(
+          label: Text(switch (type) {
+            PortForwardType.local => _localTypeLabel,
+            PortForwardType.remote => _remoteTypeLabel,
+            PortForwardType.dynamic => _dynamicTypeLabel,
+          }),
+          selected: _selectedType == type,
+          onSelected: (_) => setState(() => _selectedType = type),
+        ),
+      ]);
+    }
     return SegmentedButton<PortForwardType>(
       segments: [
         ButtonSegment(

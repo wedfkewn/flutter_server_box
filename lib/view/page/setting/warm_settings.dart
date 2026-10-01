@@ -233,7 +233,9 @@ class _WarmSettingsCategory extends StatelessWidget {
 }
 
 class _WarmServerInfoSheet extends StatefulWidget {
-  const _WarmServerInfoSheet();
+  const _WarmServerInfoSheet({this.embedded = false});
+
+  final bool embedded;
 
   @override
   State<_WarmServerInfoSheet> createState() => _WarmServerInfoSheetState();
@@ -294,14 +296,23 @@ class _WarmServerInfoSheetState extends State<_WarmServerInfoSheet> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     return SafeArea(
-      child: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
+      child: Column(
         children: [
-          Text(
-            l10n.warmCardBadges,
-            style: Theme.of(context).textTheme.titleLarge,
+          if (!widget.embedded) Padding(
+            padding: const EdgeInsets.fromLTRB(12, 8, 20, 8),
+            child: Row(children: [
+              BackButton(
+                key: const ValueKey('server-info-back'),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+              const SizedBox(width: 8),
+              Expanded(child: Text(l10n.warmCardBadges,
+                style: Theme.of(context).textTheme.titleLarge)),
+            ]),
           ),
-          const SizedBox(height: 12),
+          Expanded(child: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 4, 20, 28),
+        children: [
           SwitchListTile(
             title: Text(l10n.serverInfoNetwork),
             subtitle: Text(l10n.serverInfoNetworkTip),
@@ -335,9 +346,11 @@ class _WarmServerInfoSheetState extends State<_WarmServerInfoSheet> {
             padding: const EdgeInsets.only(top: 8),
             child: Text(
               l10n.serviceProbeDisclaimer,
-              style: const TextStyle(color: WarmTheme.muted, fontSize: 12),
+              style: Theme.of(context).textTheme.bodySmall,
             ),
           ),
+        ],
+          )),
         ],
       ),
     );

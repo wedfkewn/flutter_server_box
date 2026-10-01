@@ -381,7 +381,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             id: 'server.info',
             title: context.l10n.warmCardBadges,
             icon: Icons.view_agenda_outlined,
-            page: () => const _WarmServerInfoSheet(),
+            page: () => const _WarmServerInfoSheet(embedded: true),
           ),
         ],
       ),
