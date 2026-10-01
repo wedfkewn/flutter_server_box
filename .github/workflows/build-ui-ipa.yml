@@ -1,0 +1,64 @@
+name: Build Server Pages IPA
+
+on:
+  push:
+    branches:
+      - codex/server-pages-ipa-20261001
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  buildIOS:
+    name: Build unsigned iOS IPA
+    runs-on: macos-latest
+    timeout-minutes: 40
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          submodules: recursive
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Install Flutter
+        uses: ./.github/actions/setup-flutter
+      - name: Check locked dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          flutter pub get --enforce-lockfile
+          git diff --exit-code -- pubspec.yaml pubspec.lock
+      - name: Prepare iOS build
+        shell: bash
+        run: |
+          set -euo pipefail
+          build="$(sed -n -E 's/.*static const int build = ([0-9]+);/\1/p' lib/data/res/build_data.dart | head -n 1)"
+          test -n "$build"
+          echo "BUILD_NUMBER=$build" >> "$GITHUB_ENV"
+          printf 'SBM_ISH = 1\n' > ios/Flutter/IshLocal.xcconfig
+      - name: Build unsigned app
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
+          source_date="$(git log -1 --format=%cs "${GITHUB_SHA}")"
+          flutter build ios --release --no-codesign \
+            --build-number="${BUILD_NUMBER}" \
+            --build-name="1.0.${BUILD_NUMBER}" \
+            --dart-define="SOURCE_COMMIT=${GITHUB_SHA}" \
+            --dart-define="SOURCE_REPOSITORY=${GITHUB_REPOSITORY}" \
+            --dart-define="SOURCE_MODIFIED_DATE=${source_date}"
+      - name: Check Linux engine linkage
+        shell: bash
+        run: scripts/check-ish-linkage.sh build/ios/iphoneos/Runner.app/Runner on
+      - name: Package IPA
+        shell: bash
+        run: scripts/release/package-unsigned-ipa.sh
+      - name: Upload IPA
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: ServerBox-ui-ipa-${{ github.run_number }}
+          path: build/artifacts/ServerBox_v1.0.${{ env.BUILD_NUMBER }}_NoSign.ipa
+          if-no-files-found: error
+          retention-days: 14
