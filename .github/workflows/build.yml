@@ -22,6 +22,8 @@ on:
         type: string
         default: ''
   push:
+    branches:
+      - "codex/homepage-data-ipa-20261001"
     tags:
       - "v*"
 
@@ -124,6 +126,7 @@ jobs:
         env:
           REQUESTED: ${{ inputs.jobs }}
           IS_DISPATCH: ${{ github.event_name == 'workflow_dispatch' }}
+          IS_IPA_PUSH: ${{ github.event_name == 'push' && github.ref == 'refs/heads/codex/homepage-data-ipa-20261001' }}
           IS_RELEASE: ${{ inputs.release }}
         run: |
           set -euo pipefail
@@ -134,7 +137,9 @@ jobs:
           # match nothing and finish green having built nothing at all.
           verify_only="monitor"
 
-          if [[ "$IS_DISPATCH" != "true" || -z "${REQUESTED//[[:space:]]/}" ]]; then
+          if [[ "$IS_IPA_PUSH" == "true" ]]; then
+            selected="ios"
+          elif [[ "$IS_DISPATCH" != "true" || -z "${REQUESTED//[[:space:]]/}" ]]; then
             # A tag push, or a dispatch that named nothing: everything runs.
             selected="$known"
           else
