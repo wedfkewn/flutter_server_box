@@ -66,6 +66,18 @@ void main() {
     monitorHttp: const MonitorHttpCredential(addr: 'https://agent:3770'),
   );
 
+  test('removed local Linux sessions cannot start a backend', () async {
+    for (final source in [
+      const LocalSource(rootfs: true),
+      const LocalSource(rootfs: true, profileId: 'legacy-profile'),
+    ]) {
+      final session = TerminalSession(source: source);
+      await expectLater(session.connect(), throwsUnsupportedError);
+      expect(session.backend, isNull);
+      session.dispose();
+    }
+  });
+
   group('the shell on screen', () {
     test('what it prints reaches the terminal', () async {
       final session = TerminalSession(source: ServerSource(ssh));

@@ -7,6 +7,7 @@ import 'package:server_box/core/extension/context/locale.dart';
 import 'package:server_box/core/service/tray.dart';
 import 'package:server_box/data/model/app/tray.dart';
 import 'package:server_box/data/res/store.dart';
+import 'package:server_box/view/widget/app_dialog.dart';
 
 /// What only a desktop has, which for now is the status icon.
 ///
@@ -112,7 +113,7 @@ class _DesktopSettingsPageState extends ConsumerState<DesktopSettingsPage> {
 
   Future<void> _pickReadings() async {
     final picked = {..._setting.trayMetrics.fetch()};
-    final ok = await context.showRoundDialog<bool>(
+    final ok = await context.showAppRoundDialog<bool>(
       title: l10n.trayReadings,
       child: StatefulBuilder(
         builder: (_, setState) => Column(
@@ -170,7 +171,7 @@ class _DesktopSettingsPageState extends ConsumerState<DesktopSettingsPage> {
       for (final m in TrayMetric.values)
         if (m.chartable) m.name,
     ];
-    final picked = await context.showRoundDialog<String>(
+    final picked = await context.showAppRoundDialog<String>(
       title: l10n.trayChart,
       child: Column(
         mainAxisSize: MainAxisSize.min,

@@ -7,6 +7,7 @@ import 'package:server_box/data/model/server/service.dart';
 import 'package:server_box/data/provider/services.dart';
 import 'package:server_box/data/ssh/terminal_source.dart';
 import 'package:server_box/view/page/ssh/page/page.dart';
+import 'package:server_box/view/widget/app_dialog.dart';
 import 'package:server_box/view/widget/brand_logo.dart';
 
 final class ServicesPage extends ConsumerStatefulWidget {
@@ -275,7 +276,7 @@ final class _ServicesPageState extends ConsumerState<ServicesPage> {
   }
 
   Future<void> _showConfirmDialog(String command) async {
-    final sure = await context.showRoundDialog(
+    final sure = await context.showAppRoundDialog(
       title: libL10n.attention,
       child: SimpleMarkdown(data: '```shell\n$command\n```'),
       actions: [

@@ -43,10 +43,7 @@
 
 SBM_ISH = 0
 
-// A local override, so turning the engine on for a development build does not
-// mean editing a tracked file and remembering to put it back. Untracked; write
-// `SBM_ISH = 1` in it. Later assignment wins, so this is the last word.
-#include? "IshLocal.xcconfig"
+// Local overrides cannot re-enable the removed Linux feature.
 
 // The source is a submodule; the libraries are built out of tree, under
 // build/, so a build does not leave that submodule dirty. Both relative to

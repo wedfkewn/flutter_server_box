@@ -1,6 +1,6 @@
 import 'dart:async';
-
 import 'package:dio/dio.dart';
+
 import 'package:fl_lib/fl_lib.dart';
 import 'package:flutter/material.dart';
 import 'package:server_box/core/extension/context/locale.dart';
@@ -10,6 +10,7 @@ import 'package:server_box/core/utils/rootfs.dart';
 import 'package:server_box/data/model/app/linux_distro.dart';
 import 'package:server_box/data/model/app/rootfs_manifest.dart';
 import 'package:server_box/data/res/store.dart';
+import 'package:server_box/view/widget/app_dialog.dart';
 
 /// Puts a Linux userland on this device, asking first.
 ///
@@ -69,7 +70,7 @@ Future<bool> installRootfs(
   final distro = target.distro;
   final chosen = target.release;
 
-  final confirm = await context.showRoundDialog<bool>(
+  final confirm = await context.showAppRoundDialog<bool>(
     // Capitalised: the shared string is a verb used mid-sentence elsewhere,
     // and a dialog title is not mid-sentence.
     title: into == null ? libL10n.install.capitalize : libL10n.update,
@@ -102,7 +103,7 @@ Future<bool> installRootfs(
   // the work it is describing ends — which is the only thing that should close
   // it, so there is no barrier dismiss either.
   unawaited(
-    context.showRoundDialog(
+    context.showAppRoundDialog(
       title: libL10n.download,
       child: ValueListenableBuilder(
         valueListenable: progress,
@@ -147,7 +148,7 @@ Future<bool> installRootfs(
   } catch (e, s) {
     if (!context.mounted) return false;
     context.popDialog();
-    if (!cancelled) context.showErrDialog(e, s);
+    if (!cancelled) context.showAppErrDialog(e, s);
     return false;
   } finally {
     progress.dispose();
@@ -168,7 +169,7 @@ Future<bool> installRootfs(
 Future<bool> _confirmBeta(BuildContext context) async {
   if (Stores.setting.linuxBetaWarned.fetch()) return true;
   var noMore = false;
-  final ok = await context.showRoundDialog<bool>(
+  final ok = await context.showAppRoundDialog<bool>(
     title: libL10n.attention,
     child: Column(
       mainAxisSize: MainAxisSize.min,
@@ -210,7 +211,7 @@ Future<bool> removeRootfs(BuildContext context, {LinuxProfile? profile}) async {
   // the engine cannot unmount a `/dev/pts` a session still holds — so this
   // turns an error after the fact into something to do first.
   if (Rootfs.openSessions(target) > 0) {
-    await context.showRoundDialog(
+    await context.showAppRoundDialog(
       title: libL10n.attention,
       child: Text(context.l10n.linuxSystemInUse(target.label)),
       actions: [Btnx.okRed],
@@ -218,7 +219,7 @@ Future<bool> removeRootfs(BuildContext context, {LinuxProfile? profile}) async {
     return false;
   }
 
-  final confirm = await context.showRoundDialog<bool>(
+  final confirm = await context.showAppRoundDialog<bool>(
     title: libL10n.attention,
     child: Text(libL10n.askContinue('${libL10n.delete} ${target.label}')),
     actions: Btnx.cancelRedOk,
@@ -238,7 +239,7 @@ Future<bool> removeRootfs(BuildContext context, {LinuxProfile? profile}) async {
   // a tree with its `/dev` half unmounted, so there is no barrier dismiss
   // either. Closed below, whatever happened.
   unawaited(
-    context.showRoundDialog(
+    context.showAppRoundDialog(
       title: libL10n.delete,
       child: const SizedBox(
         height: 48,

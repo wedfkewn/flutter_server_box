@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
-
 import 'package:fl_lib/fl_lib.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:server_box/core/extension/context/locale.dart';
@@ -11,6 +11,7 @@ import 'package:server_box/data/provider/private_key.dart';
 import 'package:server_box/data/res/store.dart';
 import 'package:server_box/view/page/private_key/edit.dart';
 import 'package:server_box/view/page/private_key/generate.dart';
+import 'package:server_box/view/widget/app_dialog.dart';
 
 class PrivateKeysListPage extends ConsumerStatefulWidget {
   const PrivateKeysListPage({super.key});
@@ -95,7 +96,7 @@ extension on _PrivateKeyListState {
   /// button that pushed the page from inside the dialog would be reaching for
   /// the root navigator the dialog is on, not the one holding this page.
   Future<void> _onTapAdd() async {
-    final generate = await context.showRoundDialog<bool>(
+    final generate = await context.showAppRoundDialog<bool>(
       title: libL10n.add,
       childBuilder: (dialogContext) => Column(
         mainAxisSize: MainAxisSize.min,
@@ -134,7 +135,7 @@ extension on _PrivateKeyListState {
         name: 'system',
         key: await idRsaFile.readAsString(),
       );
-      context.showRoundDialog(
+      context.showAppRoundDialog(
         title: libL10n.attention,
         child: Text(l10n.addSystemPrivateKeyTip),
         actions: Btn.ok(

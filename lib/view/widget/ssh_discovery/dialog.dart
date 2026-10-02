@@ -4,6 +4,7 @@ import 'package:icons_plus/icons_plus.dart';
 import 'package:server_box/core/extension/context/locale.dart';
 import 'package:server_box/core/service/ssh_discovery.dart';
 import 'package:server_box/data/model/server/discovery_result.dart';
+import 'package:server_box/view/widget/app_dialog.dart';
 
 part 'settings.dart';
 
@@ -19,7 +20,7 @@ class SshDiscoveryDialog extends StatefulWidget {
 
   /// Shows it. Returns what was picked, or null.
   static Future<SshDiscoveryResult?> show(BuildContext context) {
-    return context.showRoundDialog<SshDiscoveryResult>(
+    return context.showAppRoundDialog<SshDiscoveryResult>(
       title: l10n.discoverSshServers,
       child: const SshDiscoveryDialog._(),
       actions: [Btn.cancel()],
@@ -169,7 +170,7 @@ class _SshDiscoveryDialogState extends State<SshDiscoveryDialog> {
   }
 
   void _showSettings() {
-    context.showRoundDialog(
+    context.showAppRoundDialog(
       child: _DiscoverySettingsDialog(
         config: _config.value,
         onChanged: (config) => _config.value = config,

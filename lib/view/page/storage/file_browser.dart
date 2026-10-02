@@ -1,6 +1,6 @@
 import 'dart:io';
-
 import 'package:cross_file/cross_file.dart';
+
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:fl_lib/fl_lib.dart';
 import 'package:flutter/material.dart';
@@ -17,6 +17,7 @@ import 'package:server_box/data/provider/file_transfer.dart';
 import 'package:server_box/data/res/store.dart';
 import 'package:server_box/view/page/storage/send_to.dart';
 import 'package:server_box/view/page/storage/transfer_announce.dart';
+import 'package:server_box/view/widget/app_dialog.dart';
 import 'package:server_box/view/widget/unix_perm.dart';
 
 /// What an injected action is allowed to do to the browser it sits in.
@@ -796,7 +797,7 @@ class _FileBrowserPageState extends ConsumerState<FileBrowserPage>
     final alwaysRecursive = Stores.setting.sftpRmrDir.fetch();
     var recursive = alwaysRecursive;
     final hasDir = entries.any((e) => e.isDir);
-    final confirmed = await context.showRoundDialog<bool>(
+    final confirmed = await context.showAppRoundDialog<bool>(
       title: libL10n.attention,
       child: StatefulBuilder(
         builder: (_, setState) => Column(
@@ -879,7 +880,7 @@ class _FileBrowserPageState extends ConsumerState<FileBrowserPage>
     // shape underneath the answer.
     final alwaysRecursive = Stores.setting.sftpRmrDir.fetch();
     var recursive = alwaysRecursive;
-    final confirmed = await context.showRoundDialog<bool>(
+    final confirmed = await context.showAppRoundDialog<bool>(
       title: libL10n.attention,
       child: StatefulBuilder(
         builder: (_, setState) => Column(
@@ -922,7 +923,7 @@ class _FileBrowserPageState extends ConsumerState<FileBrowserPage>
     final original = entry.mode ?? 0;
     final perm = UnixPerm.fromValue(original);
     var next = perm;
-    final ok = await context.showRoundDialog<bool>(
+    final ok = await context.showAppRoundDialog<bool>(
       child: UnixPermEditor(perm: perm, onChanged: (value) => next = value),
       actions: Btnx.okReds,
     );
@@ -967,7 +968,7 @@ class _FileBrowserPageState extends ConsumerState<FileBrowserPage>
     required IconData icon,
     String? initial,
   }) async {
-    final name = await context.showRoundDialog<String>(
+    final name = await context.showAppRoundDialog<String>(
       title: title,
       child: _NameField(icon: icon, initial: initial),
     );
@@ -1077,7 +1078,7 @@ class _FileBrowserPageState extends ConsumerState<FileBrowserPage>
   }
 
   Future<void> _pick(FileEntry entry) async {
-    final picked = await context.showRoundDialog<bool>(
+    final picked = await context.showAppRoundDialog<bool>(
       title: libL10n.file,
       child: Text(entry.name),
       actions: Btn.ok(onTap: () => context.popDialog(true)).toList,
@@ -1921,7 +1922,7 @@ enum _SortBy {
 ///
 /// The controller has to outlive the `await` that opened the dialog. Created
 /// beside it and disposed in a `finally`, it was torn out from under a field
-/// that is still mounted: `showRoundDialog` returns when the route is popped,
+/// that is still mounted: `showAppRoundDialog` returns when the route is popped,
 /// not when it has finished going away, and `autoFocus` leaves an implicit
 /// animation running in the decoration for another 167ms. Rebuilding that
 /// against a disposed controller is "Tried to build dirty widget in the wrong

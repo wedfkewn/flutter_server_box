@@ -3,9 +3,9 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;
 import 'dart:ui' show ImageFilter;
-
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:file_picker/file_picker.dart';
+
 import 'package:fl_lib/fl_lib.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
@@ -21,25 +21,18 @@ import 'package:server_box/core/route.dart';
 import 'package:server_box/core/service/crash_report.dart';
 import 'package:server_box/core/service/diagnostics_upload.dart';
 import 'package:server_box/core/service/geo_data.dart';
-import 'package:server_box/core/utils/linux_seed.dart';
 import 'package:server_box/core/utils/local_exec.dart';
 import 'package:server_box/core/utils/logo_url.dart';
-import 'package:server_box/core/utils/rootfs.dart';
-import 'package:server_box/core/utils/rootfs_manifest_source.dart';
 import 'package:server_box/core/utils/server_dedup.dart';
 import 'package:server_box/core/utils/ssh_config.dart';
 import 'package:server_box/core/warm_theme.dart';
 import 'package:server_box/data/model/ai/ask_ai_models.dart';
 import 'package:server_box/data/model/ai/model_context.dart';
 import 'package:server_box/data/model/app/geo_manifest.dart';
-import 'package:server_box/data/model/app/linux_distro.dart';
-import 'package:server_box/data/model/app/linux_distros.dart';
 import 'package:server_box/data/model/app/net_view.dart';
-import 'package:server_box/data/model/app/rootfs_manifest.dart';
 import 'package:server_box/data/model/server/server_private_info.dart';
 import 'package:server_box/data/provider/server/all.dart';
 import 'package:server_box/data/res/build_data.dart';
-import 'package:server_box/data/res/default.dart';
 import 'package:server_box/data/res/github_id.dart';
 import 'package:server_box/data/res/source_provenance.dart';
 import 'package:server_box/data/res/store.dart';
@@ -61,6 +54,7 @@ import 'package:server_box/view/page/setting/platform/platform_pub.dart';
 import 'package:server_box/view/page/setting/seq/known_hosts.dart';
 import 'package:server_box/view/page/setting/seq/srv_orders.dart';
 import 'package:server_box/view/page/setting/seq/virt_key.dart';
+import 'package:server_box/view/widget/app_dialog.dart';
 import 'package:server_box/view/widget/app_ui.dart';
 import 'package:server_box/view/widget/crash_debug.dart';
 import 'package:server_box/view/widget/crash_report_dialog.dart';
@@ -68,11 +62,12 @@ import 'package:server_box/view/widget/diagnostics_level_picker.dart';
 import 'package:server_box/view/widget/dist_icon.dart';
 import 'package:server_box/view/widget/dmg_notice.dart';
 import 'package:server_box/view/widget/edge_fade_scroll.dart';
+import 'package:server_box/view/widget/floating_dialog.dart';
 import 'package:server_box/view/widget/geo_data_install.dart';
+import 'package:server_box/view/widget/language_picker.dart';
 import 'package:server_box/view/widget/pane_settings.dart';
 import 'package:server_box/view/widget/probe_labels.dart';
 import 'package:server_box/view/widget/progress_line.dart';
-import 'package:server_box/view/widget/rootfs_install.dart';
 import 'package:server_box/view/widget/theme_reveal.dart';
 import 'package:server_box/view/widget/warm_settings.dart';
 
@@ -86,7 +81,6 @@ part 'entries/container.dart';
 part 'entries/editor.dart';
 part 'entries/full_screen.dart';
 part 'entries/globe.dart';
-part 'entries/linux.dart';
 part 'entries/server.dart';
 part 'entries/sftp.dart';
 part 'entries/ssh.dart';
@@ -167,7 +161,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   }
 
   void _confirmResetSettings() {
-    context.showRoundDialog(
+    context.showAppRoundDialog(
       title: libL10n.attention,
       child: SimpleMarkdown(data: libL10n.askContinue(
         '${libL10n.delete} **${libL10n.all}** ${libL10n.setting}')),
@@ -281,22 +275,6 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             icon: Icons.settings_outlined,
             page: () => const AppSettingsPage(section: SettingsSection.ssh),
           ),
-          // Under the terminal because that is where a Linux system is
-          // reached from, and absent when this build carries none — the same
-          // question the terminal's own tab asks before it offers to install
-          // one. Named for Linux rather than for the distribution: which one
-          // is installed is allowed to change, and none of what is on that
-          // page is about which.
-          if (Rootfs.isAvailable)
-            SettingsNode.leaf(
-              id: 'terminal.linux',
-              // Not localized, and not searched for either: the id above is
-              // what the settings search matches on, and "Linux" is the same
-              // word in every locale this ships in.
-              title: 'Linux (Beta)',
-              icon: Icons.layers_outlined,
-              page: () => const AppSettingsPage(section: SettingsSection.linux),
-            ),
           SettingsNode.leaf(
             id: 'terminal.knownHosts',
             title: l10n.sshKnownHostKeys,
@@ -429,7 +407,6 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           ),
           leaf('terminal.knownHosts'),
           leaf('terminal.virtKey'),
-          if (leaves.containsKey('terminal.linux')) leaf('terminal.linux'),
         ],
       ),
       SettingsNode.branch(
@@ -665,7 +642,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           Btn.icon(
             text: libL10n.delete,
             icon: const Icon(Icons.delete),
-            onTap: () => context.showRoundDialog(
+            onTap: () => context.showAppRoundDialog(
               title: libL10n.attention,
               child: SimpleMarkdown(
                 data: libL10n.askContinue(
@@ -922,7 +899,6 @@ enum SettingsSection {
   ai,
   server,
   ssh,
-  linux,
   sftp,
   container,
   editor,
@@ -940,9 +916,6 @@ enum SettingsSection {
     SettingsSection.ai => libL10n.ai,
     SettingsSection.server => libL10n.server,
     SettingsSection.ssh => libL10n.terminal,
-    // Not localized: the id is what the settings search matches on, and Linux
-    // is the same word in every locale this ships in.
-    SettingsSection.linux => 'Linux (Beta)',
     SettingsSection.sftp => 'SFTP',
     SettingsSection.container => libL10n.container,
     SettingsSection.editor => libL10n.editor,
@@ -952,8 +925,7 @@ enum SettingsSection {
 
 /// One settings group as a page of its own.
 ///
-/// For the places outside the settings tree that lead into it — the terminal
-/// tab's "add a Linux system" is the one there is.
+/// For places outside the settings tree that open a settings group.
 ///
 /// A wrapper rather than an `embedded` flag on [AppSettingsPage], which is what
 /// the three sibling pages in the menu use: that page is a group's rows and
@@ -1026,23 +998,6 @@ final class _AppSettingsPageState extends ConsumerState<AppSettingsPage> {
   );
 
   @override
-  void initState() {
-    super.initState();
-    // Which releases are installable is fetched rather than compiled in, and
-    // this page is where someone is about to act on the answer: the version
-    // beside "add", the update button on a profile. Launch already tries once;
-    // this catches the case where it failed or the release moved since.
-    //
-    // Not awaited and not shown. What is in force already works, and a refresh
-    // that changes nothing — the ordinary case — should look like nothing.
-    if (widget.section == SettingsSection.linux && Rootfs.isAvailable) {
-      RootfsManifestSource.refresh().then((changed) {
-        if (changed && mounted) setState(() {});
-      });
-    }
-  }
-
-  @override
   void dispose() {
     _sshOpacityCtrl.dispose();
     _sshBlurCtrl.dispose();
@@ -1062,7 +1017,6 @@ final class _AppSettingsPageState extends ConsumerState<AppSettingsPage> {
       SettingsSection.ai => _buildAskAiConfig(),
       SettingsSection.server => _buildServer(),
       SettingsSection.ssh => _buildSSH(),
-      SettingsSection.linux => _buildLinux(),
       SettingsSection.sftp => _buildSFTP(),
       SettingsSection.container => _buildContainer(),
       SettingsSection.editor => _buildEditor(),
@@ -1076,11 +1030,7 @@ final class _AppSettingsPageState extends ConsumerState<AppSettingsPage> {
     ));
   }
 
-  /// Redraws after something a listenable does not cover.
-  ///
-  /// The Linux page reads `Rootfs.profiles`, which is built by scanning a
-  /// directory rather than from a store key, so nothing notifies when an
-  /// install or a removal changes it.
+  /// Redraws after a setting outside a listenable changes.
   void refresh() {
     if (mounted) setState(() {});
   }
@@ -1103,7 +1053,7 @@ final class _AppSettingsPageState extends ConsumerState<AppSettingsPage> {
           context.popDialog();
         }
 
-        await context.showRoundDialog<bool>(
+        await context.showAppRoundDialog<bool>(
           title: title,
           child: Input(
             controller: ctrl,

@@ -11,6 +11,7 @@ import 'package:server_box/view/page/storage/local.dart';
 import 'package:server_box/view/page/storage/server_file.dart';
 import 'package:server_box/view/page/storage/sftp.dart';
 import 'package:server_box/view/page/storage/transfer_announce.dart';
+import 'package:server_box/view/widget/app_dialog.dart';
 
 /// Ask where [source] should go, and queue the transfer.
 ///
@@ -139,7 +140,7 @@ Future<_Place?> _pickPlace(BuildContext context, WidgetRef ref) async {
       if (state.servers[id] case final spi? when canTransferTo(ref, spi)) spi,
   ];
 
-  return context.showRoundDialog<_Place>(
+  return context.showAppRoundDialog<_Place>(
     title: libL10n.select,
     child: SingleChildScrollView(
       child: Column(

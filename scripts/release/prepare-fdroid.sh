@@ -46,9 +46,6 @@ rustup run "$rust_toolchain" cargo fetch \
   --locked \
   --manifest-path crates/sbm_ffi/Cargo.toml
 scripts/release/patch-jni-build-id.sh
-if [ "$variant" = all ] || [ "$variant" = arm64 ]; then
-  scripts/build-proot-android.sh
-fi
 
 # Refresh Flutter's Android metadata after `pub get`, then remove dev-only
 # plugins before Gradle configures the release. The complete build below

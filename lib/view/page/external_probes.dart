@@ -1,11 +1,12 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:server_box/core/service/external_probe_controller.dart';
 import 'package:server_box/data/model/app/external_probe.dart';
 import 'package:server_box/data/provider/external_probe.dart';
 import 'package:server_box/data/provider/server/single.dart';
+import 'package:server_box/view/widget/floating_dialog.dart';
 import 'package:server_box/view/widget/probe_labels.dart';
 
 class ExternalProbesPage extends ConsumerStatefulWidget {
@@ -201,7 +202,7 @@ class _ExternalProbesPageState extends ConsumerState<ExternalProbesPage> {
   }
 
   Future<void> _delete(ExternalProbeController controller, ProbeTarget target) async {
-    final confirmed = await showDialog<bool>(context: context, builder: (dialogContext) => AlertDialog(
+    final confirmed = await showDialog<bool>(context: context, builder: (dialogContext) => AppFloatingDialog(
       title: Text(_t('删除 ${target.name}？', 'Delete ${target.name}?')),
       actions: [TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: Text(_t('取消', 'Cancel'))),
         FilledButton(onPressed: () => Navigator.pop(dialogContext, true), child: Text(_t('删除', 'Delete')))]));
@@ -238,7 +239,7 @@ class _ProbeTargetDialogState extends State<_ProbeTargetDialog> {
   void dispose() { for (final c in [_name, _address, _keyword, _min, _max]) { c.dispose(); } super.dispose(); }
 
   @override
-  Widget build(BuildContext context) => AlertDialog(
+  Widget build(BuildContext context) => AppFloatingDialog(
     title: Text(_t(widget.target == null ? '添加自定义检测' : '编辑自定义检测',
       widget.target == null ? 'Add custom check' : 'Edit custom check')),
     content: SizedBox(width: 440, child: SingleChildScrollView(child: Form(key: _form,

@@ -18,8 +18,6 @@ import 'package:server_box/core/service/native_exit.dart';
 import 'package:server_box/core/service/watch_sync.dart';
 import 'package:server_box/core/service/widget_sync.dart';
 import 'package:server_box/core/sync.dart';
-import 'package:server_box/core/utils/rootfs.dart';
-import 'package:server_box/core/utils/rootfs_manifest_source.dart';
 import 'package:server_box/core/utils/sandbox_import.dart';
 import 'package:server_box/core/utils/ssh_native_crypto.dart';
 import 'package:server_box/data/model/ai/model_context.dart';
@@ -346,38 +344,7 @@ Future<void> _doPlatformRelated() async {
     CrashReport.report();
   }());
 
-  // Where the Linux userland is, and whether there is one — proot and an
-  // unpacked rootfs on Android, the engine and its filesystem on iOS. A few
-  // file checks, and the terminal tab reads the answer while building.
-  try {
-    await Rootfs.prepare();
-  } catch (e, s) {
-    Loggers.app.warning('Failed to locate the Linux rootfs', e, s);
-  }
-  // Both open crash reports naming a terminal are on Android, and neither says
-  // whether a Linux userland was involved at all.
-  Diag.tag(SbDiagTag.rootfs, Rootfs.isAvailable ? 'yes' : 'no');
-
-  // Which releases are installable is data that moves on the distributions'
-  // schedule, so it is fetched rather than compiled in. Not awaited: what
-  // `prepare` just adopted already works, and this only ever replaces it with
-  // something newer that verified.
-  //
-  // Gated on the build carrying an engine at all. Most do not — iOS ships with
-  // the switch off and Android needs a proot this repository does not contain —
-  // and a request per launch for a feature that cannot be used is one nobody
-  // asked for.
-  if (Rootfs.isAvailable) {
-    unawaited(
-      (() async {
-        try {
-          await RootfsManifestSource.refresh();
-        } catch (e, s) {
-          Loggers.app.warning('Rootfs manifest refresh failed', e, s);
-        }
-      })(),
-    );
-  }
+  Diag.tag(SbDiagTag.rootfs, 'no');
 
   // The watch app used to learn about servers only while the user sat on the
   // iOS settings page. Pushing at launch is what makes a freshly installed or

@@ -953,7 +953,7 @@ extension _Widgets on _ServerEditPageState {
     return IconButton(
       tooltip: libL10n.attention,
       onPressed: () {
-        context.showRoundDialog(
+        context.showAppRoundDialog(
           title: libL10n.attention,
           child: SimpleMarkdown(data: l10n.writeScriptTip),
           actions: Btnx.oks,
@@ -974,7 +974,7 @@ extension _Widgets on _ServerEditPageState {
         // two pops in a row from a callback that can see two navigators: the
         // dialog is on the root one, and this page may be inside a pane, so
         // whichever `pop` was written first decided which of the two closed.
-        final confirmed = await context.showRoundDialog<bool>(
+        final confirmed = await context.showAppRoundDialog<bool>(
           title: libL10n.attention,
           child: Text(
             libL10n.askContinue(
@@ -987,7 +987,7 @@ extension _Widgets on _ServerEditPageState {
         try {
           await ref.read(serversProvider.notifier).delServer(cur.id);
         } catch (e, s) {
-          if (mounted) context.showErrDialog(e, s);
+          if (mounted) context.showAppErrDialog(e, s);
           return;
         }
         if (!mounted) return;

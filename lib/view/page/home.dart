@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:math' as math;
-
 import 'package:fl_lib/fl_lib.dart';
+
 import 'package:flutter/foundation.dart' show kReleaseMode, visibleForTesting;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -25,6 +25,7 @@ import 'package:server_box/view/page/home_tab.dart';
 import 'package:server_box/view/page/macos_menu_bar.dart';
 import 'package:server_box/view/page/setting/entries/home_tabs.dart';
 import 'package:server_box/view/page/setting/entry.dart';
+import 'package:server_box/view/widget/app_dialog.dart';
 import 'package:server_box/view/widget/dmg_notice.dart';
 import 'package:server_box/view/widget/legacy_status_notice.dart';
 import 'package:server_box/view/widget/server_share.dart';
@@ -919,7 +920,7 @@ class _HomePageState extends ConsumerState<HomePage>
 
   /// Completes once the lock screen, if there is one, has been dismissed.
   ///
-  /// Awaited by the launch notices. `showRoundDialog` puts a dialog on the
+  /// Awaited by the launch notices. `showAppRoundDialog` puts a dialog on the
   /// *root* navigator, which is the one holding the lock page, so anything
   /// raised while it is up draws over it — and the crash report renders the
   /// previous run's log, which is precisely what a lock screen exists to keep
@@ -1195,7 +1196,7 @@ extension _HomePageNav on _HomePageState {
   /// back where it was. A terminal that was closed takes its scrollback with
   /// it, and whatever was still running in it.
   Future<void> _confirmCloseAllTerminals() async {
-    final ok = await context.showRoundDialog<bool>(
+    final ok = await context.showAppRoundDialog<bool>(
       title: libL10n.attention,
       child: Text(
         libL10n.askContinue(

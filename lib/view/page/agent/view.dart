@@ -1,6 +1,6 @@
 import 'dart:async';
-
 import 'package:fl_lib/fl_lib.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:server_box/core/extension/context/locale.dart';
@@ -16,6 +16,7 @@ import 'package:server_box/view/widget/agent_common.dart';
 import 'package:server_box/view/widget/agent_entry_appear.dart';
 import 'package:server_box/view/widget/agent_proposal_pager.dart';
 import 'package:server_box/view/widget/agent_user_bubble.dart';
+import 'package:server_box/view/widget/app_dialog.dart';
 import 'package:server_box/view/widget/float_shell.dart';
 
 /// How far the copy button floating over an output box stays from that box's
@@ -167,7 +168,7 @@ class _AdHocSessionsButton extends ConsumerWidget {
   }
 
   void _show(BuildContext context) {
-    context.showRoundDialog(
+    context.showAppRoundDialog(
       title: context.l10n.agentAdHocSessions,
       child: Consumer(
         builder: (context, ref, _) {
@@ -303,7 +304,7 @@ class _AgentConversationViewState extends ConsumerState<AgentConversationView> {
   /// because nothing that needs asking is eligible for it.
   Future<void> _runPendingTool(AskAiCommand proposal) async {
     if (proposal.risk == AskAiCommandRisk.destructive) {
-      final confirmed = await context.showRoundDialog<bool>(
+      final confirmed = await context.showAppRoundDialog<bool>(
         title: context.l10n.askAiHighRiskConfirmTitle,
         child: Column(
           mainAxisSize: MainAxisSize.min,

@@ -350,9 +350,6 @@ extension _WarmTerminal on _SSHTabPageState {
               search: _search,
               onTap: _openServer,
               onLocal: () => _open(const LocalSource()),
-              onRootfsOpen: _openRootfs,
-              onRootfsAdd: _addRootfs,
-              onRootfsRemove: _removeRootfs,
               onLongPress: (spi) =>
                   ServerEditPage.route.go(context, args: SpiRequiredArgs(spi)),
             ),

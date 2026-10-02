@@ -1,6 +1,6 @@
 import 'dart:async';
-
 import 'package:fl_lib/fl_lib.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:server_box/core/extension/context/locale.dart';
@@ -14,6 +14,7 @@ import 'package:server_box/data/provider/server/single.dart';
 import 'package:server_box/data/res/terminal.dart';
 import 'package:server_box/data/ssh/terminal_session.dart';
 import 'package:server_box/data/ssh/terminal_source.dart';
+import 'package:server_box/view/widget/app_dialog.dart';
 import 'package:xterm/ui.dart' hide TerminalThemes;
 
 /// Runs [snippet] on [spi] in a terminal, without leaving the page.
@@ -42,7 +43,7 @@ Future<TerminalSession?> showSnippetRun(
   final running = ValueNotifier(true);
 
   try {
-    final carryOn = await context.showRoundDialog<bool>(
+    final carryOn = await context.showAppRoundDialog<bool>(
       title: snippet.name,
       contentPadding: const EdgeInsets.fromLTRB(11, 11, 11, 0),
       child: _SnippetRunView(

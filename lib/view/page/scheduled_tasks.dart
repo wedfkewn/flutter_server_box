@@ -7,6 +7,7 @@ import 'package:server_box/data/model/server/cron.dart';
 import 'package:server_box/data/model/server/system.dart';
 import 'package:server_box/data/provider/server/single.dart';
 import 'package:server_box/data/service/cron_manager.dart';
+import 'package:server_box/view/widget/app_dialog.dart';
 
 enum _ScheduledTaskAction { edit, delete }
 
@@ -286,7 +287,7 @@ extension on _ScheduledTasksPageState {
   Future<void> _deleteTask(CronJob task) async {
     final catalog = _catalog;
     if (catalog == null) return;
-    final confirmed = await context.showRoundDialog<bool>(
+    final confirmed = await context.showAppRoundDialog<bool>(
       title: libL10n.attention,
       child: Text(libL10n.delFmt(l10n.scheduledTasks, task.schedule)),
       actions: Btnx.cancelRedOk,
@@ -327,7 +328,7 @@ extension on _ScheduledTasksPageState {
     var enabled = task?.enabled ?? true;
     try {
       while (mounted) {
-        final submitted = await context.showRoundDialog<bool>(
+        final submitted = await context.showAppRoundDialog<bool>(
           title: task == null ? libL10n.add : libL10n.edit,
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 520),

@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:dartssh2/dartssh2.dart';
+
 import 'package:fl_lib/fl_lib.dart';
 import 'package:flutter/material.dart';
 import 'package:server_box/core/extension/context/locale.dart';
@@ -11,6 +11,7 @@ import 'package:server_box/core/utils/shell_quote.dart';
 import 'package:server_box/data/model/server/server_exec.dart';
 import 'package:server_box/data/model/server/server_private_info.dart';
 import 'package:server_box/data/res/store.dart';
+import 'package:server_box/view/widget/app_dialog.dart';
 
 final class SftpSudoHelper {
   final SSHClient client;
@@ -58,7 +59,7 @@ final class SftpSudoHelper {
     final context = contextProvider();
     if (context == null || !context.mounted) return null;
 
-    final pwd = await context.showPwdDialog(
+    final pwd = await context.showAppPwdDialog(
       title: l10n.trySudo,
       label: spi.ssh?.user ?? '',
       id: '${spi.id}_sftp_sudo',

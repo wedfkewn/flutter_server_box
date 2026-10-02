@@ -1,6 +1,6 @@
 import 'dart:async';
-
 import 'package:fl_lib/fl_lib.dart';
+
 import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter/material.dart';
 import 'package:server_box/core/diag.dart';
@@ -8,6 +8,7 @@ import 'package:server_box/core/extension/context/locale.dart';
 import 'package:server_box/core/service/geo_data.dart';
 import 'package:server_box/data/model/app/geo_manifest.dart';
 import 'package:server_box/data/res/url.dart';
+import 'package:server_box/view/widget/app_dialog.dart';
 
 /// Getting the city data, from wherever somebody noticed they need it.
 ///
@@ -68,7 +69,7 @@ abstract final class GeoDataInstall {
 
     final installed = GeoData.installed();
     if (installed != null && installed.generated == manifest.generated) {
-      await context.showRoundDialog(
+      await context.showAppRoundDialog(
         title: l10n.geoData,
         child: Text(l10n.geoDataCurrent(manifest.generated)),
         actions: Btnx.oks,
@@ -102,7 +103,7 @@ abstract final class GeoDataInstall {
     final progress = ValueNotifier((0, manifest.downloadBytes));
     // Not awaited here: this dialog is closed from below rather than by a
     // button, so waiting on it would wait for the thing this has to close.
-    final closed = context.showRoundDialog(
+    final closed = context.showAppRoundDialog(
       title: l10n.geoData,
       child: _Progress(progress: progress),
       // No actions. Cancelling mid-download would leave a directory half
@@ -144,7 +145,7 @@ abstract final class GeoDataInstall {
     BuildContext context,
     GeoManifest manifest,
   ) async {
-    final ok = await context.showRoundDialog<bool>(
+    final ok = await context.showAppRoundDialog<bool>(
       title: l10n.geoData,
       child: SingleChildScrollView(
         child: SimpleMarkdown(
@@ -165,7 +166,7 @@ abstract final class GeoDataInstall {
     return ok == true;
   }
 
-  static Future<void> _fail(BuildContext context) => context.showRoundDialog(
+  static Future<void> _fail(BuildContext context) => context.showAppRoundDialog(
     title: libL10n.fail,
     child: Text(l10n.geoDataUnreachable),
     actions: Btnx.oks,

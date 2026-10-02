@@ -40,11 +40,36 @@ class WarmPage<T> extends MaterialPage<T> {
   const WarmPage({required super.child, super.key});
 
   @override
-  Route<T> createRoute(BuildContext context) => WarmPageRoute<T>(
-    builder: (_) => child,
-    settings: this,
+  Route<T> createRoute(BuildContext context) => _WarmPageBasedRoute<T>(
+    page: this,
     reduceMotion: MediaQuery.maybeOf(context)?.disableAnimations == true,
   );
+}
+
+/// Read the current Page settings, as Flutter's MaterialPage route does.
+/// Capturing the first child in a builder retains its old background colors
+/// when the navigator updates a page with the same key after a theme change.
+class _WarmPageBasedRoute<T> extends PageRoute<T> with MaterialRouteTransitionMixin<T> {
+  _WarmPageBasedRoute({required WarmPage<T> page, required this.reduceMotion})
+    : super(settings: page, allowSnapshotting: page.allowSnapshotting);
+
+  final bool reduceMotion;
+  WarmPage<T> get _page => settings as WarmPage<T>;
+
+  @override
+  Widget buildContent(BuildContext context) => _page.child;
+
+  @override
+  bool get maintainState => _page.maintainState;
+
+  @override
+  bool get fullscreenDialog => _page.fullscreenDialog;
+
+  @override
+  Duration get transitionDuration => reduceMotion ? Duration.zero : WarmMotion.page;
+
+  @override
+  Duration get reverseTransitionDuration => transitionDuration;
 }
 
 /// Keeps both phone destinations mounted, while only the visible one ticks.
@@ -208,10 +233,11 @@ abstract final class WarmTheme {
         selectedIconTheme: IconThemeData(color: scheme.primary),
       ),
       dialogTheme: const DialogThemeData(
+        constraints: BoxConstraints(minWidth: 360, maxWidth: 420, maxHeight: 560),
         backgroundColor: surface,
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(34)),
+          borderRadius: BorderRadius.all(Radius.circular(28)),
         ),
       ),
       bottomSheetTheme: const BottomSheetThemeData(

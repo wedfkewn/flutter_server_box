@@ -6,6 +6,7 @@ import 'package:server_box/core/extension/context/locale.dart';
 import 'package:server_box/data/model/app/bak/backup2.dart';
 import 'package:server_box/data/model/app/bak/backup_source.dart';
 import 'package:server_box/data/model/app/bak/utils.dart';
+import 'package:server_box/view/widget/app_dialog.dart';
 
 /// Service class for handling backup operations
 class BackupService {
@@ -44,7 +45,7 @@ class BackupService {
         data: {'to': kind},
       );
       if (context.mounted) {
-        context.showErrDialog(e, s, libL10n.backup);
+        context.showAppErrDialog(e, s, libL10n.backup);
       }
     }
   }
@@ -73,18 +74,18 @@ class BackupService {
 
     if (!isEncrypted) {
       try {
-        final (backup, err) = await context.showLoadingDialog(
+        final (backup, err) = await context.showAppLoadingDialog(
           fn: () => _decodeOnIsolate(text, null),
         );
         if (err != null) {
           if (context.mounted) {
-            context.showErrDialog(err, null, libL10n.restore);
+            context.showAppErrDialog(err, null, libL10n.restore);
           }
           return;
         }
         if (backup == null) {
           if (context.mounted) {
-            context.showErrDialog(
+            context.showAppErrDialog(
               '${libL10n.empty}: ${libL10n.backup}',
               null,
               libL10n.restore,
@@ -97,7 +98,7 @@ class BackupService {
         await _confirmAndRestore(context, backup);
       } catch (e, s) {
         Loggers.app.warning('Import backup failed', e, s);
-        if (context.mounted) context.showErrDialog(e, s, libL10n.restore);
+        if (context.mounted) context.showAppErrDialog(e, s, libL10n.restore);
       }
       return;
     }
@@ -107,7 +108,7 @@ class BackupService {
     if (!context.mounted) return;
     if (savedPassword != null && savedPassword.isNotEmpty) {
       try {
-        final (backup, err) = await context.showLoadingDialog(
+        final (backup, err) = await context.showAppLoadingDialog(
           fn: () => _decodeOnIsolate(text, savedPassword),
         );
         if (err == null && backup != null) {
@@ -136,7 +137,7 @@ class BackupService {
       if (password == null) return; // User cancelled
 
       try {
-        final (backup, err) = await context.showLoadingDialog(
+        final (backup, err) = await context.showAppLoadingDialog(
           fn: () => _decodeOnIsolate(text, password),
         );
         if (!context.mounted) return;
@@ -144,7 +145,7 @@ class BackupService {
           final msg = err.toString().toLowerCase();
           if (msg.contains('incorrect password') ||
               msg.contains('failed to decrypt')) {
-            final retry = await context.showRoundDialog<bool>(
+            final retry = await context.showAppRoundDialog<bool>(
               title: l10n.backupPasswordWrong,
               child: Text(l10n.backupPasswordWrong),
               actions: [
@@ -162,12 +163,12 @@ class BackupService {
             continue;
           }
           if (context.mounted) {
-            context.showErrDialog(err, null, libL10n.restore);
+            context.showAppErrDialog(err, null, libL10n.restore);
           }
           return;
         }
         if (backup == null) {
-          context.showErrDialog(
+          context.showAppErrDialog(
             '${libL10n.empty}: ${libL10n.backup}',
             null,
             libL10n.restore,
@@ -181,7 +182,7 @@ class BackupService {
         if (!context.mounted) return;
         if (e.toString().contains('incorrect password') ||
             e.toString().contains('Failed to decrypt')) {
-          final retry = await context.showRoundDialog<bool>(
+          final retry = await context.showAppRoundDialog<bool>(
             title: l10n.backupPasswordWrong,
             child: Text(l10n.backupPasswordWrong),
             actions: [
@@ -200,7 +201,7 @@ class BackupService {
         } else {
           // Other error, show and exit
           if (context.mounted) {
-            context.showErrDialog(e, null, libL10n.restore);
+            context.showAppErrDialog(e, null, libL10n.restore);
           }
           return;
         }
@@ -214,7 +215,7 @@ class BackupService {
     (dynamic, String) backup,
   ) async {
     if (!context.mounted) return;
-    await context.showRoundDialog(
+    await context.showAppRoundDialog(
       title: libL10n.restore,
       child: Text(
         libL10n.askContinue(
@@ -232,7 +233,7 @@ class BackupService {
             } catch (e, s) {
               if (!context.mounted) return;
               context.popDialog();
-              context.showErrDialog(e, s, libL10n.restore);
+              context.showAppErrDialog(e, s, libL10n.restore);
             }
           },
         ),
@@ -261,7 +262,7 @@ class BackupService {
     String? hint,
   }) async {
     final controller = TextEditingController(text: initial ?? '');
-    final result = await context.showRoundDialog<String>(
+    final result = await context.showAppRoundDialog<String>(
       title: title ?? libL10n.pwd,
       // Disposed by the tree: this future completes on the pop, and the
       // field is still there while the route animates out.

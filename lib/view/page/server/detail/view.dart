@@ -33,6 +33,7 @@ import 'package:server_box/data/provider/server/single.dart';
 import 'package:server_box/data/res/store.dart';
 import 'package:server_box/view/page/pve.dart';
 import 'package:server_box/view/page/server/edit/edit.dart';
+import 'package:server_box/view/widget/app_dialog.dart';
 import 'package:server_box/view/widget/app_ui.dart';
 import 'package:server_box/view/widget/dist_icon.dart';
 import 'package:server_box/view/widget/server_func_btns.dart';
@@ -308,7 +309,7 @@ ${err.message ?? 'null'}
           .read(serversProvider.notifier)
           .updateServer(si.spi, si.spi.copyWith(monitorHttp: monitor.allowingInsecure()));
     } catch (e, s) {
-      if (mounted) context.showErrDialog(e, s);
+      if (mounted) context.showAppErrDialog(e, s);
     }
   }
 
@@ -452,7 +453,7 @@ ${err.message ?? 'null'}
   /// the empty page, so the same one-tap answer has to be offered in both.
   void _showErrDetail(ServerState si, Err err) {
     final md = _errMarkdown(err);
-    context.showRoundDialog(
+    context.showAppRoundDialog(
       title: libL10n.error,
       child: SingleChildScrollView(child: SimpleMarkdown(data: md)),
       actions: [
@@ -1220,7 +1221,7 @@ ${err.message ?? 'null'}
     }
 
     final markdown = details.join('\n\n- ');
-    context.showRoundDialog(
+    context.showAppRoundDialog(
       title: smart.device,
       child: MarkdownBody(
         data: '- $markdown',
@@ -1644,7 +1645,7 @@ ${err.message ?? 'null'}
     // whoever is on it. The dialog names the ResetType actually chosen, not the
     // intent, because they differ — a "restart" is ForceRestart on hardware
     // that has no graceful one, and that is worth seeing before agreeing.
-    final ok = await context.showRoundDialog<bool>(
+    final ok = await context.showAppRoundDialog<bool>(
       title: _bmcIntentText(intent),
       child: Text(l10n.bmcPowerConfirm(si.spi.name, request.resetType)),
       actions: Btnx.cancelRedOk,

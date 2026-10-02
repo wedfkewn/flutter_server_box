@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:dartssh2/dartssh2.dart';
+
 import 'package:fl_lib/fl_lib.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -17,6 +17,7 @@ import 'package:server_box/data/model/app/error.dart';
 import 'package:server_box/data/model/server/server_private_info.dart';
 import 'package:server_box/data/model/server/ssh_credential.dart';
 import 'package:server_box/data/res/store.dart';
+import 'package:server_box/view/widget/app_dialog.dart';
 
 /// Must put this func out of any Class.
 ///
@@ -1188,7 +1189,7 @@ Future<bool> _showHostKeyDialog(
       ? l10n.sshHostKeyChangedDesc(info.spi.name)
       : l10n.sshHostKeyNewDesc(info.spi.name);
 
-  final result = await ctx.showRoundDialog<bool>(
+  final result = await ctx.showAppRoundDialog<bool>(
     title: libL10n.attention,
     barrierDismiss: false,
     child: Column(

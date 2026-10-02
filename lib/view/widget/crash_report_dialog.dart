@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:server_box/core/extension/context/locale.dart';
 import 'package:server_box/core/service/crash_report.dart';
 import 'package:server_box/data/res/url.dart';
+import 'package:server_box/view/widget/app_dialog.dart';
 
 /// Shows what the previous run left behind, after it crashed.
 ///
@@ -24,7 +25,7 @@ abstract final class CrashReportDialog {
   /// False only when the user dropped it, which is what the caller needs to
   /// know: the row that opened this stops existing at that point.
   static Future<bool> show(BuildContext context, String report) async {
-    final action = await context.showRoundDialog<_ReportAction>(
+    final action = await context.showAppRoundDialog<_ReportAction>(
       title: l10n.crashReportTitle,
       child: _ReportBody(report: report),
       actionsBuilder: (ctx) => [

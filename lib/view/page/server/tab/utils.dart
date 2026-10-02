@@ -64,7 +64,7 @@ extension _Actions on _ServerPageState {
   /// The cost is a tap: this used to open the editor directly. Adding a server
   /// is rare enough that finding the other two is worth more than saving it.
   Future<void> _onTapAddServer() async {
-    final way = await context.showRoundDialog<_AddServerWay>(
+    final way = await context.showAppRoundDialog<_AddServerWay>(
       title: libL10n.add,
       child: Column(
         mainAxisSize: MainAxisSize.min,

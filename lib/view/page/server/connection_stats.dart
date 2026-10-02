@@ -6,6 +6,7 @@ import 'package:flutter/rendering.dart';
 import 'package:server_box/core/extension/context/locale.dart';
 import 'package:server_box/data/model/server/connection_stat.dart';
 import 'package:server_box/data/res/store.dart';
+import 'package:server_box/view/widget/app_dialog.dart';
 
 class ConnectionStatsPage extends StatefulWidget {
   const ConnectionStatsPage({super.key});
@@ -272,7 +273,7 @@ extension _Actions on _ConnectionStatsPageState {
   }
 
   void _showServerDetailsDialog(ServerConnectionStats stats) {
-    context.showRoundDialog(
+    context.showAppRoundDialog(
       title: '${stats.serverName} - ${l10n.connectionDetails}',
       child: SizedBox(
         width: double.maxFinite,
@@ -353,7 +354,7 @@ extension _Actions on _ConnectionStatsPageState {
     required String content,
     required Future<void> Function() onConfirm,
   }) {
-    context.showRoundDialog(
+    context.showAppRoundDialog(
       title: title,
       child: Text(content),
       actions: [
@@ -368,7 +369,7 @@ extension _Actions on _ConnectionStatsPageState {
               }
             } catch (e, s) {
               if (!mounted) return;
-              context.showErrDialog(e, s);
+              context.showAppErrDialog(e, s);
             }
           },
           text: libL10n.ok,

@@ -4,7 +4,6 @@ import 'dart:io';
 
 import 'package:fl_lib/fl_lib.dart';
 import 'package:server_box/core/utils/android_rootfs.dart';
-import 'package:server_box/core/utils/ish_exec.dart';
 import 'package:server_box/core/utils/local_shell.dart';
 import 'package:server_box/core/utils/process_tree.dart';
 import 'package:server_box/core/utils/rootfs.dart';
@@ -13,11 +12,7 @@ import 'package:server_box/data/res/store.dart';
 
 /// [ServerExec] on the machine the app is running on.
 ///
-/// Two mechanisms behind one name, which is the split the terminal already has
-/// (`LocalShellBackend` and `IshShellBackend`): everywhere but iOS the app
-/// starts a process, and iOS has none to start, so its commands run inside the
-/// interpreter's guest. What the Agent's tools ask is the same either way —
-/// whether this machine is a container, and where a path it names actually is.
+/// Native local commands remain available on supported desktop hosts.
 abstract class LocalExec implements ServerExec {
   const LocalExec();
 
@@ -34,9 +29,9 @@ abstract class LocalExec implements ServerExec {
   /// caller that got an instance has a machine; what kind it is, it asks the
   /// instance.
   static LocalExec? forThisDevice() {
-    if (isIOS) return IshExec.isSupported ? const IshExec() : null;
+    if (isAndroid || isIOS) return null;
     if (!ProcessExec.isSupported) return null;
-    return ProcessExec(inRootfs: isAndroid);
+    return const ProcessExec();
   }
 
   /// Whether this platform will run one.

@@ -338,7 +338,7 @@ class _AskAiPanelState extends ConsumerState<_AskAiPanel> {
   /// the session has no `BuildContext` to put one on.
   Future<void> _runPendingCommand(AskAiCommand command) async {
     if (command.risk == AskAiCommandRisk.destructive) {
-      final confirmed = await context.showRoundDialog<bool>(
+      final confirmed = await context.showAppRoundDialog<bool>(
         title: context.l10n.askAiHighRiskConfirmTitle,
         child: Column(
           mainAxisSize: MainAxisSize.min,

@@ -10,6 +10,7 @@ import 'package:server_box/data/model/server/system.dart';
 import 'package:server_box/data/model/server/system_user.dart';
 import 'package:server_box/data/provider/server/single.dart';
 import 'package:server_box/data/service/user_manager.dart';
+import 'package:server_box/view/widget/app_dialog.dart';
 
 enum _UserFilter { all, regular, system }
 
@@ -314,7 +315,7 @@ extension on _UsersPageState {
 
   Future<void> _deleteUser(ServerUser user) async {
     var removeHome = false;
-    final confirmed = await context.showRoundDialog<bool>(
+    final confirmed = await context.showAppRoundDialog<bool>(
       title: libL10n.attention,
       child: StatefulBuilder(
         builder: (context, setDialogState) => Column(
@@ -351,7 +352,7 @@ extension on _UsersPageState {
       );
       if (result.exitCode == kSudoPasswordRejected) {
         if (!mounted) return false;
-        final password = await context.showPwdDialog(
+        final password = await context.showAppPwdDialog(
           title: libL10n.sudoPassword,
           label: widget.args.spi.ssh?.user ?? _catalog?.currentUser ?? '',
           id: '${widget.args.spi.id}_sudo_users',
@@ -404,7 +405,7 @@ extension on _UsersPageState {
 
     try {
       while (mounted) {
-        final submitted = await context.showRoundDialog<bool>(
+        final submitted = await context.showAppRoundDialog<bool>(
           title: user == null ? libL10n.add : libL10n.edit,
           child: ConstrainedBox(
             constraints: BoxConstraints(

@@ -1,6 +1,6 @@
 import 'dart:convert';
-
 import 'package:fl_lib/fl_lib.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:icons_plus/icons_plus.dart';
@@ -13,6 +13,7 @@ import 'package:server_box/view/page/storage/local.dart';
 import 'package:server_box/view/page/storage/send_to.dart';
 import 'package:server_box/view/page/storage/server_file.dart';
 import 'package:server_box/view/page/storage/sftp.dart';
+import 'package:server_box/view/widget/app_dialog.dart';
 import 'package:server_box/view/widget/dist_icon.dart';
 import 'package:server_box/view/widget/pane_settings.dart';
 
@@ -390,7 +391,7 @@ extension _Sessions on _FileTabPageState {
     final tab = _sessions.tabs.elementAtOrNull(index - 1);
     if (tab == null) return;
 
-    final confirm = await context.showRoundDialog<bool>(
+    final confirm = await context.showAppRoundDialog<bool>(
       title: libL10n.attention,
       child: Text('${libL10n.close} ${tab.name} ?'),
       actions: Btnx.okReds,

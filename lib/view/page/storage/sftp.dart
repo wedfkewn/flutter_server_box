@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
-
 import 'package:dartssh2/dartssh2.dart';
+
 import 'package:fl_lib/fl_lib.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -29,6 +29,7 @@ import 'package:server_box/view/page/storage/file_browser.dart';
 import 'package:server_box/view/page/storage/local.dart';
 import 'package:server_box/view/page/storage/show_transfers.dart';
 import 'package:server_box/view/page/storage/transfer_announce.dart';
+import 'package:server_box/view/widget/app_dialog.dart';
 
 part 'sftp_helpers.dart';
 
@@ -431,7 +432,7 @@ extension _Actions on _SftpPageState {
   }
 
   void _download(FileEntry entry, String fullPath) {
-    context.showRoundDialog(
+    context.showAppRoundDialog(
       title: libL10n.attention,
       child: Text('${l10n.dl2Local(entry.name)}\n${l10n.keepForeground}'),
       actions: [
@@ -448,7 +449,7 @@ extension _Actions on _SftpPageState {
               await LocalFiles.ensure();
             } catch (e, s) {
               Loggers.app.warning('Prepare ${Paths.file}', e, s);
-              if (mounted) context.showErrDialog(e, s);
+              if (mounted) context.showAppErrDialog(e, s);
               return;
             }
             if (!mounted) return;
@@ -468,7 +469,7 @@ extension _Actions on _SftpPageState {
   }
 
   Future<void> _upload(FileBrowserHandle handle) async {
-    final from = await context.showRoundDialog<int>(
+    final from = await context.showAppRoundDialog<int>(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -556,7 +557,7 @@ extension _Actions on _SftpPageState {
           completer: completer,
         );
 
-    final (moved, err) = await context.showLoadingDialog(
+    final (moved, err) = await context.showAppLoadingDialog(
       // No timeout: this waits for a transfer, whose length is the file's
       // business and not this dialog's.
       timeout: null,
@@ -600,7 +601,7 @@ extension _Actions on _SftpPageState {
   ) async {
     final cmd = _getDecompressCmd(fullPath);
     if (cmd == null) {
-      context.showRoundDialog(
+      context.showAppRoundDialog(
         title: libL10n.error,
         child: Text('${libL10n.unsupported}: ${entry.name}'),
         actions: Btnx.oks,
@@ -608,7 +609,7 @@ extension _Actions on _SftpPageState {
       return;
     }
 
-    final confirm = await context.showRoundDialog<bool>(
+    final confirm = await context.showAppRoundDialog<bool>(
       title: libL10n.attention,
       child: SimpleMarkdown(data: '```sh\n$cmd\n```'),
       actions: Btnx.cancelRedOk,
@@ -695,7 +696,7 @@ extension _Edit on _SftpPageState {
     if (!useSudo) return entry.size ?? 0;
     final pwd = await _sudoHelper.ensurePassword();
     if (pwd == null || !mounted) return null;
-    final (size, err) = await context.showLoadingDialog(
+    final (size, err) = await context.showAppLoadingDialog(
       fn: () => _sudoHelper.getFileSize(remotePath, password: pwd),
     );
     return err == null ? size : null;
@@ -709,7 +710,7 @@ extension _Edit on _SftpPageState {
     if (useSudo) {
       final pwd = await _sudoHelper.ensurePassword();
       if (pwd == null || !mounted) return false;
-      final (_, err) = await context.showLoadingDialog(
+      final (_, err) = await context.showAppLoadingDialog(
         fn: () async {
           await _sudoHelper.downloadTextFile(
             remotePath,
@@ -732,7 +733,7 @@ extension _Edit on _SftpPageState {
           ),
           completer: completer,
         );
-    final (opened, err) = await context.showLoadingDialog(
+    final (opened, err) = await context.showAppLoadingDialog(
       timeout: null,
       fn: () async {
         // The completer says "this transfer is over", not "it worked":
@@ -771,7 +772,7 @@ extension _Edit on _SftpPageState {
 
     final pwd = await _sudoHelper.ensurePassword();
     if (pwd == null || !mounted) return;
-    final (_, err) = await context.showLoadingDialog(
+    final (_, err) = await context.showAppLoadingDialog(
       fn: () async {
         await _sudoHelper.uploadTextFile(localPath, remotePath, password: pwd);
         return true;
@@ -808,7 +809,7 @@ final class _SudoEscalation implements SftpEscalation {
   Future<bool> confirmRetry() async {
     final context = contextProvider();
     if (context == null) return false;
-    final retry = await context.showRoundDialog<bool>(
+    final retry = await context.showAppRoundDialog<bool>(
       title: l10n.trySudo,
       child: Text(
         '${libL10n.permissionDenied}\n${libL10n.askContinue(l10n.trySudo)}',

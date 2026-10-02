@@ -82,7 +82,7 @@ extension _SSH on _AppSettingsPageState {
       return;
     }
 
-    final shouldImport = await context.showRoundDialog<bool>(
+    final shouldImport = await context.showAppRoundDialog<bool>(
       title: l10n.sshConfigImport,
       child: SingleChildScrollView(
         child: Column(
@@ -127,7 +127,7 @@ extension _SSH on _AppSettingsPageState {
     dprint('Error importing SSH config: $e');
     if (e is PathAccessException ||
         e.toString().contains('Operation not permitted')) {
-      final useFilePicker = await context.showRoundDialog<bool>(
+      final useFilePicker = await context.showAppRoundDialog<bool>(
         title: l10n.sshConfigImport,
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -148,7 +148,7 @@ extension _SSH on _AppSettingsPageState {
       }
     } else {
       if (!mounted) return;
-      context.showErrDialog(e, s);
+      context.showAppErrDialog(e, s);
     }
   }
 
@@ -173,7 +173,7 @@ extension _SSH on _AppSettingsPageState {
       }
     } catch (e, s) {
       if (!mounted) return;
-      context.showErrDialog(e, s);
+      context.showAppErrDialog(e, s);
     }
   }
 
@@ -195,7 +195,7 @@ extension _SSH on _AppSettingsPageState {
         return WarmSettingValue(fontName ?? libL10n.empty);
       }),
       onTap: () {
-        context.showRoundDialog(
+        context.showAppRoundDialog(
           title: libL10n.font,
           actions: [
             TextButton(
@@ -296,7 +296,7 @@ extension _SSH on _AppSettingsPageState {
               context.popDialog();
             }
 
-            await context.showRoundDialog<bool>(
+            await context.showAppRoundDialog<bool>(
               title: libL10n.select,
               child: Input(
                 controller: ctrl,
@@ -360,7 +360,7 @@ extension _SSH on _AppSettingsPageState {
         builder: (val) => Text(index2Str(val), style: UIs.text15),
       ),
       onTap: () async {
-        final selected = await context.showPickSingleDialog(
+        final selected = await context.showAppPickSingleDialog(
           title: libL10n.theme,
           items: List.generate(3, (index) => index),
           display: (p0) => index2Str(p0),
@@ -413,7 +413,7 @@ extension _SSH on _AppSettingsPageState {
         return WarmSettingValue(name ?? libL10n.empty);
       }),
       onTap: () {
-        context.showRoundDialog(
+        context.showAppRoundDialog(
           title: libL10n.image,
           actions: [
             TextButton(
@@ -451,7 +451,7 @@ extension _SSH on _AppSettingsPageState {
         listenable: _setting.sshBgOpacity.listenable(),
         builder: (val) => Text(val.toString(), style: UIs.text15),
       ),
-      onTap: () => context.showRoundDialog(
+      onTap: () => context.showAppRoundDialog(
         title: libL10n.opacity,
         child: Input(
           controller: _sshOpacityCtrl,
@@ -488,7 +488,7 @@ extension _SSH on _AppSettingsPageState {
         listenable: _setting.sshBlurRadius.listenable(),
         builder: (val) => Text(val.toString(), style: UIs.text15),
       ),
-      onTap: () => context.showRoundDialog(
+      onTap: () => context.showAppRoundDialog(
         title: libL10n.blurRadius,
         child: Input(
           controller: _sshBlurCtrl,
@@ -575,7 +575,7 @@ extension _SSH on _AppSettingsPageState {
         context.popDialog();
       }
 
-      await context.showRoundDialog<bool>(
+      await context.showAppRoundDialog<bool>(
         title: l10n.tmuxSessionName,
         child: Input(
           controller: ctrl,

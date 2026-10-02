@@ -48,6 +48,8 @@ void main() {
     }
     await font('SettingsSans', Platform.isWindows ? r'C:\Windows\Fonts\msyh.ttc'
       : '/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc');
+    await font('SettingsLatin', r'C:\Windows\Fonts\segoeui.ttf');
+    await font('SettingsKorean', r'C:\Windows\Fonts\malgun.ttf');
     final configFile = File('.dart_tool/package_config.json').absolute;
     final packages = (jsonDecode(await configFile.readAsString()) as Map)['packages'] as List;
     final icons = packages.cast<Map>().firstWhere((package) => package['name'] == 'icons_plus');
@@ -84,7 +86,7 @@ void main() {
       child: MaterialApp(key: ValueKey('$title-$width-$scale-$dark'), debugShowCheckedModeBanner: false,
         locale: const Locale('zh'), supportedLocales: AppLocalizations.supportedLocales,
         localizationsDelegates: const [FLocalizations.delegate, LibLocalizations.delegate, ...AppLocalizations.localizationsDelegates],
-        theme: theme.copyWith(textTheme: theme.textTheme.apply(fontFamily: 'SettingsSans'),
+        theme: theme.copyWith(textTheme: theme.textTheme.apply(fontFamily: 'SettingsSans', fontFamilyFallback: ['SettingsLatin', 'SettingsKorean']),
           primaryTextTheme: theme.primaryTextTheme.apply(fontFamily: 'SettingsSans'),
           appBarTheme: theme.appBarTheme.copyWith(titleTextStyle:
             theme.appBarTheme.titleTextStyle?.copyWith(fontFamily: 'SettingsSans'))),
@@ -111,6 +113,30 @@ void main() {
     image.dispose();
   });
 
+  testWidgets('language popup matches the floating design and saves only on Done', (tester) async {
+    for (final dark in [false, true]) {
+      await pump(tester, const AppSettingsPage(section: SettingsSection.app), '通用', dark: dark);
+      await tester.tap(find.text(libL10n.language).first);
+      await frames(tester);
+      expect(find.byKey(const ValueKey('language-picker')), findsOneWidget);
+      final rect = tester.getRect(find.byKey(const ValueKey('language-picker')));
+      expect(rect.left, greaterThan(20));
+      expect(rect.top, greaterThan(40));
+      await capture(tester, 'language-floating-${dark ? "dark" : "light"}');
+      await tester.enterText(find.byType(EditableText), '英语');
+      await frames(tester);
+      await tester.tap(find.byKey(const ValueKey('language-en')));
+      await frames(tester);
+      expect(Stores.setting.locale.fetch(), isNot('en'));
+      await tester.tap(find.byKey(const ValueKey('language-done')));
+      await frames(tester);
+      expect(Stores.setting.locale.fetch(), 'en');
+      expect(find.byType(AppSettingsPage), findsOneWidget);
+      Stores.setting.locale.put('zh');
+      expect(tester.takeException(), isNull);
+    }
+  });
+
   final pages = <String, Widget>{
     'iOS': const IosSettingsPage(embedded: true),
     'AI': const AppSettingsPage(section: SettingsSection.ai),
@@ -120,7 +146,6 @@ void main() {
     '编辑器': const AppSettingsPage(section: SettingsSection.editor),
     '容器': const AppSettingsPage(section: SettingsSection.container),
     'SFTP': const AppSettingsPage(section: SettingsSection.sftp),
-    'Linux (Beta)': const AppSettingsPage(section: SettingsSection.linux),
     '服务器设置': const AppSettingsPage(section: SettingsSection.server),
     '终端设置': const AppSettingsPage(section: SettingsSection.ssh),
     '顺序': const ServerOrdersPage(embedded: true),

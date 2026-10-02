@@ -24,7 +24,7 @@ extension _Discovery on _ServerEditPageState {
       found = await SshDiscoveryDialog.show(context);
     } catch (e, s) {
       if (!mounted) return;
-      context.showErrDialog(e, s);
+      context.showAppErrDialog(e, s);
       return;
     }
     if (!mounted || found == null) return;
@@ -79,12 +79,12 @@ extension _Actions on _ServerEditPageState {
   Future<void> _onTapBmcAccount() async {
     final creds = ref.read(bmcCredentialProvider).creds;
     final current = _bmcCredId.value;
-    // `showPickDialog` rather than `showPickSingleDialog`, which answers null
+    // `showAppPickDialog` rather than `showAppPickSingleDialog`, which answers null
     // for a dialog that was dismissed *and* for one whose selection was
     // cleared. Those have to be told apart here, or dismissing would silently
     // unset the account. This one answers null only for a dismissal, and an
     // empty list for a clear.
-    final picked = await context.showPickDialog<String>(
+    final picked = await context.showAppPickDialog<String>(
       title: l10n.bmcAccount,
       items: [...creds.map((e) => e.id), _kNewBmcCred],
       display: (id) {
@@ -144,7 +144,7 @@ extension _Actions on _ServerEditPageState {
     final pinned = _bmcCert.value;
     final changed = pinned != null && pinned != info.fingerprint;
 
-    final accepted = await context.showRoundDialog<bool>(
+    final accepted = await context.showAppRoundDialog<bool>(
       title: l10n.bmcCert,
       barrierDismiss: false,
       child: Column(
@@ -185,7 +185,7 @@ extension _Actions on _ServerEditPageState {
 
     // Disposed by the tree, not after this `await`: the dialog's future
     // completes on the pop, while the field is still mounted and animating.
-    await context.showRoundDialog(
+    await context.showAppRoundDialog(
       title: libL10n.sudoPwdTitle(libL10n.pwd),
       child: DisposeWith(
         notifiers: [controller],
@@ -226,7 +226,7 @@ extension _Actions on _ServerEditPageState {
     await _setPendingSudoPassword(value);
     if (!mounted) return;
     // `popDialog`, not `pop`. This runs from the dialog's Save button but
-    // `context` is the *page's*, and `showRoundDialog` puts the dialog on the
+    // `context` is the *page's*, and `showAppRoundDialog` puts the dialog on the
     // root navigator — so in a pane those are two navigators and `pop` closed
     // the edit page while leaving the dialog on screen.
     context.popDialog();
@@ -381,7 +381,7 @@ extension _Actions on _ServerEditPageState {
       // on every save would be asking about something that is not true.
       final hasKey = selectedKey != null || _keyPath.value != null;
       if (!hasKey && _passwordController.text.isEmpty) {
-        final ok = await context.showRoundDialog<bool>(
+        final ok = await context.showAppRoundDialog<bool>(
           title: libL10n.attention,
           child: Text(libL10n.askContinue(l10n.useNoPwd)),
           actions: Btnx.cancelRedOk,
@@ -565,7 +565,7 @@ extension _Actions on _ServerEditPageState {
       if (mounted) Toast.error(l10n.nameAlreadyExistsFmt(e.name));
       return;
     } catch (e, s) {
-      if (mounted) context.showErrDialog(e, s);
+      if (mounted) context.showAppErrDialog(e, s);
       return;
     }
 
@@ -641,7 +641,7 @@ extension _Utils on _ServerEditPageState {
         return;
       }
 
-      final shouldImport = await context.showRoundDialog<bool>(
+      final shouldImport = await context.showAppRoundDialog<bool>(
         title: l10n.sshConfigImport,
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -687,7 +687,7 @@ extension _Utils on _ServerEditPageState {
   }
 
   Future<void> _showCmdTypesDialog(Set<ShellCmdType> allCmdTypes) {
-    return context.showRoundDialog(
+    return context.showAppRoundDialog(
       title: '${libL10n.disabled} ${libL10n.cmd}',
       child: SizedBox(
         width: 270,

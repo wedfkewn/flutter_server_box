@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:math' as math;
-
 import 'package:fl_lib/fl_lib.dart';
+
 import 'package:flutter/gestures.dart' show DragStartBehavior;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,10 +9,7 @@ import 'package:server_box/core/extension/context/inset.dart';
 import 'package:server_box/core/extension/context/locale.dart';
 import 'package:server_box/core/route.dart';
 import 'package:server_box/core/utils/local_shell.dart';
-import 'package:server_box/core/utils/rootfs.dart';
 import 'package:server_box/core/warm_theme.dart';
-import 'package:server_box/data/model/app/linux_distro.dart';
-import 'package:server_box/data/model/server/dist.dart';
 import 'package:server_box/data/model/server/server_private_info.dart';
 import 'package:server_box/data/model/server/snippet.dart';
 import 'package:server_box/data/provider/app/session_requests.dart';
@@ -23,12 +20,11 @@ import 'package:server_box/data/ssh/session_manager.dart';
 import 'package:server_box/data/ssh/terminal_session.dart';
 import 'package:server_box/data/ssh/terminal_source.dart';
 import 'package:server_box/view/page/server/edit/edit.dart';
-import 'package:server_box/view/page/setting/entry.dart';
 import 'package:server_box/view/page/ssh/page/page.dart';
+import 'package:server_box/view/widget/app_dialog.dart';
 import 'package:server_box/view/widget/app_ui.dart';
 import 'package:server_box/view/widget/dist_icon.dart';
 import 'package:server_box/view/widget/pane_settings.dart';
-import 'package:server_box/view/widget/rootfs_install.dart';
 
 part 'tab_add.dart';
 part 'tab_sort.dart';
@@ -134,9 +130,6 @@ class _SSHTabPageState extends ConsumerState<SSHTabPage>
       search: _search,
       onTap: _openServer,
       onLocal: () => _open(const LocalSource()),
-      onRootfsOpen: _openRootfs,
-      onRootfsAdd: _addRootfs,
-      onRootfsRemove: _removeRootfs,
       onLongPress: (spi) =>
           ServerEditPage.route.go(context, args: SpiRequiredArgs(spi)),
     ),
@@ -148,7 +141,6 @@ class _SSHTabPageState extends ConsumerState<SSHTabPage>
   @override
   void initState() {
     super.initState();
-    Rootfs.removed.addListener(_onRootfsRemoved);
     // Both after the first frame, and in this order: a queued request is what
     // the user just asked for, and it should end up beside the tabs that were
     // already open rather than racing them.
@@ -170,7 +162,6 @@ class _SSHTabPageState extends ConsumerState<SSHTabPage>
 
   @override
   void dispose() {
-    Rootfs.removed.removeListener(_onRootfsRemoved);
     _sessions.dispose();
     _sortVersion.dispose();
     _search.dispose();
@@ -214,9 +205,6 @@ class _SSHTabPageState extends ConsumerState<SSHTabPage>
               actions: [_sortBtn, _searchBtn, _historyBtn],
               onOpen: _openServer,
               onLocal: () => _open(const LocalSource()),
-              onRootfsOpen: _openRootfs,
-              onRootfsAdd: _addRootfs,
-              onRootfsRemove: _removeRootfs,
               onEdit: (spi) =>
                   ServerEditPage.route.go(context, args: SpiRequiredArgs(spi)),
               onSelect: _sessions.select,
@@ -401,79 +389,12 @@ extension _Sessions on _SSHTabPageState {
     _setDrawer(false);
   }
 
-  /// Opens a shell in the system a chip names.
-  ///
-  /// Which one is picked on the page rather than asked for here: they can all
-  /// run at once, so it is a tap on the one wanted and not a question in the
-  /// way.
-  void _openRootfs(String profileId) =>
-      _open(LocalSource(rootfs: true, profileId: profileId));
-
-  /// Installs another system and opens a shell in it.
-  ///
-  /// The install is where the tap may stop: it downloads, and it can be
-  /// cancelled or fail. Only a system that is actually there gets a tab, which
-  /// is why the id comes back from the install rather than from the settings.
-  /// Opens the Linux settings rather than installing something.
-  ///
-  /// It used to install straight away: one tap fetched a fixed distribution at
-  /// a fixed version and opened a shell in it. That is a download of a hundred
-  /// megabytes and a choice of distribution, both made on the user's behalf by
-  /// a `+` on a list of servers. The settings page is where the choice
-  /// actually lives — which release, which mirror, which shell — so this is
-  /// the way there.
-  /// [SettingsSectionPage], which is the group with a bar and a surface round
-  /// it — [AppSettingsPage] on its own is the rows, and a route holding those
-  /// alone is a black screen.
-  ///
-  /// On the root navigator, not this tab's. The settings are not part of the
-  /// terminal tab, and pushed inside it they replaced its contents with the
-  /// navigation still on screen — and from the side bar, which is a pane, they
-  /// would open in the narrow column beside the terminals.
-  void _addRootfs() {
-    SettingsSectionPage.route.go(
-      context,
-      SettingsSection.linux,
-      target: NavTarget.root,
-    );
-  }
-
-  /// Deletes one Linux system, and the terminals that were inside it.
-  ///
-  /// Their shells are already gone with the files they were running from, so
-  /// leaving the tabs up would leave dead terminals nobody asked to keep. Tabs
-  /// in the *other* systems are untouched — that is the point of them being
-  /// separate.
-  Future<void> _removeRootfs(LinuxProfile target) async {
-    await removeRootfs(context, profile: target);
-  }
-
-  /// Closes the terminals that were running in a system that has been deleted.
-  ///
-  /// Their shells went with the files they were running from, so leaving the
-  /// tabs up leaves dead terminals nobody asked to keep. Driven by
-  /// `Rootfs.removed` rather than by the delete here, because the settings page
-  /// deletes too and only this page has the tabs.
-  void _onRootfsRemoved() {
-    final id = Rootfs.removed.value;
-    if (id == null || !mounted) return;
-    for (final tab in [..._sessions.tabs]) {
-      final source = tab.data.page.args.source;
-      if (source is! LocalSource || !source.rootfs) continue;
-      // A tab that names no profile was opened in whichever was selected then.
-      // With that one gone the selection has moved, so it cannot be recovered
-      // here — such a tab is left alone rather than closed on a guess, and its
-      // shell reports what it finds.
-      if (source.profileId == id) _closeTab(tab.id);
-    }
-  }
-
   Future<void> _confirmClose(int index) async {
     // Resolved now, while the position still means what the bar drew.
     final tab = _sessions.tabs.elementAtOrNull(index - 1);
     if (tab == null) return;
 
-    final confirm = await contextSafe?.showRoundDialog(
+    final confirm = await contextSafe?.showAppRoundDialog(
       title: libL10n.attention,
       // Not "SSH": this strip also carries a shell on this device and one
       // inside the Linux userland, neither of which is a connection to
@@ -559,22 +480,8 @@ extension _Sessions on _SSHTabPageState {
       final id = entry['sourceId'] ?? entry['serverId'];
       final TerminalSource source;
       if (id is String && id.startsWith(LocalSource.rootfsId)) {
-        // Only where there is one to enter. A rootfs the user deleted, or a
-        // tab set restored onto a build without proot, would otherwise reopen
-        // as a terminal that can only print an error.
-        if (!Rootfs.isAvailable) continue;
-        if (!Rootfs.isReady) continue;
-        // A saved set from before profiles existed names no profile, and reads
-        // as "whichever is selected" — which is what it meant.
-        final profileId = LocalSource.profileIdOf(id);
-        // One that names a profile this device has not got is skipped like an
-        // unknown server: a backup restored onto another device is exactly how
-        // that happens.
-        if (profileId != null &&
-            !Rootfs.profiles.any((e) => e.id == profileId)) {
-          continue;
-        }
-        source = LocalSource(rootfs: true, profileId: profileId);
+        // Ignore saved sessions for the removed local Linux feature.
+        continue;
       } else if (id == const LocalSource().id) {
         // A tab set saved on a desktop can be restored on a phone — the same
         // backup, the same account — and iOS has no shell to give. Skipped
@@ -768,7 +675,7 @@ extension _Actions on _SSHTabPageState {
   void _showHistory() {
     final history = Stores.history.sshServerHistory.all.cast<String>();
     if (history.isEmpty) {
-      context.showRoundDialog(
+      context.showAppRoundDialog(
         title: l10n.serverHistory,
         child: Text(libL10n.empty),
         actions: [Btn.ok(onTap: context.popDialog)],
@@ -777,7 +684,7 @@ extension _Actions on _SSHTabPageState {
     }
 
     final servers = ref.read(serversProvider).servers;
-    context.showRoundDialog(
+    context.showAppRoundDialog(
       title: l10n.serverHistory,
       child: SizedBox(
         width: 420,

@@ -4,6 +4,7 @@ import 'package:server_box/core/extension/context/inset.dart';
 import 'package:server_box/core/extension/context/locale.dart';
 import 'package:server_box/core/utils/server.dart';
 import 'package:server_box/data/res/store.dart';
+import 'package:server_box/view/widget/app_dialog.dart';
 import 'package:server_box/view/widget/dist_icon.dart';
 
 /// Every host key this app has accepted, and a way to take one back.
@@ -78,7 +79,7 @@ class _KnownHostsPageState extends State<KnownHostsPage> {
         : '${_label(key.serverId)} · '
               '${key.keyType.isEmpty ? libL10n.unknown : key.keyType}\n'
               '${key.fingerprint}';
-    final ok = await context.showRoundDialog<bool>(
+    final ok = await context.showAppRoundDialog<bool>(
       title: libL10n.attention,
       child: Text(libL10n.askContinue('${libL10n.delete} $what')),
       actions: Btnx.cancelRedOk,

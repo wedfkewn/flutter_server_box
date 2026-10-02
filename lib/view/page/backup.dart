@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:computer/computer.dart';
+
 import 'package:fl_lib/fl_lib.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,6 +16,7 @@ import 'package:server_box/data/model/server/snippet.dart';
 import 'package:server_box/data/provider/snippet.dart';
 import 'package:server_box/data/res/misc.dart';
 import 'package:server_box/data/res/store.dart';
+import 'package:server_box/view/widget/app_dialog.dart';
 import 'package:server_box/view/widget/server_share.dart';
 import 'package:server_box/view/widget/warm_settings.dart';
 import 'package:webdav_client_plus/webdav_client_plus.dart';
@@ -193,7 +194,7 @@ final class _BackupPageState extends ConsumerState<BackupPage>
     final currentPwd = await SecureStoreProps.bakPwd.read();
     final controller = TextEditingController(text: currentPwd ?? '');
     final node = FocusNode();
-    final result = await context.showRoundDialog<bool>(
+    final result = await context.showAppRoundDialog<bool>(
       title: l10n.backupPassword,
       // Both disposed by the tree. The focus node has the same problem the
       // controller does — the field holds it while the route animates out —
@@ -597,7 +598,7 @@ final class _BackupPageState extends ConsumerState<BackupPage>
       leading: const Icon(MingCute.code_line),
       trailing: const Icon(Icons.keyboard_arrow_right),
       onTap: () async {
-        final data = await context.showImportDialog(
+        final data = await context.showAppImportDialog(
           title: libL10n.snippet,
           modelDef: Snippet.example.toJson(),
         );
@@ -606,10 +607,10 @@ final class _BackupPageState extends ConsumerState<BackupPage>
         try {
           str = utf8.decode(data);
         } on FormatException catch (e, s) {
-          context.showErrDialog(e, s, libL10n.error);
+          context.showAppErrDialog(e, s, libL10n.error);
           return;
         }
-        final (list, _) = await context.showLoadingDialog(
+        final (list, _) = await context.showAppLoadingDialog(
           fn: () => Computer.shared.start((s) {
             return json.decode(s) as List;
           }, str),
@@ -630,7 +631,7 @@ final class _BackupPageState extends ConsumerState<BackupPage>
           return;
         }
         if (errs.isNotEmpty) {
-          context.showRoundDialog(
+          context.showAppRoundDialog(
             title: libL10n.error,
             child: SingleChildScrollView(child: Text(errs.join('\n'))),
           );
@@ -640,7 +641,7 @@ final class _BackupPageState extends ConsumerState<BackupPage>
         // The dialog answers; the page acts on the answer, and closes
         // itself. Doing both from the button meant two pops in a row from a
         // callback that can see two navigators.
-        final confirmed = await context.showRoundDialog<bool>(
+        final confirmed = await context.showAppRoundDialog<bool>(
           title: libL10n.attention,
           child: SingleChildScrollView(
             child: Text(
@@ -695,7 +696,7 @@ extension on _BackupPageState {
       final files = await Webdav.shared.list();
       if (files.isEmpty) return Toast.show(l10n.dirEmpty);
 
-      final fileName = await context.showPickSingleDialog(
+      final fileName = await context.showAppPickSingleDialog(
         title: libL10n.restore,
         items: files,
       );
@@ -705,7 +706,7 @@ extension on _BackupPageState {
       final dlFile = await File('${Paths.doc}/$fileName').readAsString();
       await BackupService.restoreFromText(context, dlFile);
     } catch (e, s) {
-      context.showErrDialog(e, s, libL10n.restore);
+      context.showAppErrDialog(e, s, libL10n.restore);
       Loggers.app.warning('Download webdav backup failed', e, s);
     } finally {
       webdavLoading.value = false;
@@ -723,7 +724,7 @@ extension on _BackupPageState {
       await Webdav.shared.upload(relativePath: bakName);
       Loggers.app.info('Upload webdav backup success');
     } catch (e, s) {
-      context.showErrDialog(e, s, libL10n.upload);
+      context.showAppErrDialog(e, s, libL10n.upload);
       Loggers.app.warning('Upload webdav backup failed', e, s);
     } finally {
       webdavLoading.value = false;
@@ -736,7 +737,7 @@ extension on _BackupPageState {
       final files = await GistRs.shared.list();
       if (files.isEmpty) return Toast.show(l10n.dirEmpty);
 
-      final fileName = await context.showPickSingleDialog(
+      final fileName = await context.showAppPickSingleDialog(
         title: libL10n.restore,
         items: files,
       );
@@ -746,7 +747,7 @@ extension on _BackupPageState {
       final dlFile = await File('${Paths.doc}/$fileName').readAsString();
       await BackupService.restoreFromText(context, dlFile);
     } catch (e, s) {
-      context.showErrDialog(e, s, libL10n.restore);
+      context.showAppErrDialog(e, s, libL10n.restore);
       Loggers.app.warning('Download gist backup failed', e, s);
     } finally {
       gistLoading.value = false;
@@ -764,7 +765,7 @@ extension on _BackupPageState {
       await GistRs.shared.upload(relativePath: bakName);
       Loggers.app.info('Upload gist backup success');
     } catch (e, s) {
-      context.showErrDialog(e, s, libL10n.upload);
+      context.showAppErrDialog(e, s, libL10n.upload);
       Loggers.app.warning('Upload gist backup failed', e, s);
     } finally {
       gistLoading.value = false;
@@ -778,7 +779,7 @@ extension on _BackupPageState {
     final gistIdCtrl = TextEditingController(text: PrefProps.gistId.get());
     final nodeToken = FocusNode();
     final appL10n = context.l10n;
-    final result = await context.showRoundDialog<bool>(
+    final result = await context.showAppRoundDialog<bool>(
       title: 'GitHub Gist',
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -820,7 +821,7 @@ extension on _BackupPageState {
         // Same reason as WebDAV: a different gist behind the same backend.
         await BakSyncer.forgetCheckpoint();
       } catch (e, s) {
-        context.showErrDialog(e, s, 'Gist');
+        context.showAppErrDialog(e, s, 'Gist');
       }
     }
     tokenCtrl.dispose();
@@ -836,7 +837,7 @@ extension on _BackupPageState {
     );
     final nodeUser = FocusNode();
     final nodePwd = FocusNode();
-    final result = await context.showRoundDialog<bool>(
+    final result = await context.showAppRoundDialog<bool>(
       title: 'WebDAV',
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -888,7 +889,7 @@ extension on _BackupPageState {
         // somewhere new is exactly when the skip would be wrong.
         await BakSyncer.forgetCheckpoint();
       } catch (e, s) {
-        context.showErrDialog(e, s, 'Webdav');
+        context.showAppErrDialog(e, s, 'Webdav');
       }
     }
     url.dispose();
@@ -899,7 +900,7 @@ extension on _BackupPageState {
   }
 
   void _onBulkImportServers(BuildContext context) async {
-    final data = await context.showImportDialog(
+    final data = await context.showAppImportDialog(
       title: libL10n.server,
       modelDef: Spix.example.toJson(),
     );
@@ -908,25 +909,25 @@ extension on _BackupPageState {
     try {
       text = utf8.decode(data);
     } on FormatException catch (e, s) {
-      context.showErrDialog(e, s, libL10n.error);
+      context.showAppErrDialog(e, s, libL10n.error);
       return;
     }
 
     try {
-      final (spis, err) = await context.showLoadingDialog(
+      final (spis, err) = await context.showAppLoadingDialog(
         fn: () => Computer.shared.start((val) {
           final list = json.decode(val) as List;
           return list.map((e) => Spi.fromJson(e)).toList();
         }, text.trim()),
       );
       if (err != null || spis == null) return;
-      final sure = await context.showRoundDialog<bool>(
+      final sure = await context.showAppRoundDialog<bool>(
         title: libL10n.import,
         child: Text(libL10n.askContinue('${spis.length} ${libL10n.server}')),
         actions: Btnx.oks,
       );
       if (sure == true) {
-        final (suc, err) = await context.showLoadingDialog(
+        final (suc, err) = await context.showAppLoadingDialog(
           fn: () async {
             final usedIds = <String>{};
             for (var spi in spis) {
@@ -947,7 +948,7 @@ extension on _BackupPageState {
         Toast.success(libL10n.success);
       }
     } catch (e, s) {
-      context.showErrDialog(e, s, libL10n.import);
+      context.showAppErrDialog(e, s, libL10n.import);
       Loggers.app.warning('Import servers failed', e, s);
     }
   }
@@ -958,7 +959,7 @@ extension on _BackupPageState {
 
     // Remote backups contain credentials and private keys, so encryption is
     // mandatory rather than an optional warning.
-    final result = await context.showRoundDialog<bool>(
+    final result = await context.showAppRoundDialog<bool>(
       title: l10n.backupPassword,
       child: Text(l10n.remoteBackupPasswordRequired, style: UIs.textGrey),
       actions: [

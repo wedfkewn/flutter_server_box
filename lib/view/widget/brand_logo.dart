@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:server_box/core/utils/program_logo.dart';
 import 'package:server_box/data/model/server/service.dart';
+import 'package:server_box/data/res/brand_assets.dart';
 import 'package:server_box/data/res/store.dart';
 
 /// Fixed geometry and original artwork colors, including during load/failure.
@@ -19,32 +20,38 @@ class BrandLogo extends StatelessWidget {
 
   static void refreshSource(String url) => _LogoCache._items.remove(url);
 
-  Widget _fallback(BuildContext context) => Icon(fallback, size: size - 4,
-    color: source == null ? Theme.of(context).colorScheme.onSurfaceVariant : const Color(0xff475569));
+  Widget _fallback(BuildContext context) => Icon(fallback, size: size * .66,
+    color: Theme.of(context).colorScheme.onSurfaceVariant);
 
   @override
   Widget build(BuildContext context) {
     final path = source;
+    final colors = Theme.of(context).colorScheme;
+    final filter = themeAwareBrandAssets.contains(path)
+        ? ColorFilter.mode(colors.onSurface, BlendMode.srcIn) : null;
+    final artwork = path == null ? _fallback(context) :
+        path.startsWith('assets/') ? SvgPicture.asset(path, fit: BoxFit.contain,
+          colorFilter: filter, errorBuilder: (_, _, _) => _fallback(context)) :
+        FutureBuilder<Uint8List>(future: _LogoCache.load(path), builder: (context, snapshot) {
+          final data = snapshot.data;
+          if (data == null) return _fallback(context);
+          final isSvg = Uri.tryParse(path)?.path.toLowerCase().endsWith('.svg') == true ||
+              String.fromCharCodes(data.take(200)).contains('<svg');
+          return isSvg ? SvgPicture.memory(data, fit: BoxFit.contain,
+            errorBuilder: (_, _, _) => _fallback(context)) :
+            Image.memory(data, fit: BoxFit.contain,
+              cacheWidth: (size * MediaQuery.devicePixelRatioOf(context)).round(),
+              errorBuilder: (_, _, _) => _fallback(context));
+        });
     return Semantics(label: label, image: true, child: SizedBox.square(
       dimension: size,
-      child: path == null ? _fallback(context) : DecoratedBox(
-        // A neutral plate keeps native black/dark artwork visible in dark mode.
-        decoration: BoxDecoration(color: const Color(0xfff5f6f8), borderRadius: BorderRadius.circular(5)),
-        child: Padding(padding: const EdgeInsets.all(2), child:
-          path.startsWith('assets/') ? SvgPicture.asset(path, fit: BoxFit.contain,
-            errorBuilder: (_, _, _) => _fallback(context)) :
-          FutureBuilder<Uint8List>(future: _LogoCache.load(path), builder: (context, snapshot) {
-            final data = snapshot.data;
-            if (data == null) return _fallback(context);
-            final isSvg = Uri.tryParse(path)?.path.toLowerCase().endsWith('.svg') == true ||
-                String.fromCharCodes(data.take(200)).contains('<svg');
-            return isSvg ? SvgPicture.memory(data, fit: BoxFit.contain,
-              errorBuilder: (_, _, _) => _fallback(context)) :
-              Image.memory(data, fit: BoxFit.contain,
-                cacheWidth: (size * MediaQuery.devicePixelRatioOf(context)).round(),
-                errorBuilder: (_, _, _) => _fallback(context));
-          }),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: colors.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(size * .28),
+          border: Border.all(color: colors.outlineVariant.withValues(alpha: .3), width: .5),
         ),
+        child: Padding(padding: EdgeInsets.all(size * .18), child: artwork),
       ),
     ));
   }

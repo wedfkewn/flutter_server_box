@@ -5,6 +5,7 @@ import 'package:server_box/core/extension/context/locale.dart';
 import 'package:server_box/data/model/ssh/virtual_key.dart';
 import 'package:server_box/data/res/store.dart';
 import 'package:server_box/view/page/setting/seq/reorder_proxy_decorator.dart';
+import 'package:server_box/view/widget/app_dialog.dart';
 
 class SSHVirtKeySettingPage extends StatefulWidget {
     /// Whether it is being shown inside the settings pane rather than pushed.
@@ -117,7 +118,7 @@ class _SSHVirtKeySettingPageState extends State<SSHVirtKeySettingPage> {
   Future<void> _pickVirtKeyRows(int rows, int current) async {
     // 0 is "all of them", and so is the row count itself — offering both would
     // be two entries doing one thing.
-    final picked = await context.showPickSingleDialog<int>(
+    final picked = await context.showAppPickSingleDialog<int>(
       title: l10n.virtKeyRows,
       items: [0, for (var i = 1; i < rows; i++) i],
       // The effective value, so the dialog opens on the entry the row above

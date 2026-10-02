@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;
 import 'dart:ui';
-
 import 'package:dartssh2/dartssh2.dart';
+
 import 'package:fl_lib/fl_lib.dart';
 import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter/material.dart';
@@ -43,6 +43,7 @@ import 'package:server_box/view/widget/agent_common.dart';
 import 'package:server_box/view/widget/agent_entry_appear.dart';
 import 'package:server_box/view/widget/agent_proposal_pager.dart';
 import 'package:server_box/view/widget/agent_user_bubble.dart';
+import 'package:server_box/view/widget/app_dialog.dart';
 import 'package:server_box/view/widget/tmux_session_selector.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:xterm/core.dart';
@@ -769,7 +770,7 @@ class SSHPageState extends ConsumerState<SSHPage>
       // without a word whenever there was no server, so the snippet key did
       // nothing at all on a shell on this device.
       final tags = ref.read(snippetProvider.select((p) => p.tags));
-      final picked = await context.showPickWithTagDialog<Snippet>(
+      final picked = await context.showAppPickWithTagDialog<Snippet>(
         title: libL10n.snippet,
         tags: tags.vn,
         itemsBuilder: (tag) {
@@ -785,7 +786,7 @@ class SSHPageState extends ConsumerState<SSHPage>
         await selected.runInTerm(_terminal, spi);
       } catch (e, s) {
         if (!mounted) return;
-        context.showErrDialog(e, s, '${libL10n.snippet}: ${selected.name}');
+        context.showAppErrDialog(e, s, '${libL10n.snippet}: ${selected.name}');
         return;
       }
       if (!mounted) return;

@@ -1,6 +1,6 @@
 import 'dart:io';
-
 import 'package:fl_lib/fl_lib.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:server_box/core/extension/context/locale.dart';
@@ -9,6 +9,7 @@ import 'package:server_box/data/model/app/share/server_share.dart';
 import 'package:server_box/data/model/server/server_private_info.dart';
 import 'package:server_box/data/provider/private_key.dart';
 import 'package:server_box/data/provider/server/all.dart';
+import 'package:server_box/view/widget/app_dialog.dart';
 
 /// Handing one server to another device, and taking one in.
 ///
@@ -34,7 +35,7 @@ abstract final class ServerShareUi {
     final probe = ServerShare.of(spi, ttl: ShareCarrier.qr.ttl);
     final fits = ServerShareCodec.fitsInQr(probe);
 
-    final carrier = await context.showRoundDialog<ShareCarrier>(
+    final carrier = await context.showAppRoundDialog<ShareCarrier>(
       title: l10n.shareVia,
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -81,12 +82,12 @@ abstract final class ServerShareUi {
     final code = ServerShareCodec.generateCode();
     final share = ServerShare.of(spi, ttl: ShareCarrier.qr.ttl);
 
-    final (text, err) = await context.showLoadingDialog(
+    final (text, err) = await context.showAppLoadingDialog(
       fn: () => ServerShareCodec.encodeAsync(share, code, ShareCarrier.qr),
     );
     if (text == null || err != null || !context.mounted) return;
 
-    await context.showRoundDialog(
+    await context.showAppRoundDialog(
       title: libL10n.share,
       child: ConstrainedBox(
         // Without a cap the hint's intrinsic width sets the dialog's, and the
@@ -128,7 +129,7 @@ abstract final class ServerShareUi {
     if (pwd == null || !context.mounted) return;
 
     final share = ServerShare.of(spi);
-    final (text, err) = await context.showLoadingDialog(
+    final (text, err) = await context.showAppLoadingDialog(
       fn: () => ServerShareCodec.encodeAsync(share, pwd, ShareCarrier.file),
     );
     if (text == null || err != null) return;
@@ -144,7 +145,7 @@ abstract final class ServerShareUi {
       await file.writeAsString(text);
       await Pfs.sharePaths(paths: [file.path], title: spi.name);
     } catch (e, s) {
-      if (context.mounted) context.showErrDialog(e, s, libL10n.share);
+      if (context.mounted) context.showAppErrDialog(e, s, libL10n.share);
       Loggers.app.warning('Share server as file', e, s);
     } finally {
       // On mobile the sheet is done with the file by the time `sharePaths`
@@ -222,8 +223,8 @@ abstract final class ServerShareUi {
       if (password == null || !context.mounted) return;
     }
 
-    // Caught inside `fn` rather than let out. `showLoadingDialog` answers a
-    // throw by popping its spinner and raising `showErrDialog` itself, so an
+    // Caught inside `fn` rather than let out. `showAppLoadingDialog` answers a
+    // throw by popping its spinner and raising `showAppErrDialog` itself, so an
     // exception that escapes is reported twice — the raw object first, then
     // the sentence [_errorText] wrote for it. A mistyped digit showed
     // `Exception: Failed to decrypt: incorrect password or corrupted data`
@@ -231,7 +232,7 @@ abstract final class ServerShareUi {
     // with `ServerShareExpiredException`. Anything still escaping is the
     // dialog's own timeout, which has no better message than the raw one.
     Object? decodeErr;
-    final (share, _) = await context.showLoadingDialog<ServerShare?>(
+    final (share, _) = await context.showAppLoadingDialog<ServerShare?>(
       fn: () async {
         try {
           return await ServerShareCodec.decodeAsync(text, password: password);
@@ -249,7 +250,7 @@ abstract final class ServerShareUi {
     }
 
     final existing = ServerShareInstaller.findExisting(share.spi);
-    final confirmed = await context.showRoundDialog<bool>(
+    final confirmed = await context.showAppRoundDialog<bool>(
       title: l10n.shareImportTitle,
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -281,7 +282,7 @@ abstract final class ServerShareUi {
       ref.read(privateKeyProvider.notifier).reload();
       Toast.success('${libL10n.success}: ${result.spi.name}');
     } catch (e, s) {
-      if (context.mounted) context.showErrDialog(e, s, libL10n.import);
+      if (context.mounted) context.showAppErrDialog(e, s, libL10n.import);
       Loggers.app.warning('Install shared server', e, s);
     }
   }
@@ -304,7 +305,7 @@ abstract final class ServerShareUi {
   }) async {
     final controller = TextEditingController();
     final node = FocusNode();
-    final ok = await context.showRoundDialog<bool>(
+    final ok = await context.showAppRoundDialog<bool>(
       title: digitsOnly ? l10n.shareCodePrompt : libL10n.pwd,
       // Disposed by the tree: the field holds both while the route animates
       // out, and doing it on every return path means remembering both twice.

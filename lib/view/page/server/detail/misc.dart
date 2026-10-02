@@ -5,7 +5,7 @@ extension on _ServerDetailPageState {
     required String title,
     required Widget child,
   }) {
-    context.showRoundDialog(
+    context.showAppRoundDialog(
       title: title,
       child: child,
       actions: [
@@ -21,7 +21,7 @@ extension on _ServerDetailPageState {
   }) {
     final displayCount = itemCount > 5 ? 5 : itemCount;
     final height = (displayCount > 0 ? displayCount : 1) * 47.0;
-    context.showRoundDialog(
+    context.showAppRoundDialog(
       title: title,
       child: SizedBox(
         width: double.maxFinite,
@@ -94,7 +94,7 @@ extension on _ServerDetailPageState {
   }
 
   void _onTapSensorItem(SensorItem si) {
-    context.showRoundDialog(
+    context.showAppRoundDialog(
       title: si.device,
       child: SingleChildScrollView(
         child: SimpleMarkdown(
@@ -287,7 +287,7 @@ extension on _ServerDetailPageState {
         })
         .join('\n');
 
-    context.showRoundDialog(
+    context.showAppRoundDialog(
       title: libL10n.temperature,
       child: SingleChildScrollView(
         child: SimpleMarkdown(

@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
-
 import 'package:dio/dio.dart';
+
 import 'package:fl_lib/fl_lib.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -13,6 +13,7 @@ import 'package:server_box/core/warm_theme.dart';
 import 'package:server_box/data/model/app/dns_lookup.dart';
 import 'package:server_box/data/model/app/ip_lookup.dart';
 import 'package:server_box/data/res/store.dart';
+import 'package:server_box/view/widget/floating_dialog.dart';
 
 class IpLookupPage extends StatefulWidget {
   const IpLookupPage({super.key, this.service, this.dnsService});
@@ -61,7 +62,7 @@ class _IpLookupPageState extends State<IpLookupPage> {
         context: context,
         animationStyle: isMobile ? WarmMotion.dialog(context) : null,
         barrierDismissible: false,
-        builder: (ctx) => AlertDialog(
+        builder: (ctx) => AppFloatingDialog(
           icon: const Icon(Icons.privacy_tip_outlined),
           title: Text(ctx.l10n.ipLookupPrivacyTitle),
           content: Text(ctx.l10n.ipLookupPrivacyBody),
@@ -182,7 +183,7 @@ class _IpLookupPageState extends State<IpLookupPage> {
         context: context,
         animationStyle: isMobile ? WarmMotion.dialog(context) : null,
         barrierDismissible: false,
-        builder: (ctx) => AlertDialog(
+        builder: (ctx) => AppFloatingDialog(
           icon: const Icon(Icons.privacy_tip_outlined),
           title: Text(ctx.l10n.dnsLookupPrivacyTitle),
           content: Text(ctx.l10n.dnsLookupPrivacyBody),

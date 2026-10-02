@@ -1,4 +1,9 @@
+import 'dart:io';
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:forui/forui.dart';
@@ -15,6 +20,13 @@ import 'package:server_box/view/widget/dist_icon.dart';
 import 'helpers/test_db.dart';
 
 void main() {
+  setUpAll(() async {
+    final font = File(Platform.isWindows ? r'C:\Windows\Fonts\msyh.ttc' : '/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc');
+    if (font.existsSync()) {
+      final bytes = await font.readAsBytes();
+      await (FontLoader('BrandPreview')..addFont(Future.value(ByteData.sublistView(bytes)))).load();
+    }
+  });
   setUp(() async {
     await openTestDb();
     getIt.registerSingleton<SettingStore>(SettingStore('brand_widgets')..init());
@@ -22,7 +34,8 @@ void main() {
   tearDown(() async { await getIt.reset(); await closeTestDb(); });
 
   Widget app(Widget home, {bool dark = false, double scale = 1}) => MaterialApp(
-    theme: dark ? WarmTheme.dark() : WarmTheme.light(),
+    theme: (dark ? WarmTheme.dark() : WarmTheme.light()).copyWith(textTheme:
+      (dark ? WarmTheme.dark() : WarmTheme.light()).textTheme.apply(fontFamily: 'BrandPreview')),
     localizationsDelegates: const [FLocalizations.delegate],
     builder: (context, child) => MediaQuery(data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(scale)),
       child: AppUiScope(child: child!)), home: home,
@@ -91,4 +104,50 @@ void main() {
     await tester.tap(find.text('Cancel'));
     await tester.pump(const Duration(milliseconds: 400));
   });
+  testWidgets('logo badges stay aligned and single-tone marks contrast in both themes', (tester) async {
+    tester.view.physicalSize = const Size(393, 400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final capture = GlobalKey();
+    for (final dark in [false, true]) {
+      await tester.pumpWidget(app(RepaintBoundary(key: capture, child: Scaffold(
+        body: Padding(padding: const EdgeInsets.all(24), child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start, children: [
+            const Text('ServerBox · 系统与程序图标', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
+            const SizedBox(height: 24),
+            for (final row in [
+              ['Ubuntu', 'Debian', 'Arch', 'Fedora'],
+              ['Python', 'nginx', 'Docker', 'macOS'],
+            ]) Padding(padding: const EdgeInsets.only(bottom: 24), child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [for (final name in row) SizedBox(width: 72, child: Column(children: [
+                if (['Ubuntu', 'Debian', 'Arch', 'Fedora', 'macOS'].contains(name))
+                  DistIconOf(switch (name) { 'Ubuntu' => Dist.ubuntu, 'Debian' => Dist.debian,
+                    'Arch' => Dist.arch, 'Fedora' => Dist.fedora, _ => Dist.macos }, size: 44)
+                else ProgramLogo(name.toLowerCase(), size: 44),
+                const SizedBox(height: 8), Text(name, style: const TextStyle(fontSize: 12)),
+              ]))],
+            )),
+          ],
+        )),
+      )), dark: dark));
+      await tester.pumpAndSettle();
+      final mac = find.descendant(of: find.byWidgetPredicate((w) => w is DistIconOf && w.dist == Dist.macos), matching: find.byType(SvgPicture));
+      expect(tester.widget<SvgPicture>(mac).colorFilter, isNotNull);
+      for (final badge in find.byType(BrandLogo).evaluate()) {
+        expect(tester.getSize(find.byWidget(badge.widget)), const Size(44, 44));
+      }
+      await tester.runAsync(() async {
+      final boundary = capture.currentContext!.findRenderObject() as RenderRepaintBoundary;
+      final picture = await boundary.toImage(pixelRatio: 2);
+      final png = await picture.toByteData(format: ui.ImageByteFormat.png);
+      final output = File('design-qa/brand-refresh-${dark ? "dark" : "light"}.png');
+      await output.writeAsBytes(png!.buffer.asUint8List());
+      picture.dispose();
+      });
+      expect(tester.takeException(), isNull);
+    }
+  });
+
 }

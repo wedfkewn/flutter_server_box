@@ -1,6 +1,6 @@
 import 'dart:async';
-
 import 'package:fl_lib/fl_lib.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:server_box/core/extension/context/locale.dart';
@@ -10,6 +10,7 @@ import 'package:server_box/data/model/app/error.dart';
 import 'package:server_box/data/model/server/pve.dart';
 import 'package:server_box/data/model/server/server_private_info.dart';
 import 'package:server_box/data/provider/pve.dart';
+import 'package:server_box/view/widget/app_dialog.dart';
 import 'package:server_box/view/widget/percent_circle.dart';
 
 final class PvePageArgs {
@@ -454,7 +455,7 @@ extension on _PvePageState {
     _lastHandledTfaMessage = error.message;
     try {
       final otpController = TextEditingController();
-      final submitted = await context.showRoundDialog<bool>(
+      final submitted = await context.showAppRoundDialog<bool>(
         title: l10n.pveOtpTitle,
         // Disposed by the tree. `autoFocus` is exactly the case that breaks
         // when the controller goes before the field does.
@@ -488,7 +489,7 @@ extension on _PvePageState {
         return;
       }
 
-      final (_, err) = await context.showLoadingDialog(
+      final (_, err) = await context.showAppLoadingDialog(
         fn: () async {
           await _notifier.submitTfaCode(otp);
           return true;
@@ -512,14 +513,14 @@ extension on _PvePageState {
     PveCtrlIface item,
     Future<bool> Function() func,
   ) async {
-    final sure = await context.showRoundDialog<bool>(
+    final sure = await context.showAppRoundDialog<bool>(
       title: libL10n.attention,
       child: Text(libL10n.askContinue('$action ${item.id}')),
       actions: Btnx.okReds,
     );
     if (sure != true) return;
 
-    final (suc, err) = await context.showLoadingDialog(fn: func);
+    final (suc, err) = await context.showAppLoadingDialog(fn: func);
     if (suc == true) {
       Toast.success(libL10n.success);
     } else {

@@ -1,12 +1,13 @@
 import 'dart:async';
 import 'dart:collection';
-
 import 'package:dartssh2/dartssh2.dart';
+
 import 'package:fl_lib/fl_lib.dart';
 import 'package:flutter/material.dart';
 import 'package:server_box/core/app_navigator.dart';
 import 'package:server_box/core/extension/context/locale.dart';
 import 'package:server_box/data/model/server/server_private_info.dart';
+import 'package:server_box/view/widget/app_dialog.dart';
 
 typedef SSHKeyboardInteractiveHandler =
     FutureOr<List<String>?> Function(Spi server, SSHUserInfoRequest request);
@@ -215,7 +216,7 @@ abstract final class KeyboardInteractiveAuth {
     final instruction = _sanitize(request.instruction);
     final title = requestName.isNotEmpty ? requestName : libL10n.authRequired;
 
-    return await context.showRoundDialog<List<String>>(
+    return await context.showAppRoundDialog<List<String>>(
       title: title,
       titleMaxLines: 2,
       barrierDismiss: false,

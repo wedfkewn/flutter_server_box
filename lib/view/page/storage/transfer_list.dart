@@ -1,6 +1,6 @@
 import 'dart:async';
-
 import 'package:fl_lib/fl_lib.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:server_box/core/extension/context/locale.dart';
@@ -12,6 +12,7 @@ import 'package:server_box/data/model/file/transfer_status.dart';
 import 'package:server_box/data/provider/file_transfer.dart';
 import 'package:server_box/data/res/default.dart';
 import 'package:server_box/view/page/storage/local.dart';
+import 'package:server_box/view/widget/app_dialog.dart';
 
 /// Every transfer, running and finished.
 ///
@@ -99,7 +100,7 @@ class _TransferListViewState extends ConsumerState<TransferListView> {
         status: status,
         subtitle: libL10n.error,
         trailing: IconButton(tooltip: libL10n.error, 
-          onPressed: () => context.showRoundDialog(
+          onPressed: () => context.showAppRoundDialog(
             title: libL10n.error,
             child: Text(err.toString()),
           ),
@@ -216,7 +217,7 @@ class _TransferListViewState extends ConsumerState<TransferListView> {
 
   Widget _buildDelete(FileTransferStatus status) {
     return IconButton(tooltip: libL10n.delete, 
-      onPressed: () => context.showRoundDialog(
+      onPressed: () => context.showAppRoundDialog(
         title: libL10n.attention,
         child: Text(
           libL10n.askContinue(

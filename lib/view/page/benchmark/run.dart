@@ -1,6 +1,6 @@
 import 'dart:async';
-
 import 'package:fl_lib/fl_lib.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:server_box/core/extension/context/locale.dart';
@@ -9,6 +9,7 @@ import 'package:server_box/data/model/server/server_private_info.dart';
 import 'package:server_box/data/provider/benchmark.dart';
 import 'package:server_box/view/page/benchmark/config.dart';
 import 'package:server_box/view/page/benchmark/running_card.dart';
+import 'package:server_box/view/widget/app_dialog.dart';
 
 /// One machine's benchmark: the form to start one, or the run in flight.
 ///
@@ -118,7 +119,7 @@ class _BenchmarkRunPageState extends ConsumerState<BenchmarkRunPage> {
   }
 
   Future<void> _onCancel() async {
-    final ok = await context.showRoundDialog<bool>(
+    final ok = await context.showAppRoundDialog<bool>(
       title: libL10n.attention,
       child: Text(l10n.benchmarkCancelConfirm),
       actions: Btnx.cancelRedOk,

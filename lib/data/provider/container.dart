@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
-
 import 'package:fl_lib/fl_lib.dart';
+
 import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -15,6 +15,7 @@ import 'package:server_box/data/model/container/type.dart';
 import 'package:server_box/data/model/server/server_exec.dart';
 import 'package:server_box/data/provider/server/single.dart';
 import 'package:server_box/data/res/store.dart';
+import 'package:server_box/view/widget/app_dialog.dart';
 
 part 'container.freezed.dart';
 part 'container.g.dart';
@@ -278,7 +279,7 @@ class ContainerNotifier extends _$ContainerNotifier {
     if (_cachedPassword != null) return _cachedPassword;
 
     if (!context.mounted) return null;
-    final pwd = await context.showPwdDialog(title: userName, id: hostId);
+    final pwd = await context.showAppPwdDialog(title: userName, id: hostId);
 
     if (pwd != null && pwd.isNotEmpty) {
       _cachedPassword = pwd;

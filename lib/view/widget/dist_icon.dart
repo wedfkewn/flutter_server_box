@@ -1,6 +1,6 @@
 import 'dart:async';
-
 import 'package:fl_lib/fl_lib.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
@@ -13,6 +13,7 @@ import 'package:server_box/data/provider/server/all.dart';
 import 'package:server_box/data/provider/server/single.dart';
 import 'package:server_box/data/res/store.dart';
 import 'package:server_box/generated/l10n/l10n.dart';
+import 'package:server_box/view/widget/app_dialog.dart';
 import 'package:server_box/view/widget/brand_logo.dart';
 
 /// User-configured distribution image URL; bundled original-color SVGs are
@@ -151,7 +152,7 @@ String distLegalPlain(AppLocalizations l10n) => l10n.distIconIntroLegal;
 /// under the thumb is one that gets dismissed without a glance.
 Future<bool> confirmDistIconTerms(BuildContext context) async {
   final l10n = context.l10n;
-  final agreed = await context.showRoundDialog<bool>(
+  final agreed = await context.showAppRoundDialog<bool>(
     title: l10n.distIcon,
     childBuilder: (ctx) => ConstrainedBox(
       // Half the window, so the dialog never grows past what it can scroll
@@ -203,7 +204,7 @@ class _DistTerms extends StatelessWidget {
 /// An OK button that cannot be pressed for [_kReadPause], counting down.
 ///
 /// Its own widget so the timer lives with the thing it disables, and so the
-/// dialog around it stays a plain `showRoundDialog` call.
+/// dialog around it stays a plain `showAppRoundDialog` call.
 class _DelayedOk extends StatefulWidget {
   const _DelayedOk();
 

@@ -70,7 +70,7 @@ extension _VirtKey on SSHPageState {
     final help = item.help;
     if (help == null) return;
     HapticFeedback.selectionClick();
-    context.showRoundDialog(
+    context.showAppRoundDialog(
       title: item.text,
       child: Text(help),
       actions: [Btn.ok(onTap: context.popDialog)],
@@ -153,7 +153,7 @@ extension _VirtKey on SSHPageState {
         while (initPath == null) {
           // Check if we've exceeded timeout
           if (DateTime.now().difference(startTime) > timeout) {
-            contextSafe?.showRoundDialog(
+            contextSafe?.showAppRoundDialog(
               title: libL10n.error,
               child: Text(libL10n.empty),
             );
@@ -185,7 +185,7 @@ extension _VirtKey on SSHPageState {
         }
 
         if (!initPath.startsWith('/')) {
-          context.showRoundDialog(
+          context.showAppRoundDialog(
             title: libL10n.error,
             child: Text('${l10n.remotePath}: $initPath'),
           );

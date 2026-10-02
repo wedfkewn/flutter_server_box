@@ -19,11 +19,11 @@ extension on _ContainerPageState {
   Future<void> _execContainerAction(
     Future<ContainerErr?> Function() action,
   ) async {
-    final (result, err) = await context.showLoadingDialog(fn: action);
+    final (result, err) = await context.showAppLoadingDialog(fn: action);
     if (!mounted) return;
     if (err != null || result != null) {
       final e = result?.message ?? err?.toString();
-      context.showRoundDialog(
+      context.showAppRoundDialog(
         title: libL10n.error,
         child: Text(_errorMessage(e)),
       );
@@ -36,7 +36,7 @@ extension on _ContainerPageState {
     final imageCtrl = TextEditingController();
     final nameCtrl = TextEditingController();
     final argsCtrl = TextEditingController();
-    await context.showRoundDialog(
+    await context.showAppRoundDialog(
       title: l10n.newContainer,
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -93,7 +93,7 @@ extension on _ContainerPageState {
     String? message,
     required Future<ContainerErr?> Function() onConfirm,
   }) async {
-    final confirmed = await context.showRoundDialog<bool>(
+    final confirmed = await context.showAppRoundDialog<bool>(
       title: title,
       child: Text(message ?? libL10n.askContinue('${libL10n.prune} $title')),
       actions: Btnx.cancelRedOk,
@@ -109,7 +109,7 @@ extension on _ContainerPageState {
         ? null
         : countUnusedTaggedImages(images, containerImages);
     var allUnused = false;
-    final confirmed = await context.showRoundDialog<bool>(
+    final confirmed = await context.showAppRoundDialog<bool>(
       title: l10n.pruneImages,
       child: StatefulBuilder(
         builder: (_, setState) {
@@ -139,7 +139,7 @@ extension on _ContainerPageState {
   Future<void> _showSystemPruneDialog() async {
     var allUnusedImages = false;
     var includeVolumes = false;
-    final confirmed = await context.showRoundDialog<bool>(
+    final confirmed = await context.showAppRoundDialog<bool>(
       title: l10n.pruneUnusedData,
       child: StatefulBuilder(
         builder: (_, setState) {
@@ -178,7 +178,7 @@ extension on _ContainerPageState {
   }
 
   Future<void> _showAddCmdPreview(String cmd) async {
-    await context.showRoundDialog(
+    await context.showAppRoundDialog(
       title: libL10n.preview,
       child: Text(cmd),
       actions: [
@@ -202,7 +202,7 @@ extension on _ContainerPageState {
         : 'DOCKER_HOST';
     final ctrl = TextEditingController(text: host);
     try {
-      await context.showRoundDialog(
+      await context.showAppRoundDialog(
         title: libL10n.edit,
         child: Input(
           maxLines: 2,
@@ -233,7 +233,7 @@ extension on _ContainerPageState {
       Toast.show(libL10n.empty);
       return;
     }
-    context.showRoundDialog(
+    context.showAppRoundDialog(
       title: libL10n.attention,
       child: Text(
         libL10n.askContinue('${libL10n.delete} Image(${e.repository})'),
@@ -270,7 +270,7 @@ extension on _ContainerPageState {
           return;
         }
         final imageRef = '$repo:$tag';
-        context.showRoundDialog(
+        context.showAppRoundDialog(
           title: libL10n.attention,
           child: Text(
             libL10n.askContinue('${l10n.pull} ${l10n.image}($imageRef)'),
@@ -303,7 +303,7 @@ extension on _ContainerPageState {
     switch (item) {
       case ContainerMenu.rm:
         var force = false;
-        context.showRoundDialog(
+        context.showAppRoundDialog(
           title: libL10n.attention,
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -433,7 +433,7 @@ extension on _ContainerPageState {
     };
     if (action == null) return;
     if (showLoading) {
-      await context.showLoadingDialog(fn: action);
+      await context.showAppLoadingDialog(fn: action);
     } else {
       await action();
     }

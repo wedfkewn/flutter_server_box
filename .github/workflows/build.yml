@@ -595,14 +595,6 @@ jobs:
         run: |
           flutter pub get
           scripts/release/patch-jni-build-id.sh
-      # The Linux userland the terminal tab offers. Not in the repository —
-      # these are binaries, and they are built from pinned upstream sources
-      # here. Without this step the feature is absent from the build rather
-      # than broken in it, which is why the check below exists.
-      - name: Build proot
-        if: matrix.abi == 'arm64'
-        shell: bash
-        run: scripts/build-proot-android.sh
       - name: Build (release)
         if: needs.reproducibilityCheck.outputs.isRelease == 'true'
         shell: bash
@@ -611,23 +603,6 @@ jobs:
         if: needs.reproducibilityCheck.outputs.isRelease != 'true'
         shell: bash
         run: dart run fl_build -p android -- --target-platform=${{ matrix.target }}
-      # `useLegacyPackaging` off means nothing is extracted from the APK, so
-      # `nativeLibraryDir` does not exist and proot cannot be run from
-      # anywhere. The APK still builds, installs and runs — the rootfs entry
-      # simply never appears. Checked here because nothing else would say so.
-      - name: Check proot shipped
-        if: matrix.abi == 'arm64'
-        shell: bash
-        run: |
-          shopt -s nullglob
-          apks=(build/app/outputs/flutter-apk/*_arm64.apk)
-          [ ${#apks[@]} -gt 0 ] || { echo "no arm64 APK was built"; exit 1; }
-          for apk in "${apks[@]}"; do
-            unzip -l "$apk" | grep -q 'lib/arm64-v8a/libproot.so' ||
-              { echo "$apk carries no proot; the Linux userland would be missing"; exit 1; }
-            unzip -l "$apk" | grep -q 'lib/arm64-v8a/libproot-loader.so' ||
-              { echo "$apk carries proot but not its loader; entering the rootfs would be refused"; exit 1; }
-          done
       - name: Rename
         shell: bash
         run: |
@@ -695,22 +670,6 @@ jobs:
           fetch-depth: 0
       - name: Install Flutter
         uses: ./.github/actions/setup-flutter
-      - name: Turn the Linux engine on
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          # Untracked by design. ios/Flutter/Ish.xcconfig defaults SBM_ISH to
-          # 0 so that a checkout which has not built the engine cannot link
-          # one that is not there; CI opts in the way a development machine
-          # does rather than by moving that default.
-          #
-          # The libraries themselves are fetched by the Runner target, through
-          # scripts/ensure-ish-libs.sh: the release the fork publishes for the
-          # revision the gitlink names. Nothing is built here, and no toolchain
-          # is installed — if that download has no release to find, the gitlink
-          # points at an unpublished revision and the build says so.
-          printf 'SBM_ISH = 1\n' > ios/Flutter/IshLocal.xcconfig
       - name: Build (unsigned)
         shell: bash
         run: |
@@ -723,14 +682,9 @@ jobs:
             --dart-define="SOURCE_COMMIT=${GITHUB_SHA}" \
             --dart-define="SOURCE_REPOSITORY=${GITHUB_REPOSITORY}" \
             --dart-define="SOURCE_MODIFIED_DATE=${source_date}"
-      # The step above asked for the engine; this is what says it arrived. It
-      # cannot fail at build time — nothing in the app calls those functions, so
-      # a linker that dead-strips them produces an IPA that builds, installs and
-      # runs, with the terminal tab's Linux userland simply absent. Android has
-      # `Check proot shipped` for the same reason.
-      - name: Check the Linux engine linked
+      - name: Check local Linux engine is absent
         shell: bash
-        run: scripts/check-ish-linkage.sh build/ios/iphoneos/Runner.app/Runner on
+        run: scripts/check-ish-linkage.sh build/ios/iphoneos/Runner.app/Runner off
       - name: Package ipa
         shell: bash
         run: APP_ASSET_NAME="${APP_NAME}" scripts/release/package-unsigned-ipa.sh

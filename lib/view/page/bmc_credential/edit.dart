@@ -5,6 +5,7 @@ import 'package:server_box/core/extension/context/locale.dart';
 import 'package:server_box/data/model/server/bmc_credential.dart';
 import 'package:server_box/data/provider/bmc_credential.dart';
 import 'package:server_box/data/store/entity_store.dart';
+import 'package:server_box/view/widget/app_dialog.dart';
 
 final class BmcCredentialEditPageArgs {
   /// The account being edited, or null to create one.
@@ -166,7 +167,7 @@ extension on _BmcCredentialEditPageState {
   }
 
   Future<void> _onDelete(BmcCredential existing, int shared) async {
-    final sure = await context.showRoundDialog<bool>(
+    final sure = await context.showAppRoundDialog<bool>(
       title: libL10n.attention,
       child: Text(
         shared > 0

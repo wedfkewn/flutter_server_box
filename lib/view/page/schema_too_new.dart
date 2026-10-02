@@ -1,8 +1,8 @@
 // ignore_for_file: invalid_use_of_protected_member
 
 import 'dart:io';
-
 import 'package:fl_lib/fl_lib.dart';
+
 import 'package:fl_lib/generated/l10n/lib_l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -10,6 +10,7 @@ import 'package:server_box/core/extension/context/locale.dart';
 import 'package:server_box/core/utils/db_rescue.dart';
 import 'package:server_box/data/store/schema.dart';
 import 'package:server_box/generated/l10n/l10n.dart';
+import 'package:server_box/view/widget/app_dialog.dart';
 
 /// The whole app, when the stored data was written by a newer build.
 ///
@@ -185,14 +186,14 @@ extension _Actions on _SchemaTooNewPageState {
       'serverbox-rescue-v${widget.err.stored}$suffix.db';
 
   Future<void> _onExportEncrypted() async {
-    final pwd = await context.showPwdDialog(title: libL10n.pwd);
+    final pwd = await context.showAppPwdDialog(title: libL10n.pwd);
     if (pwd == null || pwd.isEmpty) return;
     await _export(password: pwd, suffix: '');
   }
 
   Future<void> _onExportPlain() async {
     final l10n = context.l10n;
-    final ok = await context.showRoundDialog<bool>(
+    final ok = await context.showAppRoundDialog<bool>(
       title: libL10n.attention,
       child: Text(l10n.schemaTooNewPlainWarn),
       actions: Btnx.cancelRedOk,
@@ -231,7 +232,7 @@ extension _Actions on _SchemaTooNewPageState {
     } catch (e, s) {
       Loggers.app.warning('Rescue export failed', e, s);
       if (mounted) {
-        await context.showRoundDialog(
+        await context.showAppRoundDialog(
           title: libL10n.fail,
           child: Text('$e'),
         );
@@ -258,7 +259,7 @@ extension _Actions on _SchemaTooNewPageState {
 
   Future<void> _onWipe() async {
     final l10n = context.l10n;
-    final ok = await context.showRoundDialog<bool>(
+    final ok = await context.showAppRoundDialog<bool>(
       title: libL10n.attention,
       child: Text(l10n.schemaTooNewWipeConfirm),
       actions: Btnx.cancelRedOk,
@@ -280,7 +281,7 @@ extension _Actions on _SchemaTooNewPageState {
     } catch (e, s) {
       Loggers.app.warning('Rescue wipe failed', e, s);
       if (mounted) {
-        await context.showRoundDialog(
+        await context.showAppRoundDialog(
           title: libL10n.fail,
           child: Text('$e'),
         );

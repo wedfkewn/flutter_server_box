@@ -4,6 +4,7 @@ import 'package:server_box/data/res/brand_assets.dart';
 import 'package:server_box/data/res/store.dart';
 import 'package:server_box/view/widget/app_ui.dart';
 import 'package:server_box/view/widget/brand_logo.dart';
+import 'package:server_box/view/widget/floating_dialog.dart';
 
 String _text(BuildContext context, String zh, String en) =>
     Localizations.localeOf(context).languageCode == 'zh' ? zh : en;
@@ -66,7 +67,7 @@ class BrandIconsPage extends StatelessWidget {
     var previewUrl = urlController.text;
     final form = GlobalKey<FormState>();
     final route = DialogRoute<(String, String)>(context: context, builder: (dialogContext) => StatefulBuilder(
-      builder: (context, update) => AlertDialog(
+      builder: (context, update) => AppFloatingDialog(
         insetPadding: const EdgeInsets.all(16),
         title: Text(_text(context, '自定义图标', 'Custom logo')),
         content: SizedBox(width: 400, child: SingleChildScrollView(child: Form(key: form, child: Column(

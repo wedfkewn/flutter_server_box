@@ -119,7 +119,7 @@ ${ss.err?.solution ?? libL10n.unknown}
 ```sh
 ${ss.err?.message ?? 'null'}
 ''';
-    context.showRoundDialog(
+    context.showAppRoundDialog(
       title: libL10n.error,
       child: SingleChildScrollView(child: SimpleMarkdown(data: md)),
       actions: [

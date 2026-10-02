@@ -6,6 +6,8 @@ import 'package:server_box/core/route.dart';
 import 'package:server_box/data/model/server/port_forward.dart';
 import 'package:server_box/data/provider/port_forward_provider.dart';
 import 'package:server_box/data/res/store.dart';
+import 'package:server_box/view/widget/app_dialog.dart';
+import 'package:server_box/view/widget/floating_dialog.dart';
 
 final class PortForwardPage extends ConsumerStatefulWidget {
   final SpiRequiredArgs args;
@@ -37,7 +39,7 @@ final class _PortForwardPageState extends ConsumerState<PortForwardPage> {
   void _showBetaWarning() {
     if (Stores.setting.portForwardBetaWarned.fetch()) return;
     var noMore = false;
-    context.showRoundDialog(
+    context.showAppRoundDialog(
       title: libL10n.attention,
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -234,7 +236,7 @@ final class _PortForwardPageState extends ConsumerState<PortForwardPage> {
   }
 
   void _onDelete(PortForwardConfig config) async {
-    final sure = await context.showRoundDialog<bool>(
+    final sure = await context.showAppRoundDialog<bool>(
       title: libL10n.attention,
       child: Text(context.l10n.portForward_deleteConfirmFmt(config.name)),
       actions: Btnx.cancelOk,
@@ -327,7 +329,7 @@ class _PortForwardConfigDialogState extends State<_PortForwardConfigDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
+    return AppFloatingDialog(
       title: Text(widget.existing == null ? libL10n.add : libL10n.edit),
       content: SingleChildScrollView(
         child: Column(

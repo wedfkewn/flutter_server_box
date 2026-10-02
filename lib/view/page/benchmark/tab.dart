@@ -1,8 +1,8 @@
 // ignore_for_file: invalid_use_of_protected_member
 
 import 'dart:async';
-
 import 'package:fl_lib/fl_lib.dart';
+
 import 'package:flutter/foundation.dart' show setEquals;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,6 +18,7 @@ import 'package:server_box/data/store/benchmark.dart';
 import 'package:server_box/view/page/benchmark/history_tile.dart';
 import 'package:server_box/view/page/benchmark/result.dart';
 import 'package:server_box/view/page/benchmark/run.dart';
+import 'package:server_box/view/widget/app_dialog.dart';
 import 'package:server_box/view/widget/pane_settings.dart';
 
 /// The benchmark tab: pick a machine, run one, and read what every machine has
@@ -428,7 +429,7 @@ extension _Actions on _BenchmarkTabPageState {
   }
 
   Future<void> _onDelete(BenchmarkRun run) async {
-    final ok = await context.showRoundDialog<bool>(
+    final ok = await context.showAppRoundDialog<bool>(
       title: libL10n.attention,
       child: Text(l10n.benchmarkDeleteConfirm),
       actions: Btnx.cancelRedOk,

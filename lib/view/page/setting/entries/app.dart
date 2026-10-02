@@ -2,7 +2,7 @@ part of '../entry.dart';
 
 extension _App on _AppSettingsPageState {
   void _showInvalidDialog() {
-    context.showRoundDialog(title: libL10n.fail, child: Text(libL10n.invalid));
+    context.showAppRoundDialog(title: libL10n.fail, child: Text(libL10n.invalid));
   }
 
   Widget _buildApp() {
@@ -137,7 +137,7 @@ extension _App on _AppSettingsPageState {
     return ListTile(
       title: Text(l10n.updateServerStatusInterval),
       onTap: () async {
-        final val = await context.showPickSingleDialog(
+        final val = await context.showAppPickSingleDialog(
           title: libL10n.setting,
           items: List.generate(10, (idx) => idx == 1 ? null : idx),
           initial: _setting.serverStatusUpdateInterval.fetch(),
@@ -166,7 +166,7 @@ extension _App on _AppSettingsPageState {
       onTap: () {
         withTextFieldController((ctrl) async {
           ctrl.text = Color(_setting.colorSeed.fetch()).toHex;
-          await context.showRoundDialog(
+          await context.showAppRoundDialog(
             title: libL10n.primaryColorSeed,
             child: StatefulBuilder(
               builder: (context, setState) {
@@ -244,7 +244,7 @@ extension _App on _AppSettingsPageState {
       builder: (val) => ListTile(
         title: Text(l10n.maxRetryCount),
         onTap: () async {
-          final selected = await context.showPickSingleDialog(
+          final selected = await context.showAppPickSingleDialog(
             title: l10n.maxRetryCount,
             items: List.generate(10, (index) => index),
             display: (p0) => '$p0 ${l10n.times}',
@@ -266,7 +266,7 @@ extension _App on _AppSettingsPageState {
       leading: const Icon(MingCute.moon_stars_fill),
       title: Text(libL10n.themeMode),
       onTap: () async {
-        final selected = await context.showPickSingleDialog(
+        final selected = await context.showAppPickSingleDialog(
           title: libL10n.themeMode,
           items: List.generate(len + 2, (index) => index),
           display: (p0) => _buildThemeModeStr(p0),
@@ -306,12 +306,8 @@ extension _App on _AppSettingsPageState {
       leading: const Icon(IonIcons.language),
       title: Text(libL10n.language),
       onTap: () async {
-        final selected = await context.showPickSingleDialog(
-          title: libL10n.language,
-          items: AppLocalizations.supportedLocales,
-          display: (p0) => p0.nativeName,
-          initial: _setting.locale.fetch().toLocale,
-        );
+        final selected = await showLanguagePicker(context,
+          initial: _setting.locale.fetch().toLocale);
         if (selected != null) {
           _setting.locale.put(selected.code);
           // No `pop`: the picker has already closed — that is what `await`
@@ -530,7 +526,7 @@ extension _App on _AppSettingsPageState {
       if (backupPwd?.isNotEmpty == true) return backupPwd;
       final controller = TextEditingController();
       try {
-        final result = await context.showRoundDialog<String>(
+        final result = await context.showAppRoundDialog<String>(
           title: libL10n.pwd,
           child: Input(
             controller: controller,
@@ -581,7 +577,7 @@ extension _App on _AppSettingsPageState {
                   e.toString().contains('incorrect password')
               ? l10n.backupPasswordWrong
               : '${libL10n.error}:\n$e';
-          context.showRoundDialog(title: libL10n.fail, child: Text(msg));
+          context.showAppRoundDialog(title: libL10n.fail, child: Text(msg));
           Loggers.app.warning('Decrypt raw settings failed', e, stack);
           return;
         }
@@ -647,7 +643,7 @@ extension _App on _AppSettingsPageState {
           });
         }
       } catch (e, trace) {
-        context.showRoundDialog(
+        context.showAppRoundDialog(
           title: libL10n.error,
           child: Text('${libL10n.save}:\n$e'),
         );

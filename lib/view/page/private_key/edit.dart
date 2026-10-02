@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:dartssh2/dartssh2.dart';
+
 import 'package:fl_lib/fl_lib.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -16,6 +16,7 @@ import 'package:server_box/data/model/server/ssh_credential.dart';
 import 'package:server_box/data/provider/private_key.dart';
 import 'package:server_box/data/res/misc.dart';
 import 'package:server_box/data/store/entity_store.dart';
+import 'package:server_box/view/widget/app_dialog.dart';
 
 const _format = 'text/plain';
 final _whitespaceRegex = RegExp(r'\s+');
@@ -162,7 +163,7 @@ class _PrivateKeyEditPageState extends ConsumerState<PrivateKeyEditPage> {
               onPressed: () async {
                 // The dialog answers; the page acts on the answer. See the
                 // snippet editor for why not from inside the button.
-                final confirmed = await context.showRoundDialog<bool>(
+                final confirmed = await context.showAppRoundDialog<bool>(
                   title: libL10n.attention,
                   child: Text(
                     libL10n.askContinue(
@@ -209,7 +210,7 @@ class _PrivateKeyEditPageState extends ConsumerState<PrivateKeyEditPage> {
       return;
     }
     if (!mounted) return;
-    await context.showRoundDialog(
+    await context.showAppRoundDialog(
       title: l10n.sshKeyPublicKey,
       child: Column(
         mainAxisSize: MainAxisSize.min,

@@ -30,6 +30,8 @@ for name in programs:
         path = f'icons/{name if name != "traefik" else "traefikproxy"}.svg'
     if path not in trees[repo]:
         raise RuntimeError('Missing program logo: ' + name)
+    if name == 'nginx':
+        repo, path = repos[2], 'icons/nginx.svg'
     jobs.append(('program-' + name, repo, path))
 
 names = re.findall(r'^  (\w+)[,;]\s*$', (ROOT / 'lib/data/model/server/dist.dart').read_text(encoding='utf-8'), re.M)
@@ -52,6 +54,8 @@ for name in names:
     if path not in trees[repo]:
         print('No artwork:', name)
         continue
+    if name == 'ubuntu':
+        repo, path = repos[2], 'icons/ubuntu.svg'
     jobs.append(('distro-' + name, repo, path))
 
 def download(job):
@@ -60,8 +64,19 @@ def download(job):
     data = fetch(url)
     if b'<svg' not in data:
         raise RuntimeError('Not SVG: ' + url)
+    source_hash = hashlib.sha256(data).hexdigest()
+    color = {'distro-ubuntu': 'E95420', 'program-nginx': '009639'}.get(name)
+    if color:
+        data = data.replace(b'<svg ', f'<svg fill="#{color}" '.encode(), 1)
+    if name == 'program-nginx':
+        data = data.replace(b'<path d=', b'<path fill="#fff" d="M12 0L1.605 6v12L12 24l10.395-6V6L12 0z"/><path d=', 1)
     (OUT / (name + '.svg')).write_bytes(data)
-    return dict(id=name, asset='assets/brands/' + name + '.svg', source=url, upstream=repo, commit=pins[repo], sha256=hashlib.sha256(data).hexdigest())
+    record = dict(id=name, asset='assets/brands/' + name + '.svg', source=url, upstream=repo, commit=pins[repo], sha256=hashlib.sha256(data).hexdigest())
+    if color:
+        record.update(sourceSha256=source_hash, transformation=f'Apply official brand color #{color} to transparent symbol')
+    if name == 'program-nginx':
+        record['transformation'] = 'Apply official green #009639 and white symbol contrast to transparent hexagon'
+    return record
 
 with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:
     assets = sorted(pool.map(download, jobs), key=lambda a: a['id'])
@@ -74,5 +89,13 @@ dart += ''.join("  '%s': '%s',\n" % (a['id'][7:], a['asset']) for a in assets if
 dart += '};\n\nconst bundledProgramLogos = <String, String>{\n'
 dart += ''.join("  '%s': '%s',\n" % (a['id'][8:], a['asset']) for a in assets if a['id'].startswith('program-'))
 dart += '};\n'
+monochrome = []
+for asset in assets:
+    svg = (ROOT / asset['asset']).read_text(encoding='utf-8').lower()
+    colors = set(re.findall(r"(?:fill|stroke)=[\"']([^\"']+)", svg) + re.findall(r'(?:fill|stroke)\s*:\s*([^;}\"]+)', svg)) - {'none', 'transparent', 'currentcolor'}
+    if colors <= {'#000', '#000000', 'black', '#fff', '#ffffff', 'white'} and not any(x in svg for x in ['<lineargradient', '<radialgradient', '<pattern']):
+        monochrome.append(asset['asset'])
+dart += '\n/// Single-tone symbols use foreground contrast in both app themes.\nconst themeAwareBrandAssets = <String>{\n'
+dart += ''.join("  '%s',\n" % path for path in sorted(monochrome)) + '};\n'
 (ROOT / 'lib/data/res/brand_assets.dart').write_text(dart, encoding='utf-8')
 print('Vendored', len(assets), 'logos;', sum((OUT / (a['id'] + '.svg')).stat().st_size for a in assets), 'bytes')

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:server_box/core/app_navigator.dart';
 import 'package:server_box/core/extension/context/locale.dart';
 import 'package:server_box/data/res/store.dart';
+import 'package:server_box/view/widget/app_dialog.dart';
 
 /// How to authenticate to a host the Agent wants to reach.
 ///
@@ -53,7 +54,7 @@ Future<AdHocSshCredential?> promptAdHocSshCredential({
   String? keyId;
 
   try {
-    return await ctx.showRoundDialog<AdHocSshCredential>(
+    return await ctx.showAppRoundDialog<AdHocSshCredential>(
       title: ctx.l10n.agentSshConnectTitle,
       barrierDismiss: false,
       child: StatefulBuilder(
@@ -160,7 +161,7 @@ Future<AdHocServerSaveResult?> promptSaveAdHocServer({
     return value.isEmpty ? null : value;
   }
 
-  return await ctx.showRoundDialog<AdHocServerSaveResult>(
+  return await ctx.showAppRoundDialog<AdHocServerSaveResult>(
     title: ctx.l10n.agentSaveServerTitle,
     barrierDismiss: false,
     // All four disposed by the tree rather than after the `await`. The

@@ -7,6 +7,7 @@ import 'package:server_box/core/service/watch_sync.dart';
 import 'package:server_box/core/utils/misc.dart';
 import 'package:server_box/data/model/server/server_private_info.dart';
 import 'package:server_box/data/res/store.dart';
+import 'package:server_box/view/widget/app_dialog.dart';
 import 'package:server_box/view/widget/warm_settings.dart';
 
 class IosSettingsPage extends StatefulWidget {
@@ -212,14 +213,14 @@ extension _Actions on _IosSettingsPageState {
     }
 
     final excluded = Stores.setting.watchExcludedServerIds.fetch().toSet();
-    final picked = await context.showPickDialog<Spi>(
+    final picked = await context.showAppPickDialog<Spi>(
       title: l10n.watchServers,
       items: servers,
       display: (e) => e.name,
       initial: servers.where((e) => !excluded.contains(e.id)).toList(),
       actions: [
         TextButton(
-          onPressed: () => context.showRoundDialog(
+          onPressed: () => context.showAppRoundDialog(
             title: l10n.watchServers,
             child: Text(l10n.watchServersTip),
           ),

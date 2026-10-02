@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
-
 import 'package:fl_lib/fl_lib.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:server_box/core/extension/context/locale.dart';
@@ -12,6 +12,7 @@ import 'package:server_box/data/model/server/proc.dart';
 import 'package:server_box/data/model/server/server.dart';
 import 'package:server_box/data/model/server/system.dart';
 import 'package:server_box/data/provider/server/single.dart';
+import 'package:server_box/view/widget/app_dialog.dart';
 import 'package:server_box/view/widget/brand_logo.dart';
 
 const _compactBreakpoint = 700.0;
@@ -227,7 +228,7 @@ class _ProcessPageState extends ConsumerState<ProcessPage>
         IconButton(
           icon: const Icon(Icons.error_outline),
           tooltip: message,
-          onPressed: () => context.showRoundDialog(
+          onPressed: () => context.showAppRoundDialog(
             title: libL10n.error,
             child: Text(message),
             actions: [
@@ -705,7 +706,7 @@ extension _ProcessPageStateWidgets on _ProcessPageState {
   }
 
   void _showProcessDetails(Proc proc) {
-    context.showRoundDialog(
+    context.showAppRoundDialog(
       title: '${libL10n.process} ${proc.pid}',
       child: SingleChildScrollView(
         child: Column(
@@ -868,7 +869,7 @@ except Exception:
 
 extension _ProcessPageStateActions on _ProcessPageState {
   Future<void> _confirmKill(Proc proc) async {
-    final confirmed = await context.showRoundDialog<bool>(
+    final confirmed = await context.showAppRoundDialog<bool>(
       title: libL10n.attention,
       child: Text(
         libL10n.askContinue('${libL10n.stop} ${libL10n.process}(${proc.pid})'),
@@ -876,7 +877,7 @@ extension _ProcessPageStateActions on _ProcessPageState {
       actions: Btnx.cancelOk,
     );
     if (confirmed != true || !mounted) return;
-    await context.showLoadingDialog(fn: () => _killAndRefresh(proc));
+    await context.showAppLoadingDialog(fn: () => _killAndRefresh(proc));
   }
 
   Future<void> _killAndRefresh(Proc target) async {

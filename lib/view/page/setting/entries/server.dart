@@ -2,7 +2,7 @@ part of '../entry.dart';
 
 extension _Server on _AppSettingsPageState {
   void _showInvalidUrlDialog() {
-    context.showRoundDialog(
+    context.showAppRoundDialog(
       title: libL10n.fail,
       child: Text(libL10n.invalidUrl),
       actions: Btnx.oks,
@@ -42,7 +42,7 @@ extension _Server on _AppSettingsPageState {
         builder: (val) => Text(val.toStr, style: UIs.text15),
       ),
       onTap: () async {
-        final selected = await context.showPickSingleDialog(
+        final selected = await context.showAppPickSingleDialog(
           title: l10n.netViewType,
           items: NetViewType.values,
           display: (p0) => p0.toStr,
@@ -79,7 +79,7 @@ extension _Server on _AppSettingsPageState {
             (e) => MapEntry(e, ref.read(serversProvider).servers[e]?.name ?? e),
           ),
         );
-        final deleteKeys = await context.showPickDialog<String>(
+        final deleteKeys = await context.showAppPickDialog<String>(
           clearable: true,
           items: keys.toList(),
           display: (p0) => names[p0] ?? p0,
@@ -87,7 +87,7 @@ extension _Server on _AppSettingsPageState {
         if (deleteKeys == null || deleteKeys.isEmpty) return;
 
         final md = deleteKeys.map((e) => '- ${names[e] ?? e}').join('\n');
-        final sure = await context.showRoundDialog(
+        final sure = await context.showAppRoundDialog(
           title: libL10n.attention,
           child: SimpleMarkdown(data: md),
           actions: Btnx.cancelRedOk,
@@ -110,7 +110,7 @@ extension _Server on _AppSettingsPageState {
         listenable: _setting.textFactor.listenable(),
         builder: (val) => Text(val.toString(), style: UIs.text15),
       ),
-      onTap: () => context.showRoundDialog(
+      onTap: () => context.showAppRoundDialog(
         title: libL10n.textScaler,
         child: Input(
           autoFocus: true,
@@ -255,7 +255,7 @@ extension _Server on _AppSettingsPageState {
       trailing: const Icon(Icons.keyboard_arrow_right),
       onTap: () {
         _serverMarkCtrl.text = _setting.serverMarkUrl.fetch();
-        context.showRoundDialog(
+        context.showAppRoundDialog(
           title: l10n.markUrl,
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -352,7 +352,7 @@ extension _Server on _AppSettingsPageState {
       trailing: const Icon(Icons.keyboard_arrow_right),
       onTap: () {
         _serverLogoCtrl.text = _setting.serverLogoUrl.fetch();
-        context.showRoundDialog(
+        context.showAppRoundDialog(
           title: l10n.logoUrl,
           child: Column(
             mainAxisSize: MainAxisSize.min,

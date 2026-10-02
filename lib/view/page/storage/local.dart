@@ -1,6 +1,6 @@
 import 'dart:io';
-
 import 'package:fl_lib/fl_lib.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:server_box/core/extension/context/locale.dart';
@@ -13,6 +13,7 @@ import 'package:server_box/data/res/misc.dart';
 import 'package:server_box/data/res/store.dart';
 import 'package:server_box/view/page/storage/file_browser.dart';
 import 'package:server_box/view/page/storage/show_transfers.dart';
+import 'package:server_box/view/widget/app_dialog.dart';
 
 final class LocalFilePageArgs {
   final bool? isPickFile;
@@ -183,7 +184,7 @@ class _LocalFilePageState extends ConsumerState<LocalFilePage> {
     final size = entry.size ?? (await _backend.stat(fullPath))?.size ?? 0;
     if (size > Miscs.editorMaxSize) {
       if (!mounted) return;
-      context.showRoundDialog(
+      context.showAppRoundDialog(
         title: libL10n.attention,
         child: Text(l10n.fileTooLarge(entry.name, size, '1m')),
       );

@@ -150,7 +150,7 @@ extension _Init on SSHPageState {
       return;
     }
 
-    return await context.showRoundDialog(
+    return await context.showAppRoundDialog(
       title: libL10n.doc,
       child: Text(l10n.sshTermHelp),
       actions: [
@@ -374,7 +374,7 @@ extension _Init on SSHPageState {
     // Captured now, while there is certainly a context to ask — see the field.
     _reconnectDialogNav = Navigator.of(context, rootNavigator: true);
     unawaited(
-      context.showRoundDialog(
+      context.showAppRoundDialog(
         child: Row(
           children: [
             const SizedBox(
@@ -428,7 +428,7 @@ extension _Init on SSHPageState {
   }
 
   Future<void> _showDisconnectDialog() async {
-    final shouldLeave = await context.showRoundDialog<bool>(
+    final shouldLeave = await context.showAppRoundDialog<bool>(
       title: libL10n.attention,
       child: Text('${libL10n.disconnected}\n${libL10n.goBackQ}'),
       barrierDismiss: false,

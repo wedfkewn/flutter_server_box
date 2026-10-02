@@ -1,9 +1,10 @@
 # Bundled system and program logos
 
 The app uses these logos only to identify an installed operating system or
-program. The artwork retains its source colors and aspect ratio; no theme tint
-is applied. Original monochrome artwork remains monochrome. A neutral plate
-provides contrast in both light and dark themes.
+program. Symbols share a rounded, theme-aware badge, consistent inset and
+aspect ratio. Colored artwork keeps its brand colors; black/white symbols use
+the app foreground color for contrast. Ubuntu and nginx use transparent symbol
+variants rather than the banner/wordmark. Their official colors are applied.
 
 Selected SVGs are vendored from **Devicon** (MIT), **font-logos** (Unlicense),
 and **Simple Icons** (CC0-1.0). The three upstream license texts accompany this
@@ -20,7 +21,7 @@ own use policies continue to apply. The logos do not imply endorsement.
 - Arch artwork: https://archlinux.org/art/
 
 `manifest.json` records **every file's original source, immutable commit and
-SHA-256**. Artwork is unmodified from the selected upstream commit. Only the
+SHA-256**. Any presentation adaptation records its source hash and transformation too. Only the
 selected files are shipped, not the icon libraries or their fonts. The existing
 four assets under `assets/distro` retain their own license notices.
 

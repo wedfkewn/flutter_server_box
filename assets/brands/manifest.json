@@ -418,10 +418,12 @@
   {
     "id": "distro-ubuntu",
     "asset": "assets/brands/distro-ubuntu.svg",
-    "source": "https://raw.githubusercontent.com/devicons/devicon/7330accdbc47e2dc0c19789a48533c4a3c50fe58/icons/ubuntu/ubuntu-original.svg",
-    "upstream": "devicons/devicon",
-    "commit": "7330accdbc47e2dc0c19789a48533c4a3c50fe58",
-    "sha256": "af8ddf6c709f61d1b7ac00d5417cf389ad23db2258f0776e0c7854f37105caed"
+    "source": "https://raw.githubusercontent.com/simple-icons/simple-icons/1089fb7d2bf0e323f834c205ab76265005a6d5e8/icons/ubuntu.svg",
+    "upstream": "simple-icons/simple-icons",
+    "commit": "1089fb7d2bf0e323f834c205ab76265005a6d5e8",
+    "sha256": "05908333dce000b0775603cdc3d14b4a7d315d3625c9fa0b374804d6753643c3",
+    "sourceSha256": "b0aca674c881a07bb60b26afbcee07093ae419e29ee38e376f938817fa66ae03",
+    "transformation": "Apply official brand color #E95420 to transparent symbol"
   },
   {
     "id": "distro-vanilla",
@@ -562,10 +564,12 @@
   {
     "id": "program-nginx",
     "asset": "assets/brands/program-nginx.svg",
-    "source": "https://raw.githubusercontent.com/devicons/devicon/7330accdbc47e2dc0c19789a48533c4a3c50fe58/icons/nginx/nginx-original.svg",
-    "upstream": "devicons/devicon",
-    "commit": "7330accdbc47e2dc0c19789a48533c4a3c50fe58",
-    "sha256": "a28c7002fda6748bb018fa5f89ba3d38c622db720d65aa88668208a3cc839900"
+    "source": "https://raw.githubusercontent.com/simple-icons/simple-icons/1089fb7d2bf0e323f834c205ab76265005a6d5e8/icons/nginx.svg",
+    "upstream": "simple-icons/simple-icons",
+    "commit": "1089fb7d2bf0e323f834c205ab76265005a6d5e8",
+    "sha256": "73b0336303c330ba17bdce5d506d7c0705eec5034e39df656b05f3bed37ff128",
+    "sourceSha256": "236d53b2b746706df75e2a01668cb84e6f3fc7c8923a9ce824f8534db007a438",
+    "transformation": "Apply official green #009639 and white symbol contrast to transparent hexagon"
   },
   {
     "id": "program-nodejs",

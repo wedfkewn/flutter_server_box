@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:server_box/core/extension/context/locale.dart';
 import 'package:server_box/data/model/ai/agent_conversation.dart';
 import 'package:server_box/data/provider/ai/agent_session.dart';
+import 'package:server_box/view/widget/app_dialog.dart';
 
 /// Opens the conversation list as a sheet, for the layouts too narrow to give
 /// it a column of its own.
@@ -82,7 +83,7 @@ class _AgentHistoryPanelState extends ConsumerState<AgentHistoryPanel> {
         extentOffset: conversation.title.length,
       );
     try {
-      final title = await context.showRoundDialog<String>(
+      final title = await context.showAppRoundDialog<String>(
         title: context.l10n.askAiRenameConversation,
         childBuilder: (dialogContext) => TextField(
           controller: controller,
@@ -105,7 +106,7 @@ class _AgentHistoryPanelState extends ConsumerState<AgentHistoryPanel> {
   }
 
   Future<void> _delete(AgentConversation conversation) async {
-    final confirmed = await context.showRoundDialog<bool>(
+    final confirmed = await context.showAppRoundDialog<bool>(
       title: context.l10n.askAiDeleteConversationTitle,
       child: Text(context.l10n.askAiDeleteConversationTip),
       actionsBuilder: (dialogContext) => [
@@ -126,7 +127,7 @@ class _AgentHistoryPanelState extends ConsumerState<AgentHistoryPanel> {
   }
 
   Future<void> _clear() async {
-    final confirmed = await context.showRoundDialog<bool>(
+    final confirmed = await context.showAppRoundDialog<bool>(
       title: context.l10n.agentClearHistoryTitle,
       child: Text(context.l10n.agentClearHistoryTip),
       actionsBuilder: (dialogContext) => [

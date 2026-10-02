@@ -546,7 +546,7 @@ extension _WarmDashboard on _ServerPageState {
     final confirmed = await showDialog<bool>(
       context: context,
       animationStyle: isMobile ? WarmMotion.dialog(context) : null,
-      builder: (ctx) => AlertDialog(
+      builder: (ctx) => AppFloatingDialog(
         title: Text('${ctx.libL10n.delete} ${srv.spi.name}?'),
         content: Text(ctx.libL10n.askContinue(ctx.libL10n.delete)),
         actions: [
@@ -577,7 +577,7 @@ extension _WarmDashboard on _ServerPageState {
       context: context,
       animationStyle: isMobile ? WarmMotion.dialog(context) : null,
       builder: (ctx) => StatefulBuilder(
-        builder: (ctx, update) => AlertDialog(
+        builder: (ctx, update) => AppFloatingDialog(
           insetPadding: const EdgeInsets.symmetric(horizontal: 24),
           titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
           contentPadding: const EdgeInsets.symmetric(horizontal: 16),

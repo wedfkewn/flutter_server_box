@@ -1,6 +1,6 @@
 import 'dart:async';
-
 import 'package:dartssh2/dartssh2.dart';
+
 import 'package:fl_lib/fl_lib.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +8,7 @@ import 'package:server_box/core/app_navigator.dart';
 import 'package:server_box/core/extension/context/locale.dart';
 import 'package:server_box/core/utils/server.dart';
 import 'package:server_box/data/model/app/error.dart';
+import 'package:server_box/view/widget/app_dialog.dart';
 
 /// Asks for a key's passphrase and answers with it, or null if the person
 /// declined.
@@ -208,7 +209,7 @@ abstract final class PrivateKeyUnlock {
 
     final controller = TextEditingController();
     try {
-      return await context.showRoundDialog<String>(
+      return await context.showAppRoundDialog<String>(
         title: libL10n.authRequired,
         childBuilder: (dialogContext) => Column(
           mainAxisSize: MainAxisSize.min,

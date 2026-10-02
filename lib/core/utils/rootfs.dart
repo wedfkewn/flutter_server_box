@@ -23,12 +23,11 @@ import 'package:server_box/data/model/app/rootfs_manifest.dart';
 /// answered "no", and the terminal tab is written to expect that.
 abstract final class Rootfs {
   /// Whether this build could offer one.
-  static bool get isAvailable =>
-      isAndroid ? AndroidRootfs.isAvailable : IosRootfs.isAvailable;
+  // Retained for reading legacy metadata; the local Linux feature is removed.
+  static bool get isAvailable => false;
 
   /// Whether one is installed and ready to enter.
-  static bool get isReady =>
-      isAndroid ? AndroidRootfs.isReady : IosRootfs.isReadySync;
+  static bool get isReady => false;
 
   /// Where the selected profile's tree is, or null before [prepare].
   static String? get root => isAndroid ? AndroidRootfs.root : IosRootfs.root;

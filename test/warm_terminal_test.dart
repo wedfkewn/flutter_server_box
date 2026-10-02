@@ -446,6 +446,7 @@ void main() {
     await tester.tap(find.text(libL10n.ok));
     await settle(tester);
     expect(find.text('暂无会话'), findsOneWidget);
+    expect(find.text('Linux (Beta)'), findsNothing);
     await tester.drag(find.byKey(const ValueKey('terminal-drawer-handle')),
       const Offset(0, 150));
     await settle(tester);
@@ -504,6 +505,7 @@ void main() {
     final container = ProviderContainer();
     await pump(tester, container: container);
     expect(find.text('暂无会话'), findsOneWidget);
+    expect(find.text('Linux (Beta)'), findsNothing);
     expect(
       find.byKey(const ValueKey('terminal-connect-terminal-capture')),
       findsOneWidget,

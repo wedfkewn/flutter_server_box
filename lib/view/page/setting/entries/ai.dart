@@ -54,22 +54,13 @@ extension _AI on _AppSettingsPageState {
           ),
           trailing: StoreSwitch(prop: _setting.askAiAutoRunSafeCommands),
         ),
-        // Absent where it could not be honoured: the sandboxed macOS build is
-        // the App Store one, and an iOS build without the engine has no guest
-        // to run in. Where the local target *is* a userland, a build that
-        // cannot install one has nothing to offer either. A switch that turns
-        // on nothing is worse than no switch.
-        if (LocalExec.forThisDevice() case final local?
-            when !local.inRootfs || Rootfs.isAvailable)
+        // Local commands are offered only on supported desktop hosts.
+        if (LocalExec.isSupported)
           ListTile(
             leading: const Icon(Icons.computer_outlined, size: _kIconSize),
             title: TipText(
               l10n.agentLocalExec,
-              // Two different machines: a container the app installed, or the
-              // computer itself with the app's own data on it.
-              local.inRootfs
-                  ? l10n.agentLocalExecRootfsTip
-                  : l10n.agentLocalExecTip,
+              l10n.agentLocalExecTip,
             ),
             trailing: StoreSwitch(prop: _setting.agentLocalExec),
           ),
@@ -200,7 +191,7 @@ extension _AI on _AppSettingsPageState {
         context.popDialog();
       }
 
-      await context.showRoundDialog(
+      await context.showAppRoundDialog(
         title: l10n.askAiContextTokens,
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -312,7 +303,7 @@ extension _AI on _AppSettingsPageState {
             context.popDialog();
           }
 
-          await context.showRoundDialog(
+          await context.showAppRoundDialog(
             title: title,
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -361,7 +352,7 @@ extension _AI on _AppSettingsPageState {
             Text(label(parseAskAiProtocol(val)), style: UIs.text15),
       ),
       onTap: () async {
-        final selected = await context.showPickSingleDialog(
+        final selected = await context.showAppPickSingleDialog(
           title: libL10n.apiProtocol,
           items: AskAiProtocol.values,
           display: label,
@@ -406,7 +397,7 @@ extension _AI on _AppSettingsPageState {
         context.popDialog();
       }
 
-      await context.showRoundDialog(
+      await context.showAppRoundDialog(
         title: title,
         child: Column(
           mainAxisSize: MainAxisSize.min,

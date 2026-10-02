@@ -80,6 +80,7 @@ void main() {
       );
     }
     expect(find.byKey(settingsTabsKey), findsNothing);
+    expect(find.text('Linux (Beta)'), findsNothing);
     await tester.tap(
       find.descendant(of: rail, matching: find.text('Connections & terminal')),
     );
@@ -102,6 +103,7 @@ void main() {
       expect(find.text(title), findsOneWidget);
     }
     expect(find.byKey(settingsTabsKey), findsNothing);
+    expect(find.text('Linux (Beta)'), findsNothing);
     await tester.tap(find.text('Appearance & display'));
     await tester.pumpAndSettle();
     expect(find.text('Server information display'), findsOneWidget);

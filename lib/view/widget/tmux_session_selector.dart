@@ -4,6 +4,7 @@ import 'package:server_box/core/extension/context/locale.dart';
 import 'package:server_box/data/ssh/tmux/tmux_session.dart';
 import 'package:server_box/data/ssh/tmux/tmux_session_info.dart';
 import 'package:server_box/data/ssh/tmux/tmux_window_info.dart';
+import 'package:server_box/view/widget/app_dialog.dart';
 
 /// Dialog that allows the user to select a tmux session and window.
 final class TmuxSessionSelector extends StatefulWidget {
@@ -406,7 +407,7 @@ Future<TmuxAttachChoice?> showTmuxSessionSelectorWithSkip(
   String? initialSessionName,
 }) async {
   final l10n = context.l10n;
-  return context.showRoundDialog<TmuxAttachChoice>(
+  return context.showAppRoundDialog<TmuxAttachChoice>(
     title: 'tmux',
     child: TmuxSessionSelector(
       sessions: sessions,

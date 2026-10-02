@@ -9,6 +9,7 @@ import 'package:server_box/data/provider/server/all.dart';
 import 'package:server_box/data/provider/snippet.dart';
 import 'package:server_box/data/store/entity_store.dart';
 import 'package:server_box/view/page/ssh/snippet_run.dart';
+import 'package:server_box/view/widget/app_dialog.dart';
 import 'package:server_box/view/widget/dist_icon.dart';
 
 final class SnippetEditPageArgs {
@@ -115,7 +116,7 @@ class _SnippetEditPageState extends ConsumerState<SnippetEditPage> {
           // button meant two pops in a row from a callback that can see two
           // navigators, and getting their order or their target wrong is
           // silent.
-          final confirmed = await context.showRoundDialog<bool>(
+          final confirmed = await context.showAppRoundDialog<bool>(
             title: libL10n.attention,
             child: Text(
               libL10n.askContinue(
@@ -204,7 +205,7 @@ class _SnippetEditPageState extends ConsumerState<SnippetEditPage> {
       return;
     }
 
-    final chosen = await context.showPickSingleDialog<Spi>(
+    final chosen = await context.showAppPickSingleDialog<Spi>(
       title: libL10n.server,
       items: spis,
       display: (spi) => spi.name,
@@ -293,7 +294,7 @@ class _SnippetEditPageState extends ConsumerState<SnippetEditPage> {
                     (e) => ref.read(serversProvider).serverOrder.contains(e),
                   )
                   .toList();
-              final serverIds = await context.showPickDialog(
+              final serverIds = await context.showAppPickDialog(
                 title: l10n.autoRun,
                 items: ref.read(serversProvider).serverOrder,
                 display: (e) => ref.read(serversProvider).servers[e]?.name ?? e,

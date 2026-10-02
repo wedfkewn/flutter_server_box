@@ -238,7 +238,7 @@ class _WarmServerInfoSheetState extends State<_WarmServerInfoSheet> {
       await showDialog<bool>(
         context: context,
         animationStyle: isMobile ? WarmMotion.dialog(context) : null,
-        builder: (ctx) => AlertDialog(
+        builder: (ctx) => AppFloatingDialog(
           title: Text(title),
           content: Text(body),
           actions: [

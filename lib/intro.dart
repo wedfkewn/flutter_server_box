@@ -272,7 +272,7 @@ final class _IntroPage extends StatelessWidget {
 
 
   static Future<void> _selectLocale(BuildContext ctx) async {
-    final selected = await ctx.showPickSingleDialog(
+    final selected = await ctx.showAppPickSingleDialog(
       title: ctx.libL10n.language,
       items: AppLocalizations.supportedLocales,
       display: (locale) => locale.nativeName,
@@ -285,7 +285,7 @@ final class _IntroPage extends StatelessWidget {
 
   static Future<void> _askBackupPassword(BuildContext ctx) async {
     final controller = TextEditingController();
-    final result = await ctx.showRoundDialog<bool>(
+    final result = await ctx.showAppRoundDialog<bool>(
       title: ctx.l10n.backupPassword,
       // Disposed by the tree. It was never disposed at all before, which leaks
       // one controller per visit and — unlike the crash the same shape causes

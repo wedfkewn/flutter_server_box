@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
-
 import 'package:fl_lib/fl_lib.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -29,6 +29,7 @@ import 'package:server_box/view/page/scheduled_tasks.dart';
 import 'package:server_box/view/page/services.dart';
 import 'package:server_box/view/page/ssh/snippet_run.dart';
 import 'package:server_box/view/page/users.dart';
+import 'package:server_box/view/widget/app_dialog.dart';
 import 'package:server_box/view/widget/edge_fade_scroll.dart';
 import 'package:server_box/view/widget/server_power.dart';
 
@@ -213,7 +214,7 @@ extension ServerFuncBtnsActions on ServerFuncBtns {
           Toast.show(libL10n.empty);
           return;
         }
-        final snippets = await context.showPickWithTagDialog<Snippet>(
+        final snippets = await context.showAppPickWithTagDialog<Snippet>(
           title: libL10n.snippet,
           tags: snippetState.tags.vn,
           itemsBuilder: (e) {
@@ -230,7 +231,7 @@ extension ServerFuncBtnsActions on ServerFuncBtns {
         final snippet = snippets.firstOrNull;
         if (snippet == null) return;
         final fmted = snippet.fmtWithSpi(spi);
-        final sure = await context.showRoundDialog<bool>(
+        final sure = await context.showAppRoundDialog<bool>(
           title: libL10n.attention,
           child: SingleChildScrollView(
             child: SimpleMarkdown(data: '```shell\n$fmted\n```'),
@@ -378,13 +379,13 @@ void _gotoSSH(Spi spi, BuildContext context, WidgetRef ref) async {
           s,
         );
         if (context.mounted) {
-          context.showErrDialog(e, s, libL10n.error);
+          context.showAppErrDialog(e, s, libL10n.error);
         }
         return;
       } on Exception catch (e, s) {
         Loggers.app.warning('Failed to prepare temporary SSH key file', e, s);
         if (context.mounted) {
-          context.showErrDialog(e, s, libL10n.error);
+          context.showAppErrDialog(e, s, libL10n.error);
         }
         return;
       }
@@ -409,7 +410,7 @@ void _gotoSSH(Spi spi, BuildContext context, WidgetRef ref) async {
           ]);
           sshLaunched = true;
         } catch (e, s) {
-          context.showErrDialog(e, s, libL10n.emulator);
+          context.showAppErrDialog(e, s, libL10n.emulator);
         }
         break;
       case Pfs.linux:
@@ -430,7 +431,7 @@ void _gotoSSH(Spi spi, BuildContext context, WidgetRef ref) async {
           sshLaunched = true;
         } catch (e, s) {
           if (context.mounted) {
-            context.showErrDialog(e, s, libL10n.emulator);
+            context.showAppErrDialog(e, s, libL10n.emulator);
           }
         } finally {
           if (await scriptDir.exists()) {

@@ -1,9 +1,10 @@
 import 'dart:async';
-
 import 'package:fl_lib/fl_lib.dart';
+
 import 'package:flutter/material.dart';
 import 'package:server_box/core/extension/context/locale.dart';
 import 'package:server_box/view/widget/agent_common.dart';
+import 'package:server_box/view/widget/app_dialog.dart';
 
 /// The user's own message, with a way to change what was asked.
 ///
@@ -191,7 +192,7 @@ class _AgentUserBubbleState extends State<AgentUserBubble> {
   /// same thing in its own dialog before the editor.
   Future<void> _confirmDelete(BuildContext context) async {
     final tip = context.l10n.askAiDeleteTip;
-    final ok = await context.showRoundDialog<bool>(
+    final ok = await context.showAppRoundDialog<bool>(
       title: libL10n.attention,
       child: Text(tip),
       actions: Btnx.cancelRedOk,
@@ -214,7 +215,7 @@ class _AgentUserBubbleState extends State<AgentUserBubble> {
         await widget.onResend(widget.ordinal, text);
       }
 
-      await context.showRoundDialog(
+      await context.showAppRoundDialog(
         title: l10n.askAiResend,
         child: Column(
           mainAxisSize: MainAxisSize.min,

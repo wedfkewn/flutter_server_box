@@ -99,6 +99,7 @@ android {
 
     packaging {
         jniLibs {
+            excludes += ["**/libproot.so", "**/libproot-loader.so"]
             // Extracted rather than mapped out of the APK. A helper binary can
             // only be executed as a file, and with minSdk >= 23 nothing is
             // extracted by default — `nativeLibraryDir` does not exist and

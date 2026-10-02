@@ -6,6 +6,7 @@ import 'package:server_box/core/utils/sandbox_import.dart';
 import 'package:server_box/data/res/store.dart';
 import 'package:server_box/data/res/url.dart';
 import 'package:server_box/view/page/backup.dart';
+import 'package:server_box/view/widget/app_dialog.dart';
 
 /// What the App Store build has to say about the DMG one.
 ///
@@ -36,7 +37,7 @@ abstract final class DmgNotice {
   /// The whole of it. Reachable from the settings page for good, so the one
   /// line above never has to carry the explanation itself.
   static Future<void> show(BuildContext context) {
-    return context.showRoundDialog(
+    return context.showAppRoundDialog(
       title: l10n.macDmgTitle,
       child: SingleChildScrollView(child: SimpleMarkdown(data: l10n.macDmgBody)),
       actions: [
@@ -138,7 +139,7 @@ abstract final class SandboxImportNotice {
     if (!result.needsExplaining) return;
 
     final denied = result == SandboxImportResult.denied;
-    await context.showRoundDialog(
+    await context.showAppRoundDialog(
       title: l10n.macDmgTitle,
       child: Text(denied ? l10n.macDmgImportDenied : l10n.macDmgImportFailed),
       actions: [

@@ -2,6 +2,7 @@ import 'package:fl_lib/fl_lib.dart';
 import 'package:flutter/material.dart';
 import 'package:server_box/core/extension/context/locale.dart';
 import 'package:server_box/data/res/store.dart';
+import 'package:server_box/view/widget/app_dialog.dart';
 
 /// Tells the user, once, that their hand-typed `/status` addresses stopped
 /// working.
@@ -21,7 +22,7 @@ abstract final class LegacyStatusNotice {
     if (!pending.fetch()) return;
     if (!context.mounted) return;
 
-    await context.showRoundDialog(
+    await context.showAppRoundDialog(
       title: l10n.legacyStatusGoneTitle,
       child: SingleChildScrollView(
         child: SimpleMarkdown(data: l10n.legacyStatusGoneBody),

@@ -7,7 +7,6 @@ import 'package:fl_lib/fl_lib.dart';
 import 'package:flutter/widgets.dart';
 import 'package:server_box/core/app_navigator.dart';
 import 'package:server_box/core/diag.dart';
-import 'package:server_box/core/utils/ish_shell.dart';
 import 'package:server_box/core/utils/local_shell.dart';
 import 'package:server_box/core/utils/monitor_terminal.dart';
 import 'package:server_box/core/utils/server.dart';
@@ -173,20 +172,12 @@ class TerminalSession {
     return _backend = SshShellBackend(client);
   }
 
-  /// A shell on this device, in its Linux userland or on the host.
-  ///
-  /// Two mechanisms behind one source: Android enters a real rootfs with proot
-  /// through the same pty a host shell uses, and iOS has no process to start at
-  /// all, so its guest is an interpreter with a console of its own. The page
-  /// above knows neither.
+  /// A native shell on this device. Legacy guest sessions cannot start.
   ShellBackend _localBackend(LocalSource local) {
-    if (local.rootfs && isIOS) {
-      return IshShellBackend(profileId: local.profileId);
+    if (local.rootfs) {
+      throw UnsupportedError('Local Linux environments have been removed.');
     }
-    return LocalShellBackend(
-      inRootfs: local.rootfs,
-      profileId: local.profileId,
-    );
+    return LocalShellBackend();
   }
 
   /// The agent's own shell, when the agent said it allows one.

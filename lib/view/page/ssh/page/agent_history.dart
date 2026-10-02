@@ -57,7 +57,7 @@ extension _AgentHistoryActions on _AskAiPanelState {
         extentOffset: conversation.title.length,
       );
     try {
-      final title = await context.showRoundDialog<String>(
+      final title = await context.showAppRoundDialog<String>(
         title: context.l10n.askAiRenameConversation,
         child: Input(
           controller: controller,
@@ -81,7 +81,7 @@ extension _AgentHistoryActions on _AskAiPanelState {
   }
 
   Future<void> _deleteConversation(AgentConversation conversation) async {
-    final confirmed = await context.showRoundDialog<bool>(
+    final confirmed = await context.showAppRoundDialog<bool>(
       title: context.l10n.askAiDeleteConversationTitle,
       child: Text(context.l10n.askAiDeleteConversationTip),
       actions: [
@@ -97,7 +97,7 @@ extension _AgentHistoryActions on _AskAiPanelState {
   }
 
   Future<void> _clearConversationHistory() async {
-    final confirmed = await context.showRoundDialog<bool>(
+    final confirmed = await context.showAppRoundDialog<bool>(
       title: context.l10n.askAiClearHistoryTitle,
       child: Text(context.l10n.askAiClearHistoryTip),
       actions: [
