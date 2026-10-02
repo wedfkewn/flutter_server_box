@@ -154,7 +154,8 @@ void main() {
       );
       final image = await boundary.toImage(pixelRatio: 1);
       final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-      final dir = Directory('design-qa')..createSync(recursive: true);
+      final dir = Directory(Platform.environment['UI_QA_OUTPUT'] ?? 'design-qa')
+        ..createSync(recursive: true);
       await File('${dir.path}/$name').writeAsBytes(bytes!.buffer.asUint8List());
       image.dispose();
     });

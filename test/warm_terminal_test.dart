@@ -62,6 +62,8 @@ void main() {
           : '/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc',
     );
     await loadFont('consola.ttf', r'C:\Windows\Fonts\consola.ttf');
+    await loadFont('monospace', Platform.isWindows ? r'C:\Windows\Fonts\consola.ttf'
+      : '/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf');
     final flutterRoot = Platform.environment['FLUTTER_ROOT'];
     if (flutterRoot != null) {
       await loadFont(
@@ -221,7 +223,8 @@ void main() {
       );
       final image = await boundary.toImage(pixelRatio: 1);
       final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-      final dir = Directory('design-qa')..createSync(recursive: true);
+      final dir = Directory(Platform.environment['TERMINAL_QA_DIR'] ?? 'design-qa')
+        ..createSync(recursive: true);
       await File('${dir.path}/$name').writeAsBytes(bytes!.buffer.asUint8List());
       image.dispose();
     });
@@ -472,6 +475,41 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('reference preserves the shell and highlighting toggles without reconnecting', (tester) async {
+    final (_, session) = await connected(tester);
+    final shell = session.foreground as FakeShellSession;
+    final original = session.terminal.buffer.getText();
+    session.terminal.write('\r\nERROR disk unavailable\r\nWARN retry\r\nINFO connected\r\nDEBUG polling\r\n');
+    final logs = session.terminal.buffer.getText();
+    await settle(tester);
+    await capture(tester, 'terminal-log-colors.png');
+    expect(tester.widget<TerminalView>(find.byType(TerminalView)).lineColorResolver, isNotNull);
+    await tester.tap(find.byKey(const ValueKey('terminal-tools-menu')));
+    await settle(tester);
+    await tester.tap(find.text('命令速查'));
+    await settle(tester);
+    await capture(tester, 'terminal-command-reference.png');
+    await tester.enterText(find.byType(EditableText).last, 'pwd');
+    await settle(tester);
+    await tester.tap(find.byKey(const ValueKey('command-pwd')));
+    await settle(tester);
+    await capture(tester, 'terminal-command-detail.png');
+    await tester.tap(find.byKey(const ValueKey('command-reference-close')));
+    await settle(tester);
+    expect(session.foreground, same(shell));
+    expect(shell.written.toString(), isEmpty);
+    expect(session.terminal.buffer.getText(), startsWith(original.trimRight()));
+    expect(session.terminal.buffer.getText(), logs);
+    Stores.setting.termLogHighlight.put(false);
+    await settle(tester);
+    expect(tester.widget<TerminalView>(find.byType(TerminalView)).lineColorResolver, isNull);
+    Stores.setting.termLogHighlight.put(true);
+    await settle(tester);
+    expect(tester.widget<TerminalView>(find.byType(TerminalView)).lineColorResolver, isNotNull);
+    expect(session.foreground, same(shell));
+    expect(tester.takeException(), isNull);
+  });
+
   for (final scenario in [
     (const Size(320, 568), 2.0, false, 'large-text'),
     (const Size(568, 320), 1.0, false, 'landscape'),
@@ -495,6 +533,15 @@ void main() {
         const Offset(0, 120));
       await settle(tester);
       expect(find.byKey(const ValueKey('terminal-connections-drawer')), findsNothing);
+      if (scenario.$4 == 'dark') {
+        await tester.tap(find.byKey(const ValueKey('terminal-tools-menu')));
+        await settle(tester);
+        await tester.tap(find.text('命令速查'));
+        await settle(tester);
+        await capture(tester, 'terminal-command-reference-dark.png');
+        await tester.tap(find.byKey(const ValueKey('command-reference-close')));
+        await settle(tester);
+      }
       expect(tester.takeException(), isNull);
     });
   }
@@ -506,6 +553,13 @@ void main() {
     await pump(tester, container: container);
     expect(find.text('暂无会话'), findsOneWidget);
     expect(find.text('Linux (Beta)'), findsNothing);
+    await tester.tap(find.byKey(const ValueKey('terminal-tools-menu')));
+    await settle(tester);
+    await tester.tap(find.text('命令速查'));
+    await settle(tester);
+    expect(find.byKey(const ValueKey('command-reference-surface')), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('command-reference-close')));
+    await settle(tester);
     expect(
       find.byKey(const ValueKey('terminal-connect-terminal-capture')),
       findsOneWidget,

@@ -115,6 +115,33 @@ void main() {
     expect(find.byType(AppFloatingDialog), findsOneWidget);
   });
 
+  testWidgets('locked progress dialog cannot be dismissed with system back', (tester) async {
+    await open(tester, (ctx) async { await ctx.showAppRoundDialog<void>(
+      title: '正在连接', barrierDismiss: false, child: const Text('请稍候')); });
+    await tester.binding.handlePopRoute();
+    await tester.pump(const Duration(milliseconds: 300));
+    await shot(tester, 'locked-system-back');
+    expect(find.byType(AppFloatingDialog), findsOneWidget);
+    Navigator.of(tester.element(find.byType(AppFloatingDialog))).pop();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.byType(AppFloatingDialog), findsNothing);
+  });
+
+  testWidgets('close button dismisses the navigator that owns the dialog', (tester) async {
+    await open(tester, (ctx) async { await showDialog<void>(context: ctx,
+      builder: (_) => Navigator(onGenerateRoute: (_) => MaterialPageRoute<void>(
+        builder: (inner) => Scaffold(body: TextButton(onPressed: () => showDialog<void>(
+          context: inner, useRootNavigator: false,
+          builder: (_) => const AppFloatingDialog(title: Text('嵌套弹窗'))), child: const Text('Nested')))))); });
+    await tester.tap(find.text('Nested'));
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.tap(find.byKey(const ValueKey('floating-dialog-close')));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text('Nested'), findsOneWidget);
+    expect(find.byType(AppFloatingDialog), findsNothing);
+  });
+
   for (final config in [(const Size(320, 640), 0.0, 1.6), (const Size(393, 852), 320.0, 1.0), (const Size(852, 393), 160.0, 1.0)]) {
     testWidgets('input scrolls with keyboard and large text $config', (tester) async {
       final controller = TextEditingController();

@@ -670,6 +670,7 @@ class SettingStore extends SqliteStore {
   /// SSH Term Theme
   /// 0: follow app theme, 1: light, 2: dark
   late final termTheme = propertyDefault('termTheme', 0);
+  late final termLogHighlight = propertyDefault('termLogHighlight', true);
 
   late final lastVer = propertyDefault('lastVer', 0);
 

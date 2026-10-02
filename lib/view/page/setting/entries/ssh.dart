@@ -27,11 +27,39 @@ extension _SSH on _AppSettingsPageState {
       final appearance = isDesktop ? 4 : 2;
       return Column(children: [
         WarmSettingsGroup(title: warmSettingsText(context, '外观与字体', 'Appearance and fonts'), children: rows.sublist(appearance, appearance + 4)),
+        _buildTermColors(),
         WarmSettingsGroup(title: warmSettingsText(context, '输入与会话', 'Input and sessions'), children: [...rows.sublist(0, appearance), ...rows.sublist(appearance + 4)]),
       ]);
     }
-    return Column(children: rows.map((e) => CardX(child: e)).toList());
+    return Column(children: [...rows.map((e) => CardX(child: e)), _buildTermColors()]);
   }
+
+  Widget _buildTermColors() => WarmSettingsGroup(
+    title: warmSettingsText(context, '彩色显示', 'Color display'), children: [
+      ListTile(leading: const Icon(Icons.format_color_text),
+        title: Text(warmSettingsText(context, '日志辅助高亮', 'Log highlighting')),
+        subtitle: Text(warmSettingsText(context, '仅高亮完整日志行，保留程序原有颜色',
+          'Highlight completed log rows; preserve program colors')),
+        trailing: StoreSwitch(prop: _setting.termLogHighlight)),
+      Padding(padding: const EdgeInsets.all(16), child: ValBuilder(
+        listenable: _setting.termTheme.listenable(), builder: (_) {
+          final colors = TerminalLook.themeOf(context);
+          return Container(width: double.infinity, padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(color: colors.background, borderRadius: BorderRadius.circular(14)),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(warmSettingsText(context, '配色预览', 'Color preview'), style: TextStyle(color: colors.foreground)),
+              const SizedBox(height: 8),
+              for (final sample in [('ERROR · Connection failed', colors.red),
+                ('WARN · Retry scheduled', colors.yellow), ('INFO · Connected', colors.blue),
+                ('DEBUG · Waiting for data', colors.brightBlack)])
+                Text(sample.$1, style: TextStyle(fontFamily: 'monospace', color: sample.$2)),
+            ]));
+        })),
+      ListTile(leading: const Icon(Icons.menu_book_outlined),
+        title: Text(warmSettingsText(context, '命令高亮配置指南', 'Command highlighting guide')),
+        subtitle: Text(warmSettingsText(context, 'Fish / Zsh · 手动配置服务器', 'Fish / Zsh · Configure manually')),
+        trailing: const Icon(Icons.chevron_right), onTap: () => showCommandReference(context, guide: true)),
+    ]);
 
   Widget _buildSSHConfigImport() {
     return ListTile(

@@ -23,7 +23,7 @@ on:
         default: ''
   push:
     branches:
-      - "codex/dialogs-ipa-20261002"
+      - "codex/terminal-ipa-20261003"
     tags:
       - "v*"
 
@@ -127,7 +127,7 @@ jobs:
           REQUESTED: ${{ inputs.jobs }}
           IS_DISPATCH: ${{ github.event_name == 'workflow_dispatch' }}
           IS_RELEASE: ${{ inputs.release }}
-          IS_UI_BUILD: ${{ github.event_name == 'push' && github.ref == 'refs/heads/codex/dialogs-ipa-20261002' }}
+          IS_UI_BUILD: ${{ github.event_name == 'push' && github.ref == 'refs/heads/codex/terminal-ipa-20261003' }}
         run: |
           set -euo pipefail
 
@@ -675,6 +675,9 @@ jobs:
           fetch-depth: 0
       - name: Install Flutter
         uses: ./.github/actions/setup-flutter
+      - name: Apply terminal renderer patch
+        shell: bash
+        run: git -C packages/xterm apply ../../scripts/patches/xterm-log-highlight.patch
       - name: Build (unsigned)
         shell: bash
         run: |

@@ -176,6 +176,8 @@ extension _WarmTerminal on _SSHTabPageState {
           _showSortMenu();
         case 'history':
           _showHistory();
+        case 'commands':
+          showCommandReference(context);
       }
     },
     itemBuilder: (_) {
@@ -196,6 +198,7 @@ extension _WarmTerminal on _SSHTabPageState {
             ),
           );
       return [
+        item('commands', Icons.menu_book_outlined, commandUiText(context, '命令速查', 'Command reference')),
         if (current != null) ...[
           if (current.data.page.args.spi != null)
             item('agent', Icons.auto_awesome, l10n.askAi),

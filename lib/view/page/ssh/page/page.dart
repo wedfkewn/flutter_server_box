@@ -12,6 +12,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:server_box/core/extension/context/locale.dart';
 import 'package:server_box/core/utils/sudo_password.dart';
+import 'package:server_box/core/utils/terminal_log_highlight.dart';
 import 'package:server_box/core/warm_theme.dart';
 import 'package:server_box/data/model/ai/agent_conversation.dart';
 import 'package:server_box/data/model/ai/ask_ai_models.dart';
@@ -44,6 +45,7 @@ import 'package:server_box/view/widget/agent_entry_appear.dart';
 import 'package:server_box/view/widget/agent_proposal_pager.dart';
 import 'package:server_box/view/widget/agent_user_bubble.dart';
 import 'package:server_box/view/widget/app_dialog.dart';
+import 'package:server_box/view/widget/command_reference_dialog.dart';
 import 'package:server_box/view/widget/tmux_session_selector.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:xterm/core.dart';
@@ -208,6 +210,7 @@ class SSHPageState extends ConsumerState<SSHPage>
   late MediaQueryData _media;
   late TerminalStyle _terminalStyle;
   late TerminalTheme _terminalTheme;
+  final _logHighlighter = TerminalLogHighlighter();
   double _virtKeysHeight = 0;
 
   /// How many rows of keys to show at once, 0 for all of them. The rest go on
@@ -494,10 +497,8 @@ class SSHPageState extends ConsumerState<SSHPage>
         _handleEscKeyOrBackButton();
       },
       child: Scaffold(
-        // One background for the whole page. Transparent over a picture, and
-        // otherwise the `Scaffold`'s own colour — which is what the terminal
-        // is drawn on either way, since [TerminalView] is given
-        // `backgroundOpacity: 0` and paints none of its own.
+          // Pictures show through; otherwise the terminal paints its own
+          // palette background so forced light/dark colors stay readable.
         backgroundColor: hasBg ? Colors.transparent : null,
         appBar: widget.args.notFromTab
             ? CustomAppBar(
@@ -604,9 +605,6 @@ class SSHPageState extends ConsumerState<SSHPage>
 
   Widget _buildBody(bool hasBg) {
     final letterCache = Stores.setting.letterCache.fetch();
-    final theme = hasBg
-        ? _terminalTheme.copyWith(background: Colors.transparent)
-        : _terminalTheme;
     final terminalView = SizedBox(
       height: double.infinity,
       child: Padding(
@@ -618,7 +616,10 @@ class SSHPageState extends ConsumerState<SSHPage>
                 left: _horizonPadding,
                 right: _horizonPadding,
               ),
-        child: TerminalView(
+        child: ValBuilder(listenable: Stores.setting.termTheme.listenable(), builder: (_) {
+          final liveTheme = TerminalLook.themeOf(context);
+          return ValBuilder(listenable: Stores.setting.termLogHighlight.listenable(),
+          builder: (highlight) => TerminalView(
           _terminal,
           key: _termKey,
           controller: _terminalController,
@@ -630,8 +631,10 @@ class SSHPageState extends ConsumerState<SSHPage>
           onSecondaryTapUp: (_, _) => _onClipboardAction(),
           enableSuggestions: letterCache,
           textStyle: _terminalStyle,
-          backgroundOpacity: 0,
-          theme: theme,
+          backgroundOpacity: hasBg ? 0 : 1,
+          theme: hasBg ? liveTheme.copyWith(background: Colors.transparent) : liveTheme,
+          lineColorResolver: highlight ? (terminal, row) =>
+            _logHighlighter.colorForRow(terminal, row, liveTheme) : null,
           deleteDetection: isMobile,
           autofocus: false,
           keyboardAppearance: _isDark ? Brightness.dark : Brightness.light,
@@ -646,7 +649,7 @@ class SSHPageState extends ConsumerState<SSHPage>
           onCopied: _onTerminalCopied,
           onSelectAll: _onTerminalSelectAll,
           onPaste: _onTerminalPaste,
-        ),
+        )); }),
       ),
     );
 
@@ -717,6 +720,9 @@ class SSHPageState extends ConsumerState<SSHPage>
 
   List<Widget> _buildAppBarActions() {
     final actions = <Widget>[
+      IconButton(onPressed: () => showCommandReference(context),
+        tooltip: commandUiText(context, '命令速查', 'Command reference'),
+        icon: const Icon(Icons.menu_book_outlined)),
       // The agent's tools all name a server, so on this device the button
       // would look tappable and do nothing. Snippets are different: the ones
       // that do not mention a server run here fine — see [_pickSnippet].

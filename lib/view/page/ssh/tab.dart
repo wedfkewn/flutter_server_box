@@ -23,6 +23,7 @@ import 'package:server_box/view/page/server/edit/edit.dart';
 import 'package:server_box/view/page/ssh/page/page.dart';
 import 'package:server_box/view/widget/app_dialog.dart';
 import 'package:server_box/view/widget/app_ui.dart';
+import 'package:server_box/view/widget/command_reference_dialog.dart';
 import 'package:server_box/view/widget/dist_icon.dart';
 import 'package:server_box/view/widget/pane_settings.dart';
 
@@ -293,12 +294,9 @@ class _SSHTabPageState extends ConsumerState<SSHTabPage>
       final current = _sessions.current;
       return CustomAppBar(
         title: Text(current?.name ?? libL10n.terminal),
-        // Both act on the terminal that is showing, and now that the rail
-        // stays up with none of them open there may be no such terminal. A
-        // button that looks tappable and does nothing is worse than no button.
-        actions: current == null
-            ? const []
-            : [..._serverActions, const SizedBox(width: 7)],
+        // Documentation is available without a session; shell actions require
+        // a selected terminal.
+        actions: [..._serverActions, const SizedBox(width: 7)],
       );
     },
   );
@@ -554,12 +552,17 @@ extension _Actions on _SSHTabPageState {
   /// place a control over the window itself belongs.
   List<Widget> get _serverActions {
     final current = _sessions.current;
-    if (current == null) return const [];
+    if (current == null) return [_commandReferenceBtn];
     final onServer = current.data.page.args.spi != null;
     return onServer
-        ? [_agentBtn, _snippetBtn, _floatBtn]
-        : [_snippetBtn, _floatBtn];
+        ? [_commandReferenceBtn, _agentBtn, _snippetBtn, _floatBtn]
+        : [_commandReferenceBtn, _snippetBtn, _floatBtn];
   }
+
+  Widget get _commandReferenceBtn => Btn.icon(
+    text: commandUiText(context, '命令速查', 'Command reference'),
+    icon: const Icon(Icons.menu_book_outlined, size: 20),
+    onTap: () => showCommandReference(context));
 
   /// Sends the terminal on screen into the window that floats over every tab,
   /// and brings it back.

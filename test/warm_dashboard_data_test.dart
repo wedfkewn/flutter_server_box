@@ -28,6 +28,7 @@ import 'package:server_box/data/store/ip_lookup_cache.dart';
 import 'package:server_box/data/store/private_key.dart';
 import 'package:server_box/data/store/self_addr.dart';
 import 'package:server_box/data/store/server.dart';
+import 'package:server_box/data/store/server_dist.dart';
 import 'package:server_box/data/store/service_reachability_cache.dart';
 import 'package:server_box/data/store/setting.dart';
 import 'package:server_box/generated/l10n/l10n.dart';
@@ -80,6 +81,7 @@ void main() {
       SettingStore('dashboard_setting_test'),
     );
     getIt.registerSingleton<ServerStore>(ServerStore());
+    getIt.registerSingleton<ServerDistStore>(ServerDistStore());
     getIt.registerSingleton<PrivateKeyStore>(PrivateKeyStore());
     getIt.registerSingleton<SelfAddrStore>(
       SelfAddrStore('dashboard_addr_test'),

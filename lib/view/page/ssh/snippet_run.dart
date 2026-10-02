@@ -4,6 +4,7 @@ import 'package:fl_lib/fl_lib.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:server_box/core/extension/context/locale.dart';
+import 'package:server_box/core/utils/terminal_log_highlight.dart';
 import 'package:server_box/data/model/app/tab.dart';
 import 'package:server_box/data/model/server/monitor_remote_access.dart';
 import 'package:server_box/data/model/server/server_private_info.dart';
@@ -11,6 +12,7 @@ import 'package:server_box/data/model/server/shell_backend.dart';
 import 'package:server_box/data/model/server/snippet.dart';
 import 'package:server_box/data/provider/app/session_requests.dart';
 import 'package:server_box/data/provider/server/single.dart';
+import 'package:server_box/data/res/store.dart';
 import 'package:server_box/data/res/terminal.dart';
 import 'package:server_box/data/ssh/terminal_session.dart';
 import 'package:server_box/data/ssh/terminal_source.dart';
@@ -208,6 +210,7 @@ class _SnippetRunView extends StatefulWidget {
 }
 
 class _SnippetRunViewState extends State<_SnippetRunView> {
+  final _logHighlighter = TerminalLogHighlighter();
   late final _controller = TerminalController();
   final _focusNode = FocusNode();
 
@@ -308,19 +311,22 @@ class _SnippetRunViewState extends State<_SnippetRunView> {
           color: theme.background,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 5),
-            child: TerminalView(
+            child: ValBuilder(listenable: Stores.setting.termLogHighlight.listenable(),
+              builder: (highlight) => TerminalView(
               _sess.terminal,
               controller: _controller,
               focusNode: _focusNode,
               textStyle: TerminalLook.style,
               theme: theme,
+              lineColorResolver: highlight ? (terminal, row) =>
+                _logHighlighter.colorForRow(terminal, row, theme) : null,
               backgroundOpacity: 0,
               keyboardType: TextInputType.text,
               keyboardAppearance: isDark ? Brightness.dark : Brightness.light,
               deleteDetection: isMobile,
               autofocus: false,
               hideScrollBar: false,
-            ),
+            )),
           ),
         ),
       ),

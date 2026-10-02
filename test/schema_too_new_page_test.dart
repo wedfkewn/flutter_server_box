@@ -226,7 +226,7 @@ void main() {
     // wrong in both directions.
     expect(find.text(l10n.schemaTooNewWipeDone), findsNothing);
     expect(find.text(l10n.schemaTooNewWipeFailed), findsOneWidget);
-  });
+  }, skip: Platform.isWindows); // Requires POSIX directory permissions.
 
   testWidgets('declining the wipe leaves everything alone', (tester) async {
     await pump(tester);

@@ -49,6 +49,8 @@ void main() {
     await font('SettingsSans', Platform.isWindows ? r'C:\Windows\Fonts\msyh.ttc'
       : '/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc');
     await font('SettingsLatin', r'C:\Windows\Fonts\segoeui.ttf');
+    await font('monospace', Platform.isWindows ? r'C:\Windows\Fonts\consola.ttf'
+      : '/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf');
     await font('SettingsKorean', r'C:\Windows\Fonts\malgun.ttf');
     final configFile = File('.dart_tool/package_config.json').absolute;
     final packages = (jsonDecode(await configFile.readAsString()) as Map)['packages'] as List;
@@ -162,6 +164,27 @@ void main() {
     await frames(tester);
     expect(find.byType(BrandIconsPage), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('terminal color settings persist the switch and open the manual guide', (tester) async {
+    await pump(tester, const AppSettingsPage(section: SettingsSection.ssh), '终端设置', width: 320, scale: 1.6);
+    final scroll = find.byType(Scrollable).first;
+    await tester.scrollUntilVisible(find.text('日志辅助高亮'), 200, scrollable: scroll);
+    final row = find.ancestor(of: find.text('日志辅助高亮'), matching: find.byType(ListTile));
+    expect(Stores.setting.termLogHighlight.fetch(), isTrue);
+    await tester.tap(find.descendant(of: row, matching: find.byType(Switch)));
+    await frames(tester);
+    expect(Stores.setting.termLogHighlight.fetch(), isFalse);
+    await tester.scrollUntilVisible(find.text('命令高亮配置指南'), 200, scrollable: scroll);
+    await tester.tap(find.text('命令高亮配置指南'));
+    await frames(tester);
+    expect(find.byKey(const ValueKey('command-reference-surface')), findsOneWidget);
+    await capture(tester, 'terminal-color-guide');
+    await tester.tap(find.byKey(const ValueKey('command-reference-close')));
+    await frames(tester);
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+    tester.view.reset();
   });
 
   testWidgets('all selected settings pages render and capture without layout errors', (tester) async {

@@ -71,6 +71,7 @@ void main() {
     (const Size(320, 640), 1.6, 0.0),
     (const Size(393, 852), 1.0, 320.0),
     (const Size(852, 393), 1.0, 160.0),
+    (const Size(852, 393), 1.6, 160.0),
   ]) {
     testWidgets('floating picker fits ${scenario.$1} with keyboard ${scenario.$3}', (tester) async {
       await open(tester, size: scenario.$1, scale: scenario.$2,

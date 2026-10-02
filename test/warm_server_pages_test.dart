@@ -246,6 +246,14 @@ void main() {
     server.snapshot = server.snapshot.copyWith(status: fixture.observedStatus());
   }
 
+  testWidgets('detail tool menu fits large text on a narrow phone', (tester) async {
+    await pump(tester, 'detail', size: const Size(320, 740), scale: 2);
+    await tester.tap(find.byTooltip('工具')); await frames(tester);
+    await capture(tester, 'tools-audit-large');
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink()); await frames(tester);
+  });
+
   testWidgets('detail charts preserve gaps and irregular sampling times', (tester) async {
     clearHistory();
     final h = server.snapshot.status.history;

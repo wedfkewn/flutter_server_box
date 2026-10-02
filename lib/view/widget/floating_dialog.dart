@@ -18,7 +18,9 @@ class AppFloatingDialog extends StatelessWidget {
     final theme = Theme.of(context);
     final route = ModalRoute.of(context);
     final canClose = dismissible && (route?.barrierDismissible ?? true);
-    return AlertDialog(
+    // A non-dismissible progress dialog must also survive system back. The
+    // task that opened it still closes it explicitly when it completes.
+    return PopScope(canPop: canClose, child: AlertDialog(
       constraints: const BoxConstraints(minWidth: 360, maxWidth: 420, maxHeight: 560),
       insetPadding: insetPadding ?? const EdgeInsets.all(24),
       backgroundColor: theme.colorScheme.surfaceContainerLow,
@@ -40,13 +42,13 @@ class AppFloatingDialog extends StatelessWidget {
           if (title != null) Expanded(child: title!) else const Spacer(),
           if (canClose) IconButton(
             key: const ValueKey('floating-dialog-close'), tooltip: libL10n.close,
-            onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
+            onPressed: () => Navigator.of(context).pop(),
             icon: const Icon(Icons.close, size: 22)),
         ],
       ),
       content: content,
       actions: actions,
-    );
+    ));
   }
 }
 
