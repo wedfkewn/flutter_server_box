@@ -8,7 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:forui/localizations.dart';
 import 'package:icons_plus/icons_plus.dart';
 import 'package:server_box/core/app_navigator.dart';
-import 'package:server_box/core/chan.dart';
 import 'package:server_box/core/extension/context/locale.dart';
 import 'package:server_box/core/service/diagnostics_upload.dart';
 import 'package:server_box/core/warm_theme.dart';
@@ -96,19 +95,6 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
-  /// Hand the theme to the app name drawn behind the Dynamic Island, which is
-  /// a native view and cannot read it. Deduplicated in [MethodChans].
-  void _syncIslandBrandColors(BuildContext ctx) {
-    if (!isIOS) return;
-    final scheme = Theme.of(ctx).colorScheme;
-    unawaited(
-      MethodChans.setIslandBrandColors(
-        scheme.primary.toARGB32(),
-        scheme.onPrimary.toARGB32(),
-      ),
-    );
-  }
-
   Widget _buildApp(
     BuildContext ctx, {
     required ThemeData light,
@@ -134,10 +120,6 @@ class _MyAppState extends State<MyApp> {
       // Outside the breakpoints builder: a toast is sized against the window,
       // not against the scaled layout the breakpoints hand to the pages.
       builder: (ctx, child) {
-        // Here rather than at launch: this `ctx` is below the theme, so it
-        // rebuilds when the seed color, the brightness or the system's dynamic
-        // color changes — each of which the native badge has to follow.
-        _syncIslandBrandColors(ctx);
         return AppUiScope(child: ToastHost(child: ResponsivePoints.builder(ctx, child)));
       },
       locale: locale,

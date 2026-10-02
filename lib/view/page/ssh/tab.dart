@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math' as math;
 
 import 'package:fl_lib/fl_lib.dart';
+import 'package:flutter/gestures.dart' show DragStartBehavior;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:server_box/core/extension/context/inset.dart';
@@ -84,6 +85,8 @@ class _SSHTabPageState extends ConsumerState<SSHTabPage>
   /// The bar's search: what is typed, and whether the bar is a field at all.
   final _search = InlineSearchController();
   final _drawerOpen = ValueNotifier(true);
+  final _drawerDragOffset = ValueNotifier(0.0);
+  bool _drawerDragging = false;
   final _controlsHidden = ValueNotifier(false);
   final _statusVersion = RNode();
   bool _narrow = false;
@@ -99,6 +102,8 @@ class _SSHTabPageState extends ConsumerState<SSHTabPage>
   }
 
   void _setDrawer(bool open) {
+    _drawerDragging = false;
+    _drawerDragOffset.value = 0;
     if (open) FocusScope.of(context).unfocus();
     _drawerOpen.value = open;
     _controlsHidden.value = _narrow && open;
@@ -106,6 +111,11 @@ class _SSHTabPageState extends ConsumerState<SSHTabPage>
       _search.end();
       _sessions.current?.focus.requestFocus();
     }
+  }
+
+  void _cancelDrawerDrag() {
+    _drawerDragging = false;
+    _drawerDragOffset.value = 0;
   }
 
   void _selectWarmSession(int index) {
@@ -165,6 +175,7 @@ class _SSHTabPageState extends ConsumerState<SSHTabPage>
     _sortVersion.dispose();
     _search.dispose();
     _drawerOpen.dispose();
+    _drawerDragOffset.dispose();
     _controlsHidden.dispose();
     _statusVersion.dispose();
     super.dispose();

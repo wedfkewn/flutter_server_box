@@ -9,18 +9,12 @@ import ActivityKit
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
-        // No scene is connected yet at this point, and the scene delegate is
-        // `FlutterSceneDelegate` (see UIApplicationSceneManifest), so there is
-        // no subclass of ours to hook. Observing is what gets a UIWindowScene to
-        // work with. Both fire again on every foreground, and both calls are
-        // idempotent.
+        // Remove the privacy cover when the app's scene becomes active.
         NotificationCenter.default.addObserver(
             forName: UIScene.didActivateNotification,
             object: nil,
             queue: .main
-        ) { note in
-            guard let scene = note.object as? UIWindowScene else { return }
-            DynamicIslandBrand.shared.install(in: scene)
+        ) { _ in
             PrivacyBlur.shared.hideIfUnlocked()
         }
 
@@ -144,13 +138,6 @@ import ActivityKit
                 } else {
                     result(nil)
                 }
-            case "setIslandBrandColors":
-                if let args = call.arguments as? [String: Any],
-                   let bg = args["bg"] as? Int,
-                   let fg = args["fg"] as? Int {
-                    DynamicIslandBrand.shared.setColors(background: bg, foreground: fg)
-                }
-                result(nil)
             case "setPrivacyBlur":
                 PrivacyBlur.shared.isEnabled = call.arguments as? Bool ?? false
                 result(nil)

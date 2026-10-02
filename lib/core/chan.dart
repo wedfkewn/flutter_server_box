@@ -72,27 +72,6 @@ abstract final class MethodChans {
     return await _channel.invokeMethod<String>('widgetTokenState');
   }
 
-  /// Last pair pushed by [setIslandBrandColors], so that rebuilding the theme —
-  /// which happens on every `MaterialApp` build — does not cross the channel
-  /// each time.
-  static (int, int)? _islandBrandColors;
-
-  /// Colors for the app name drawn behind the Dynamic Island, as ARGB.
-  ///
-  /// Follows the theme rather than being fixed, so the badge in a screenshot
-  /// matches the app the screenshot is of.
-  static Future<void> setIslandBrandColors(int bg, int fg) async {
-    if (!isIOS) return;
-    if (_islandBrandColors == (bg, fg)) return;
-    _islandBrandColors = (bg, fg);
-    try {
-      await _channel.invokeMethod('setIslandBrandColors', {'bg': bg, 'fg': fg});
-    } catch (e, s) {
-      _islandBrandColors = null;
-      Loggers.app.warning('Failed to set island brand colors', e, s);
-    }
-  }
-
   /// Tell the native side whether to cover the app once it leaves the
   /// foreground, hiding its content from the app switcher.
   ///

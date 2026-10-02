@@ -2,7 +2,7 @@ part of 'tab.dart';
 
 extension _WarmTerminal on _SSHTabPageState {
   Widget _buildWarmTerminal() => ListenableBuilder(
-    listenable: Listenable.merge([_drawerOpen, _statusVersion]),
+    listenable: Listenable.merge([_drawerOpen, _drawerDragOffset, _statusVersion]),
     builder: (context, _) {
       final current = _sessions.current;
       final open = current == null || _drawerOpen.value;
@@ -46,8 +46,30 @@ extension _WarmTerminal on _SSHTabPageState {
                           builder: (_, tab) => tab.data.page,
                         ),
                       ),
-                      if (open)
-                        SizedBox(height: drawerHeight, child: _warmDrawer()),
+                      TweenAnimationBuilder<double>(
+                        tween: Tween(end: open
+                            ? current == null ? drawerHeight
+                                : (drawerHeight - _drawerDragOffset.value)
+                                    .clamp(32.0, drawerHeight)
+                            : 0.0),
+                        duration: _drawerDragging ? Duration.zero
+                            : WarmMotion.of(context, WarmMotion.quick),
+                        curve: Curves.easeOutCubic,
+                        builder: (_, height, _) => height < .5
+                            ? const SizedBox.shrink()
+                            : ClipRect(child: SizedBox(
+                                height: height,
+                                width: double.infinity,
+                                // Keep the list's constraints stable as the
+                                // visible panel shrinks under the drag handle.
+                                child: OverflowBox(
+                                  alignment: Alignment.topCenter,
+                                  minHeight: drawerHeight,
+                                  maxHeight: drawerHeight,
+                                  child: _warmDrawer(),
+                                ),
+                              )),
+                      ),
                     ],
                   );
                 },
@@ -193,17 +215,56 @@ extension _WarmTerminal on _SSHTabPageState {
 
   Widget _warmDrawer() {
     final scheme = Theme.of(context).colorScheme;
+    final canCollapse = _sessions.current != null;
     return AppCard(
       key: const ValueKey('terminal-connections-drawer'),
       child: Column(
         children: [
-          const SizedBox(height: 12),
-          Container(
-            width: 36,
-            height: 4,
-            decoration: BoxDecoration(
-              color: scheme.onSurfaceVariant.withValues(alpha: .4),
-              borderRadius: BorderRadius.circular(8),
+          Semantics(
+            label: libL10n.close,
+            button: true,
+            enabled: canCollapse,
+            child: Listener(
+              onPointerCancel: (_) => _cancelDrawerDrag(),
+              child: GestureDetector(
+                key: const ValueKey('terminal-drawer-handle'),
+                behavior: HitTestBehavior.opaque,
+                dragStartBehavior: DragStartBehavior.down,
+                onTap: canCollapse ? () => _setDrawer(false) : null,
+                onVerticalDragStart: canCollapse ? (_) {
+                  _drawerDragging = true;
+                  _drawerDragOffset.value = 0;
+                } : null,
+                onVerticalDragUpdate: canCollapse ? (details) {
+                  _drawerDragOffset.value = math.max(
+                    0.0, _drawerDragOffset.value + details.delta.dy);
+                } : null,
+                onVerticalDragEnd: canCollapse ? (details) {
+                  if (!_drawerDragging) return;
+                  final close = _drawerDragOffset.value >= 64 ||
+                      (_drawerDragOffset.value > 12 &&
+                          (details.primaryVelocity ?? 0) > 700);
+                  _drawerDragging = false;
+                  if (close) {
+                    _setDrawer(false);
+                  } else {
+                    _drawerDragOffset.value = 0;
+                  }
+                } : null,
+                onVerticalDragCancel: canCollapse ? _cancelDrawerDrag : null,
+                child: SizedBox(
+                  height: 32,
+                  width: double.infinity,
+                  child: Center(child: Container(
+                    width: 36,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: scheme.onSurfaceVariant.withValues(alpha: .4),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  )),
+                ),
+              ),
             ),
           ),
           SizedBox(

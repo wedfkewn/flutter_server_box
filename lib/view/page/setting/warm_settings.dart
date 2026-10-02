@@ -120,9 +120,9 @@ class _WarmSettingsCategory extends StatelessWidget {
                 key: ValueKey('warm-category-toggle-${node.id}'),
                 onTap: onToggle,
                 child: Padding(
-                  padding: EdgeInsets.symmetric(
-                    vertical: 10,
-                    horizontal: expanded ? 8 : 0,
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 12,
+                    horizontal: 16,
                   ),
                   child: Row(
                     children: [

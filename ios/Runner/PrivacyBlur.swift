@@ -11,10 +11,7 @@ import UIKit
 ///
 /// The blur goes into the Flutter window rather than a window of its own: a
 /// `UIVisualEffectView` samples what is behind it, and behind it within the
-/// same window is exactly the content that has to be hidden. That also leaves
-/// `DynamicIslandBrand`'s overlay — a higher window level — untouched, which is
-/// the point. The switcher card exposes the Dynamic Island strip the same way a
-/// screenshot does, so the app name stays readable above the blur.
+/// same window is exactly the content that has to be hidden.
 ///
 /// Off by default; the app's settings page turns it on.
 final class PrivacyBlur {
@@ -90,8 +87,7 @@ final class PrivacyBlur {
         blur = nil
     }
 
-    /// Flutter's window: the one at `.normal`, as opposed to the overlay
-    /// `DynamicIslandBrand` installs above it.
+    /// Flutter's content window, at the normal window level.
     private static func hostWindow(in scene: UIWindowScene) -> UIWindow? {
         scene.windows.first { $0.windowLevel == .normal }
     }

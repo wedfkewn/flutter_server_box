@@ -8,6 +8,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:forui/localizations.dart';
 import 'package:server_box/core/extension/context/locale.dart' as app_locale;
 import 'package:server_box/core/warm_theme.dart';
 import 'package:server_box/data/provider/app/session_requests.dart';
@@ -24,6 +25,7 @@ import 'package:server_box/data/store/setting.dart';
 import 'package:server_box/generated/l10n/l10n.dart';
 import 'package:server_box/view/page/ssh/page/page.dart';
 import 'package:server_box/view/page/ssh/tab.dart';
+import 'package:server_box/view/widget/app_ui.dart';
 import 'package:xterm/ui.dart';
 
 import 'helpers/fake_shell.dart';
@@ -141,6 +143,7 @@ void main() {
             debugShowCheckedModeBanner: false,
             locale: const Locale('zh'),
             localizationsDelegates: const [
+              FLocalizations.delegate,
               LibLocalizations.delegate,
               ...AppLocalizations.localizationsDelegates,
             ],
@@ -170,7 +173,7 @@ void main() {
               data: MediaQuery.of(
                 context,
               ).copyWith(textScaler: TextScaler.linear(textScale)),
-              child: ResponsivePoints.builder(context, child),
+              child: AppUiScope(child: ResponsivePoints.builder(context, child)),
             ),
             home: Builder(
               builder: (context) {
@@ -295,6 +298,78 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('dragging the handle collapses without replacing the shell', (tester) async {
+    final (_, session) = await connected(tester);
+    final page = tester.state<SSHPageState>(find.byType(SSHPage));
+    await tester.tap(find.byKey(const ValueKey('terminal-session-picker')));
+    await settle(tester);
+    final terminal = find.byType(TerminalView);
+    final initialHeight = tester.getSize(terminal).height;
+    final gesture = await tester.startGesture(tester.getCenter(
+      find.byKey(const ValueKey('terminal-drawer-handle'))));
+    await gesture.moveBy(const Offset(0, 24));
+    await tester.pump();
+    await gesture.moveBy(const Offset(0, 60));
+    await tester.pump();
+    expect(tester.getSize(terminal).height, greaterThan(initialHeight));
+    expect(tester.state<SSHPageState>(find.byType(SSHPage)), same(page));
+    await capture(tester, 'terminal-drawer-dragging.png');
+    await gesture.up();
+    await settle(tester);
+    expect(find.byKey(const ValueKey('terminal-connections-drawer')), findsNothing);
+    expect(page.session, same(session));
+    await capture(tester, 'terminal-drawer-drag-closed.png');
+    session.terminal.onOutput?.call('echo after-drag\n');
+    expect((session.foreground as FakeShellSession).written.toString(),
+      contains('echo after-drag'));
+    await tester.tap(find.byKey(const ValueKey('terminal-session-picker')));
+    await settle(tester);
+    expect(find.text('当前会话'), findsOneWidget);
+    await tester.drag(find.descendant(
+      of: find.byKey(const ValueKey('terminal-connections-drawer')),
+      matching: find.byType(ListView)), const Offset(0, -80));
+    await settle(tester);
+    expect(find.byKey(const ValueKey('terminal-connections-drawer')), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('a short slow drag and a cancelled drag return the panel', (tester) async {
+    await connected(tester);
+    await tester.tap(find.byKey(const ValueKey('terminal-session-picker')));
+    await settle(tester);
+    final handle = find.byKey(const ValueKey('terminal-drawer-handle'));
+    final top = tester.getTopLeft(handle).dy;
+    final gesture = await tester.startGesture(tester.getCenter(handle));
+    await gesture.moveBy(const Offset(0, 24),
+      timeStamp: const Duration(milliseconds: 100));
+    await tester.pump();
+    await gesture.moveBy(const Offset(0, 20),
+      timeStamp: const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(tester.getTopLeft(handle).dy - top, closeTo(44, .5));
+    await gesture.up(timeStamp: const Duration(milliseconds: 800));
+    await settle(tester);
+    expect(tester.getTopLeft(handle).dy, closeTo(top, .5));
+    final cancelled = await tester.startGesture(tester.getCenter(handle));
+    await cancelled.moveBy(const Offset(0, 100));
+    await tester.pump();
+    await cancelled.cancel();
+    await settle(tester);
+    expect(tester.getTopLeft(handle).dy, closeTo(top, .5));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('a quick downward flick closes the panel', (tester) async {
+    await connected(tester);
+    await tester.tap(find.byKey(const ValueKey('terminal-session-picker')));
+    await settle(tester);
+    await tester.fling(find.byKey(const ValueKey('terminal-drawer-handle')),
+      const Offset(0, 55), 1000);
+    await settle(tester);
+    expect(find.byKey(const ValueKey('terminal-connections-drawer')), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('search filters connections without hiding open sessions', (
     tester,
   ) async {
@@ -371,6 +446,10 @@ void main() {
     await tester.tap(find.text(libL10n.ok));
     await settle(tester);
     expect(find.text('暂无会话'), findsOneWidget);
+    await tester.drag(find.byKey(const ValueKey('terminal-drawer-handle')),
+      const Offset(0, 150));
+    await settle(tester);
+    expect(find.byKey(const ValueKey('terminal-connections-drawer')), findsOneWidget);
     expect(Stores.history.sshTabs.fetch(), '[]');
     expect(find.byType(TerminalView), findsNothing);
     expect(tester.takeException(), isNull);
@@ -411,6 +490,10 @@ void main() {
         find.byKey(const ValueKey('terminal-collapse-drawer')),
         findsOneWidget,
       );
+      await tester.drag(find.byKey(const ValueKey('terminal-drawer-handle')),
+        const Offset(0, 120));
+      await settle(tester);
+      expect(find.byKey(const ValueKey('terminal-connections-drawer')), findsNothing);
       expect(tester.takeException(), isNull);
     });
   }
