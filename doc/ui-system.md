@@ -44,3 +44,10 @@ and that reduced motion displays values immediately. Screenshots in
 
 Real-device iOS frame timing and IPA installation are not verified by these
 Windows-hosted widget tests.
+# 主题切换与种子色
+
+- 应用使用已保存的种子色生成浅色／深色强调色；系统动态色可用且启用时使用系统调色板。中性浅色页面背景保持一致。
+- `ThemeReveal` 在选择弹窗退出后捕获一次旧画面，新主题在右上角通过圆形扩散显示，时长 420ms。旧画面只在内存中保留，不写磁盘；动画结束、窗口尺寸变化或减少动态效果时释放。
+- 按 [Flutter 官方 CustomClipper](https://api.flutter.dev/flutter/rendering/CustomClipper-class.html) 的 `reclip` 方式更新裁剪，动画期间不逐帧重建导航、终端或监控页面。关闭 MaterialApp 与 ForUI 的并行主题插值，缓存主题和 ForUI 配置；截图纹理限制在最多约 200 万像素。
+- 系统“减少动态效果”启用时立即切换。AMOLED 保留原控件文字、圆角和布局，仅调整背景，避免文字样式插值冲突。
+- 验证：`test/theme_reveal_test.dart`、`test/app_theme_test.dart` 覆盖扩散方向、页面重建次数、输入状态、快速切换、尺寸变化、弹窗退出与实际种子色生效；真机 GPU 帧耗时需要用 release/profile 版本另外测量。

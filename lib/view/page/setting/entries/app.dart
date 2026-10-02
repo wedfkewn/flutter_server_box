@@ -176,9 +176,11 @@ extension _App on _AppSettingsPageState {
                       builder: (light, dark) {
                         final supported = light != null || dark != null;
                         if (!supported) {
-                          if (!_setting.useSystemPrimaryColor.fetch()) {
-                            _setting.useSystemPrimaryColor.put(false);
+                          if (_setting.useSystemPrimaryColor.fetch()) {
                             WidgetsBinding.instance.addPostFrameCallback((_) {
+                              if (!context.mounted) return;
+                              _setting.useSystemPrimaryColor.put(false);
+                              RNodes.app.notify();
                               setState(() {});
                             });
                           }
@@ -194,7 +196,7 @@ extension _App on _AppSettingsPageState {
                       },
                     ),
                 ];
-                if (!_setting.useSystemPrimaryColor.fetch()) {
+                if (isIOS || !_setting.useSystemPrimaryColor.fetch()) {
                   children.add(
                     ColorPicker(
                       color: Color(_setting.colorSeed.fetch()),
@@ -226,19 +228,14 @@ extension _App on _AppSettingsPageState {
       return;
     }
 
-    // Save the color seed to settings
-    _setting.colorSeed.put(color.value255);
-
-    // Only update UIs colors if we're not in system mode
-    if (!_setting.useSystemPrimaryColor.fetch()) {
-      UIs.primaryColor = color;
-      UIs.colorSeed = color;
-    }
-
-    RNodes.app.notify();
     // `popDialog`: reached from the colour dialog's OK, with the settings
     // page's `context`.
     context.popDialog();
+    unawaited(ThemeReveal.change(context, () {
+      if (isIOS) _setting.useSystemPrimaryColor.put(false);
+      _setting.colorSeed.put(color.value255);
+      RNodes.app.notify();
+    }));
   }
 
   Widget _buildMaxRetry() {
@@ -275,9 +272,11 @@ extension _App on _AppSettingsPageState {
           display: (p0) => _buildThemeModeStr(p0),
           initial: _setting.themeMode.fetch(),
         );
-        if (selected != null) {
-          _setting.themeMode.put(selected);
-          RNodes.app.notify();
+        if (selected != null && selected != _setting.themeMode.fetch() && mounted) {
+          await ThemeReveal.change(context, () {
+            _setting.themeMode.put(selected);
+            RNodes.app.notify();
+          });
         }
       },
       trailing: ValBuilder(

@@ -128,12 +128,10 @@ abstract final class WarmTheme {
     );
   }
 
-  static ThemeData light() {
-    const scheme = ColorScheme.light(
-      primary: copper,
-      onPrimary: Colors.white,
-      primaryContainer: peach,
-      onPrimaryContainer: ink,
+  static ThemeData light({Color seedColor = copper, ColorScheme? colorScheme}) {
+    final accent = colorScheme ?? ColorScheme.fromSeed(seedColor: seedColor,
+      dynamicSchemeVariant: DynamicSchemeVariant.fidelity);
+    final scheme = accent.copyWith(
       secondary: olive,
       onSecondary: Colors.white,
       secondaryContainer: lemon,
@@ -146,7 +144,7 @@ abstract final class WarmTheme {
       surfaceContainerLow: surface,
       surfaceContainer: surface,
       surfaceContainerHigh: surfaceStrong,
-      surfaceContainerHighest: peach,
+      surfaceContainerHighest: surfaceStrong,
       outline: Color(0xffbbc3cf),
       outlineVariant: Color(0xffe3e7ee),
       shadow: Color(0x22000000),
@@ -158,8 +156,8 @@ abstract final class WarmTheme {
       colorScheme: scheme,
       scaffoldBackgroundColor: canvas,
       canvasColor: canvas,
-      splashColor: copper.withValues(alpha: 0.08),
-      highlightColor: copper.withValues(alpha: 0.04),
+      splashColor: scheme.primary.withValues(alpha: 0.08),
+      highlightColor: scheme.primary.withValues(alpha: 0.04),
       appBarTheme: const AppBarTheme(
         backgroundColor: canvas,
         foregroundColor: ink,
@@ -186,7 +184,7 @@ abstract final class WarmTheme {
         height: 76,
         backgroundColor: const Color(0xfff5f6f8),
         surfaceTintColor: Colors.transparent,
-        indicatorColor: peach,
+        indicatorColor: scheme.primaryContainer,
         elevation: 0,
         labelTextStyle: WidgetStateProperty.resolveWith(
           (states) => TextStyle(
@@ -199,15 +197,15 @@ abstract final class WarmTheme {
         ),
         iconTheme: WidgetStateProperty.resolveWith(
           (states) => IconThemeData(
-            color: states.contains(WidgetState.selected) ? copper : muted,
+            color: states.contains(WidgetState.selected) ? scheme.primary : muted,
             size: 24,
           ),
         ),
       ),
-      navigationRailTheme: const NavigationRailThemeData(
+      navigationRailTheme: NavigationRailThemeData(
         backgroundColor: Color(0xfff5f6f8),
-        indicatorColor: peach,
-        selectedIconTheme: IconThemeData(color: copper),
+        indicatorColor: scheme.primaryContainer,
+        selectedIconTheme: IconThemeData(color: scheme.primary),
       ),
       dialogTheme: const DialogThemeData(
         backgroundColor: surface,
@@ -234,9 +232,9 @@ abstract final class WarmTheme {
         ),
         subtitleTextStyle: TextStyle(color: muted, fontSize: 12, height: 1.25),
       ),
-      chipTheme: const ChipThemeData(
+      chipTheme: ChipThemeData(
         backgroundColor: Color(0xffedf0f5),
-        selectedColor: peach,
+        selectedColor: scheme.primaryContainer,
         side: BorderSide(color: Color(0xffe3e7ee)),
         shape: StadiumBorder(),
         labelStyle: TextStyle(color: ink, fontSize: 11),
@@ -246,11 +244,11 @@ abstract final class WarmTheme {
         color: Color(0xffe3e7ee),
         thickness: 1,
       ),
-      sliderTheme: const SliderThemeData(
-        activeTrackColor: copper,
-        inactiveTrackColor: peach,
-        thumbColor: copper,
-        overlayColor: Color(0x222563eb),
+      sliderTheme: SliderThemeData(
+        activeTrackColor: scheme.primary,
+        inactiveTrackColor: scheme.primaryContainer,
+        thumbColor: scheme.primary,
+        overlayColor: scheme.primary.withValues(alpha: .12),
       ),
       switchTheme: SwitchThemeData(
         thumbColor: WidgetStateProperty.resolveWith(
@@ -260,7 +258,7 @@ abstract final class WarmTheme {
         ),
         trackColor: WidgetStateProperty.resolveWith(
           (states) => states.contains(WidgetState.selected)
-              ? copper
+              ? scheme.primary
               : const Color(0xffe3e7ee),
         ),
         trackOutlineColor: const WidgetStatePropertyAll(Color(0xffaab3c1)),
@@ -294,9 +292,10 @@ abstract final class WarmTheme {
     );
   }
 
-  static ThemeData dark() {
-    final geometry = light();
-    final scheme = ColorScheme.fromSeed(seedColor: copper, brightness: Brightness.dark);
+  static ThemeData dark({Color seedColor = copper, ColorScheme? colorScheme}) {
+    final geometry = light(seedColor: seedColor);
+    final scheme = colorScheme ?? ColorScheme.fromSeed(seedColor: seedColor, brightness: Brightness.dark,
+      dynamicSchemeVariant: DynamicSchemeVariant.fidelity);
     final base = ThemeData(useMaterial3: true, colorScheme: scheme);
     return base.copyWith(
       scaffoldBackgroundColor: scheme.surface,
@@ -335,4 +334,15 @@ abstract final class WarmTheme {
         thumbColor: scheme.primary, overlayColor: scheme.primary.withValues(alpha: .12)),
     );
   }
+
+  /// AMOLED changes surfaces, retaining the same control geometry and text
+  /// styles so internal Material animations can interpolate safely.
+  static ThemeData amoled(ThemeData base) => base.copyWith(
+    scaffoldBackgroundColor: Colors.black, canvasColor: Colors.black,
+    colorScheme: base.colorScheme.copyWith(surface: Colors.black),
+    appBarTheme: base.appBarTheme.copyWith(backgroundColor: Colors.black),
+    navigationBarTheme: base.navigationBarTheme.copyWith(backgroundColor: Colors.black),
+    navigationRailTheme: base.navigationRailTheme.copyWith(backgroundColor: Colors.black),
+    drawerTheme: base.drawerTheme.copyWith(backgroundColor: Colors.black),
+  );
 }

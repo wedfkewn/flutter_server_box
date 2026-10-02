@@ -72,6 +72,7 @@ import 'package:server_box/view/widget/pane_settings.dart';
 import 'package:server_box/view/widget/probe_labels.dart';
 import 'package:server_box/view/widget/progress_line.dart';
 import 'package:server_box/view/widget/rootfs_install.dart';
+import 'package:server_box/view/widget/theme_reveal.dart';
 import 'package:server_box/view/widget/warm_settings.dart';
 
 part 'about.dart';

@@ -372,11 +372,11 @@ class _WarmSettingsRow extends StatelessWidget {
                       WarmTheme.controlRadius,
                     ),
                   ),
-                  child: Icon(icon, size: 22, color: WarmTheme.copper),
+                  child: Icon(icon, size: 22, color: Theme.of(context).colorScheme.primary),
                 )
               : SizedBox(
                   width: 46,
-                  child: Icon(icon, size: 23, color: WarmTheme.ink),
+                  child: Icon(icon, size: 23, color: Theme.of(context).colorScheme.onSurface),
                 ),
           const SizedBox(width: 12),
           Expanded(
@@ -388,7 +388,7 @@ class _WarmSettingsRow extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: WarmTheme.ink,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
                 const SizedBox(height: 2),

@@ -251,7 +251,7 @@ extension _WarmDashboard on _ServerPageState {
               color: selected ? Theme.of(context).colorScheme.onPrimary : Theme.of(context).colorScheme.onSurface,
               fontWeight: FontWeight.w600,
             ),
-            selectedColor: WarmTheme.copper,
+            selectedColor: Theme.of(context).colorScheme.primary,
             backgroundColor: Theme.of(context).colorScheme.surfaceContainerLow,
           );
         },
@@ -264,12 +264,12 @@ extension _WarmDashboard on _ServerPageState {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 42),
       decoration: BoxDecoration(
-        color: WarmTheme.surface,
+        color: Theme.of(context).colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(WarmTheme.cardRadius),
       ),
       child: Column(
         children: [
-          const Icon(Icons.dns_outlined, size: 38, color: WarmTheme.copper),
+          Icon(Icons.dns_outlined, size: 38, color: Theme.of(context).colorScheme.primary),
           const SizedBox(height: 12),
           Text(
             hasNoServers ? l10n.warmNoServers : l10n.warmNoServersInFilter,
@@ -511,7 +511,7 @@ extension _WarmDashboard on _ServerPageState {
                       icon: Icons.edit,
                       label: context.libL10n.edit,
                       background: Colors.transparent,
-                      foreground: WarmTheme.ink,
+                      foreground: Theme.of(context).colorScheme.onSurface,
                       onTap: () => ServerEditPage.route.go(
                         context,
                         args: SpiRequiredArgs(srv.spi),
@@ -581,9 +581,9 @@ extension _WarmDashboard on _ServerPageState {
           actionsPadding: const EdgeInsets.fromLTRB(16, 4, 16, 14),
           title: Column(
             children: [
-              const Icon(
+              Icon(
                 Icons.notifications,
-                color: WarmTheme.copper,
+                color: Theme.of(context).colorScheme.primary,
                 size: 23,
               ),
               const SizedBox(height: 6),
@@ -609,12 +609,12 @@ extension _WarmDashboard on _ServerPageState {
                       vertical: 13,
                     ),
                     decoration: BoxDecoration(
-                      color: WarmTheme.peach,
+                      color: Theme.of(context).colorScheme.primaryContainer,
                       borderRadius: BorderRadius.circular(28),
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.computer, color: WarmTheme.copper),
+                        Icon(Icons.computer, color: Theme.of(context).colorScheme.primary),
                         const SizedBox(width: 10),
                         Text(
                           srv.spi.name,
@@ -1162,7 +1162,7 @@ class _WarmTransfer extends StatelessWidget {
     children: [
       Row(
         children: [
-          Icon(icon, size: 16, color: WarmTheme.copper),
+          Icon(icon, size: 16, color: Theme.of(context).colorScheme.primary),
           const SizedBox(width: 6),
           Text(
             title,
@@ -1244,7 +1244,7 @@ class _WarmAlertSlider extends StatelessWidget {
       children: [
         Row(
           children: [
-            Icon(icon, color: WarmTheme.copper, size: 21),
+            Icon(icon, color: Theme.of(context).colorScheme.primary, size: 21),
             const SizedBox(width: 10),
             Text(label, style: const TextStyle(fontWeight: FontWeight.w700)),
           ],

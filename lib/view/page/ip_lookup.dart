@@ -451,7 +451,7 @@ class _IpLookupPageState extends State<IpLookupPage> {
   }) => Container(
     padding: const EdgeInsets.all(WarmTheme.cardPadding),
     decoration: BoxDecoration(
-      color: WarmTheme.surface,
+      color: Theme.of(context).colorScheme.surfaceContainerLow,
       borderRadius: BorderRadius.circular(WarmTheme.cardRadius),
     ),
     child: Column(
@@ -588,7 +588,7 @@ class _ResultCard extends StatelessWidget {
         vertical: 10,
       ),
       decoration: BoxDecoration(
-        color: WarmTheme.surface,
+        color: Theme.of(context).colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(WarmTheme.cardRadius),
       ),
       child: Column(

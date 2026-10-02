@@ -448,7 +448,7 @@ class _WarmConnectionRow extends StatelessWidget {
                         ? Colors.transparent
                         : dark
                         ? scheme.surfaceContainerHigh
-                        : WarmTheme.peach.withValues(alpha: .55),
+                        : Theme.of(context).colorScheme.primaryContainer.withValues(alpha: .55),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(

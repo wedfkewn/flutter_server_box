@@ -107,6 +107,8 @@ dependencies:
   device_info_plus: ^13.2.0
   aptabase_flutter: ^0.5.0
   forui: 0.26.0
+  # DynamicColorBuilder returns this ColorScheme; adapt it to Flutter Material.
+  material_ui: 1.0.1
   flutter_animate: 4.5.2
 dev_dependencies:
   integration_test:

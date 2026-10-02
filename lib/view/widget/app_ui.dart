@@ -4,13 +4,35 @@ import 'package:forui/forui.dart';
 import 'package:server_box/core/warm_theme.dart';
 
 /// ForUI and the existing Material routes share colors and system typography.
-class AppUiScope extends StatelessWidget {
+class AppUiScope extends StatefulWidget {
   const AppUiScope({super.key, required this.child});
   final Widget child;
 
   @override
+  State<AppUiScope> createState() => _AppUiScopeState();
+}
+
+class _AppUiScopeState extends State<AppUiScope> {
+  ThemeData? _theme;
+  late FThemeData _data;
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    if (_theme != theme) {
+      _data = _buildData(theme);
+      _theme = theme;
+    }
+    return FTheme(
+      data: _data,
+      // The root circular reveal owns theme motion; avoid a second palette
+      // interpolation rebuilding ForUI descendants on every animation frame.
+      motion: const FThemeMotion(duration: Duration.zero),
+      child: widget.child,
+    );
+  }
+
+  FThemeData _buildData(ThemeData theme) {
     final scheme = theme.colorScheme;
     final base = theme.brightness == Brightness.dark
         ? FTheme.neutral.dark.touch : FTheme.neutral.light.touch;
@@ -38,12 +60,7 @@ class AppUiScope extends StatelessWidget {
       ),
       pagePadding: const EdgeInsetsDelta.value(EdgeInsets.all(WarmTheme.pagePadding)),
     );
-    return FTheme(
-      data: FThemeData(colors: colors, touch: true,
-        typography: typography, style: style),
-      motion: FThemeMotion(duration: WarmMotion.of(context, WarmMotion.quick)),
-      child: child,
-    );
+    return FThemeData(colors: colors, touch: true, typography: typography, style: style);
   }
 }
 

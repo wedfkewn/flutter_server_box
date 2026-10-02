@@ -48,7 +48,7 @@ class SettingStore extends SqliteStore {
   late final textFactor = propertyDefault('textFactor', 1.0);
 
   /// The seed of color scheme
-  late final colorSeed = propertyDefault('primaryColor', 4287106639);
+  late final colorSeed = propertyDefault('primaryColor', 0xff2563eb);
 
   late final serverStatusUpdateInterval = propertyDefault(
     'serverStatusUpdateInterval',
