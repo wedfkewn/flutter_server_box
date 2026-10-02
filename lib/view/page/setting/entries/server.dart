@@ -12,6 +12,10 @@ extension _Server on _AppSettingsPageState {
   Widget _buildServer() {
     final rows = <Widget>[
         _buildDistIcon(),
+        ListTile(leading: const Icon(Icons.apps_outlined),
+          title: Text(Localizations.localeOf(context).languageCode == 'zh' ? '程序图标' : 'Program logos'),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const BrandIconsPage()))),
         _buildNetViewType(),
         _buildConnectionStats(),
         _buildDeleteServers(),
@@ -21,9 +25,9 @@ extension _Server on _AppSettingsPageState {
       ];
     if (warmSettingsPhone(context)) {
       return Column(children: [
-        WarmSettingsGroup(title: warmSettingsText(context, '信息与图表', 'Information and charts'), children: [rows[0], rows[1], rows[4], rows[5]]),
-        WarmSettingsGroup(title: warmSettingsText(context, '连接与刷新', 'Connections and refresh'), children: [rows[2], rows[6]]),
-        WarmSettingsGroup(title: warmSettingsText(context, '服务器管理', 'Server management'), children: [rows[3]]),
+        WarmSettingsGroup(title: warmSettingsText(context, '信息与图表', 'Information and charts'), children: [rows[0], rows[1], rows[2], rows[5], rows[6]]),
+        WarmSettingsGroup(title: warmSettingsText(context, '连接与刷新', 'Connections and refresh'), children: [rows[3], rows[7]]),
+        WarmSettingsGroup(title: warmSettingsText(context, '服务器管理', 'Server management'), children: [rows[4]]),
       ]);
     }
     return Column(children: rows.map((e) => CardX(child: e)).toList());
@@ -193,22 +197,13 @@ extension _Server on _AppSettingsPageState {
     );
   }
 
-  /// The mark beside each server: whether to draw one, where it comes from,
-  /// and the names that disagree.
-  ///
-  /// Collapsed, because none of it applies to an install that has not gone
-  /// looking for it: the switch is off by default, and the three addresses
-  /// under it are blank. Left expanded it would be four rows of a feature most
-  /// people never turn on, above the settings they came for.
-  ///
-  /// The tip on the title is the whole of the terms — plain, not markdown,
-  /// because a tip is a text bubble and a link in one shows as its own syntax
-  /// with nothing to tap. The same text goes up in full when the switch is
-  /// turned on.
+  /// Bundled distribution artwork with optional custom URL/name overrides.
   Widget _buildDistIcon() {
     return ExpandTile(
       leading: const Icon(Icons.dns_outlined),
-      title: TipText(l10n.distIcon, distLegalPlain(l10n)),
+      title: TipText(l10n.distIcon, warmSettingsText(context,
+        '内置发行版 Logo，也支持自定义图片链接。',
+        'Bundled distribution logos with optional custom image URLs.')),
       initiallyExpanded: false,
       children: [
         ListTile(
@@ -218,7 +213,6 @@ extension _Server on _AppSettingsPageState {
           title: Text(l10n.distIconTip),
           trailing: StoreSwitch(
             prop: _setting.showDistMark,
-            validator: _confirmDistIcon,
           ),
         ),
         _buildServerMarkUrl(),
@@ -228,17 +222,11 @@ extension _Server on _AppSettingsPageState {
     );
   }
 
-  /// Where the small mark in a list comes from.
-  ///
-  /// There is no on/off beside it: an empty address is the off position, and
-  /// the switch that used to sit here governed nothing once the app stopped
-  /// shipping pictures — it was a second gate over an address that was already
-  /// blank by default.
+  /// A custom address overrides the bundled distribution artwork.
   Widget _buildServerMarkUrl() {
     void onSave(String raw) {
       final url = resolveLogoUrl(raw);
-      // Emptying it is how marks are turned off, so it is the one value that
-      // skips both the validation and the terms.
+      // Emptying the address restores bundled artwork.
       if (url.isEmpty) {
         _setting.serverMarkUrl.put('');
         context.popDialog();
@@ -325,19 +313,6 @@ extension _Server on _AppSettingsPageState {
         },
       ),
     );
-  }
-
-  /// Putting marks on the rows is a decision, so it is made once with the
-  /// terms on screen rather than silently.
-  ///
-  /// Only on the way on. Turning them off is agreement to nothing, and asking
-  /// there would turn "stop showing these" into a second decision to get past.
-  ///
-  /// Returning false leaves the switch where it was — `StoreSwitch` treats the
-  /// validator as the gate and writes nothing when it declines.
-  Future<bool> _confirmDistIcon(bool enabling) async {
-    if (!enabling) return true;
-    return confirmDistIconTerms(context);
   }
 
   Widget _buildServerLogoUrl() {

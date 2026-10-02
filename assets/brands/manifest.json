@@ -1,0 +1,650 @@
+[
+  {
+    "id": "distro-almalinux",
+    "asset": "assets/brands/distro-almalinux.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/7330accdbc47e2dc0c19789a48533c4a3c50fe58/icons/almalinux/almalinux-original.svg",
+    "upstream": "devicons/devicon",
+    "commit": "7330accdbc47e2dc0c19789a48533c4a3c50fe58",
+    "sha256": "bc82554bde812764d0c9a919ed57d1848111cbba48a65d49fb5aa4b82d82f99b"
+  },
+  {
+    "id": "distro-aosc",
+    "asset": "assets/brands/distro-aosc.svg",
+    "source": "https://raw.githubusercontent.com/lukas-w/font-logos/d3bf5d299e54595db1b19681a0cc57ab10454857/vectors/aosc.svg",
+    "upstream": "lukas-w/font-logos",
+    "commit": "d3bf5d299e54595db1b19681a0cc57ab10454857",
+    "sha256": "8515329f93c3c74e572faa410707b0a4d880c9dcc64377e9db78014d190d8eed"
+  },
+  {
+    "id": "distro-arch",
+    "asset": "assets/brands/distro-arch.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/7330accdbc47e2dc0c19789a48533c4a3c50fe58/icons/archlinux/archlinux-original.svg",
+    "upstream": "devicons/devicon",
+    "commit": "7330accdbc47e2dc0c19789a48533c4a3c50fe58",
+    "sha256": "c9d6452bb0f1c88afecf697e3529f6f0be08af1f6f35f3eaa4867eb6f261ba5e"
+  },
+  {
+    "id": "distro-archcraft",
+    "asset": "assets/brands/distro-archcraft.svg",
+    "source": "https://raw.githubusercontent.com/lukas-w/font-logos/d3bf5d299e54595db1b19681a0cc57ab10454857/vectors/archcraft.svg",
+    "upstream": "lukas-w/font-logos",
+    "commit": "d3bf5d299e54595db1b19681a0cc57ab10454857",
+    "sha256": "0a9866e783fdc660fb0a77725dfd6827a7bcda7c2aefe004d509c0adfd3033f2"
+  },
+  {
+    "id": "distro-archlabs",
+    "asset": "assets/brands/distro-archlabs.svg",
+    "source": "https://raw.githubusercontent.com/lukas-w/font-logos/d3bf5d299e54595db1b19681a0cc57ab10454857/vectors/archlabs.svg",
+    "upstream": "lukas-w/font-logos",
+    "commit": "d3bf5d299e54595db1b19681a0cc57ab10454857",
+    "sha256": "9adb3c23ebdb252fd48fac985582048f448acc236584082c028c852efa3b7df7"
+  },
+  {
+    "id": "distro-arcolinux",
+    "asset": "assets/brands/distro-arcolinux.svg",
+    "source": "https://raw.githubusercontent.com/lukas-w/font-logos/d3bf5d299e54595db1b19681a0cc57ab10454857/vectors/arcolinux.svg",
+    "upstream": "lukas-w/font-logos",
+    "commit": "d3bf5d299e54595db1b19681a0cc57ab10454857",
+    "sha256": "231855db2d5ca4a72c0174811e3d70f6548b00664e5ff06b12fce9bedbf7b5b6"
+  },
+  {
+    "id": "distro-artix",
+    "asset": "assets/brands/distro-artix.svg",
+    "source": "https://raw.githubusercontent.com/simple-icons/simple-icons/1089fb7d2bf0e323f834c205ab76265005a6d5e8/icons/artixlinux.svg",
+    "upstream": "simple-icons/simple-icons",
+    "commit": "1089fb7d2bf0e323f834c205ab76265005a6d5e8",
+    "sha256": "c934e6c05a5ca0b8eed7786852e4d6ec399d77dec9bfc4d14c6c9379393e45b7"
+  },
+  {
+    "id": "distro-biglinux",
+    "asset": "assets/brands/distro-biglinux.svg",
+    "source": "https://raw.githubusercontent.com/lukas-w/font-logos/d3bf5d299e54595db1b19681a0cc57ab10454857/vectors/biglinux.svg",
+    "upstream": "lukas-w/font-logos",
+    "commit": "d3bf5d299e54595db1b19681a0cc57ab10454857",
+    "sha256": "697dd13004fc563f0acf3af071694e143c1cb5687e0a9f79b09ae2b179678a60"
+  },
+  {
+    "id": "distro-cachyos",
+    "asset": "assets/brands/distro-cachyos.svg",
+    "source": "https://raw.githubusercontent.com/lukas-w/font-logos/d3bf5d299e54595db1b19681a0cc57ab10454857/vectors/cachyos.svg",
+    "upstream": "lukas-w/font-logos",
+    "commit": "d3bf5d299e54595db1b19681a0cc57ab10454857",
+    "sha256": "8fea5126884cef1dd5c12bda4f629cc5512f73545864d6461957f09191b775f7"
+  },
+  {
+    "id": "distro-centos",
+    "asset": "assets/brands/distro-centos.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/7330accdbc47e2dc0c19789a48533c4a3c50fe58/icons/centos/centos-original.svg",
+    "upstream": "devicons/devicon",
+    "commit": "7330accdbc47e2dc0c19789a48533c4a3c50fe58",
+    "sha256": "b54c6ad8e100208fd0ade26633abd996c9d979b19c13c1b91caf48b49ed8c8d2"
+  },
+  {
+    "id": "distro-coreos",
+    "asset": "assets/brands/distro-coreos.svg",
+    "source": "https://raw.githubusercontent.com/lukas-w/font-logos/d3bf5d299e54595db1b19681a0cc57ab10454857/vectors/coreos.svg",
+    "upstream": "lukas-w/font-logos",
+    "commit": "d3bf5d299e54595db1b19681a0cc57ab10454857",
+    "sha256": "5ea9e37b0f1705dc683a9fe1e6e677c78c5bf8ae0c422da449fc672ad889036a"
+  },
+  {
+    "id": "distro-deepin",
+    "asset": "assets/brands/distro-deepin.svg",
+    "source": "https://raw.githubusercontent.com/lukas-w/font-logos/d3bf5d299e54595db1b19681a0cc57ab10454857/vectors/deepin.svg",
+    "upstream": "lukas-w/font-logos",
+    "commit": "d3bf5d299e54595db1b19681a0cc57ab10454857",
+    "sha256": "16dd8147c966fb146b40732bf6e06e907f1c9fb874d01cd1d5150175d7a48a16"
+  },
+  {
+    "id": "distro-devuan",
+    "asset": "assets/brands/distro-devuan.svg",
+    "source": "https://raw.githubusercontent.com/lukas-w/font-logos/d3bf5d299e54595db1b19681a0cc57ab10454857/vectors/devuan.svg",
+    "upstream": "lukas-w/font-logos",
+    "commit": "d3bf5d299e54595db1b19681a0cc57ab10454857",
+    "sha256": "53856e190672dd26510668f62f8db51eb0fb83e07cf9d2aaf4904f49ffcc77b9"
+  },
+  {
+    "id": "distro-elementary",
+    "asset": "assets/brands/distro-elementary.svg",
+    "source": "https://raw.githubusercontent.com/lukas-w/font-logos/d3bf5d299e54595db1b19681a0cc57ab10454857/vectors/elementary.svg",
+    "upstream": "lukas-w/font-logos",
+    "commit": "d3bf5d299e54595db1b19681a0cc57ab10454857",
+    "sha256": "123fa8de806125d84ffc89b25cdb617244fb556ce12823e705b8b461020a5714"
+  },
+  {
+    "id": "distro-endeavour",
+    "asset": "assets/brands/distro-endeavour.svg",
+    "source": "https://raw.githubusercontent.com/lukas-w/font-logos/d3bf5d299e54595db1b19681a0cc57ab10454857/vectors/endeavour.svg",
+    "upstream": "lukas-w/font-logos",
+    "commit": "d3bf5d299e54595db1b19681a0cc57ab10454857",
+    "sha256": "863ba90d51adb7a15876d2d24943218d3e219e4ecbe70b870fa308b526a6e60e"
+  },
+  {
+    "id": "distro-fedora",
+    "asset": "assets/brands/distro-fedora.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/7330accdbc47e2dc0c19789a48533c4a3c50fe58/icons/fedora/fedora-original.svg",
+    "upstream": "devicons/devicon",
+    "commit": "7330accdbc47e2dc0c19789a48533c4a3c50fe58",
+    "sha256": "a82984dbe775e1c973ca5d0e78c908ed0730ee6c4deab903b630721644d109d6"
+  },
+  {
+    "id": "distro-freebsd",
+    "asset": "assets/brands/distro-freebsd.svg",
+    "source": "https://raw.githubusercontent.com/lukas-w/font-logos/d3bf5d299e54595db1b19681a0cc57ab10454857/vectors/freebsd.svg",
+    "upstream": "lukas-w/font-logos",
+    "commit": "d3bf5d299e54595db1b19681a0cc57ab10454857",
+    "sha256": "29518e6883b52d0fdeb2655813b1360fadc36e0a885758289bcb09a3ca328046"
+  },
+  {
+    "id": "distro-garuda",
+    "asset": "assets/brands/distro-garuda.svg",
+    "source": "https://raw.githubusercontent.com/lukas-w/font-logos/d3bf5d299e54595db1b19681a0cc57ab10454857/vectors/garuda.svg",
+    "upstream": "lukas-w/font-logos",
+    "commit": "d3bf5d299e54595db1b19681a0cc57ab10454857",
+    "sha256": "2b67374318f56414c0233d24cee855637290b93fc060a65d584063a27705c0e9"
+  },
+  {
+    "id": "distro-guix",
+    "asset": "assets/brands/distro-guix.svg",
+    "source": "https://raw.githubusercontent.com/lukas-w/font-logos/d3bf5d299e54595db1b19681a0cc57ab10454857/vectors/gnu-guix.svg",
+    "upstream": "lukas-w/font-logos",
+    "commit": "d3bf5d299e54595db1b19681a0cc57ab10454857",
+    "sha256": "50a2569e0cec7f6313c2f1484cf30b51cb2ca64ba91886e269efbdf447f89489"
+  },
+  {
+    "id": "distro-hyperbola",
+    "asset": "assets/brands/distro-hyperbola.svg",
+    "source": "https://raw.githubusercontent.com/lukas-w/font-logos/d3bf5d299e54595db1b19681a0cc57ab10454857/vectors/hyperbola.svg",
+    "upstream": "lukas-w/font-logos",
+    "commit": "d3bf5d299e54595db1b19681a0cc57ab10454857",
+    "sha256": "70879be0d03cb912f37f295250fe6173297bbdf9128762b4dab0a77680173e0c"
+  },
+  {
+    "id": "distro-illumos",
+    "asset": "assets/brands/distro-illumos.svg",
+    "source": "https://raw.githubusercontent.com/lukas-w/font-logos/d3bf5d299e54595db1b19681a0cc57ab10454857/vectors/illumos.svg",
+    "upstream": "lukas-w/font-logos",
+    "commit": "d3bf5d299e54595db1b19681a0cc57ab10454857",
+    "sha256": "45acd803595841651a6bee09355c247dd4e53d008860164a395c18d7df3d829f"
+  },
+  {
+    "id": "distro-kali",
+    "asset": "assets/brands/distro-kali.svg",
+    "source": "https://raw.githubusercontent.com/lukas-w/font-logos/d3bf5d299e54595db1b19681a0cc57ab10454857/vectors/kali-linux.svg",
+    "upstream": "lukas-w/font-logos",
+    "commit": "d3bf5d299e54595db1b19681a0cc57ab10454857",
+    "sha256": "5864a84eab563fe10fec46ba3ab465af76312994ecd9158b105f23b884cbe479"
+  },
+  {
+    "id": "distro-kdeneon",
+    "asset": "assets/brands/distro-kdeneon.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/7330accdbc47e2dc0c19789a48533c4a3c50fe58/icons/kdeneon/kdeneon-original.svg",
+    "upstream": "devicons/devicon",
+    "commit": "7330accdbc47e2dc0c19789a48533c4a3c50fe58",
+    "sha256": "e89b31908abb46a4ee3c8de66685fdc44c23af4afa98fbc28468f99f97b4e17f"
+  },
+  {
+    "id": "distro-kubuntu",
+    "asset": "assets/brands/distro-kubuntu.svg",
+    "source": "https://raw.githubusercontent.com/lukas-w/font-logos/d3bf5d299e54595db1b19681a0cc57ab10454857/vectors/kubuntu.svg",
+    "upstream": "lukas-w/font-logos",
+    "commit": "d3bf5d299e54595db1b19681a0cc57ab10454857",
+    "sha256": "d9f78d6c350b3aa868db2002e952856f96ce1fc91c9952bfa14c92f5f8dd0e7a"
+  },
+  {
+    "id": "distro-leap",
+    "asset": "assets/brands/distro-leap.svg",
+    "source": "https://raw.githubusercontent.com/lukas-w/font-logos/d3bf5d299e54595db1b19681a0cc57ab10454857/vectors/leap.svg",
+    "upstream": "lukas-w/font-logos",
+    "commit": "d3bf5d299e54595db1b19681a0cc57ab10454857",
+    "sha256": "46a27440aa9580cf45ab7d63aa11469df8f93ea8d6fb6469487a2f0e614469c2"
+  },
+  {
+    "id": "distro-locos",
+    "asset": "assets/brands/distro-locos.svg",
+    "source": "https://raw.githubusercontent.com/lukas-w/font-logos/d3bf5d299e54595db1b19681a0cc57ab10454857/vectors/locos.svg",
+    "upstream": "lukas-w/font-logos",
+    "commit": "d3bf5d299e54595db1b19681a0cc57ab10454857",
+    "sha256": "551d19e4cf70f0cbace59c1c91477b8dfca4674047daa0e6fd3e2bc52c4a9c52"
+  },
+  {
+    "id": "distro-lxle",
+    "asset": "assets/brands/distro-lxle.svg",
+    "source": "https://raw.githubusercontent.com/lukas-w/font-logos/d3bf5d299e54595db1b19681a0cc57ab10454857/vectors/lxle.svg",
+    "upstream": "lukas-w/font-logos",
+    "commit": "d3bf5d299e54595db1b19681a0cc57ab10454857",
+    "sha256": "0295ce62dfdfd7dcc226c4ce90e7cc14fe4435704eb62366a3aa5c35073111e0"
+  },
+  {
+    "id": "distro-macos",
+    "asset": "assets/brands/distro-macos.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/7330accdbc47e2dc0c19789a48533c4a3c50fe58/icons/apple/apple-original.svg",
+    "upstream": "devicons/devicon",
+    "commit": "7330accdbc47e2dc0c19789a48533c4a3c50fe58",
+    "sha256": "8e6eef82e047f040249bc0ed50d288cfddfa52176cf5adcb9b17bae46b472e12"
+  },
+  {
+    "id": "distro-mageia",
+    "asset": "assets/brands/distro-mageia.svg",
+    "source": "https://raw.githubusercontent.com/lukas-w/font-logos/d3bf5d299e54595db1b19681a0cc57ab10454857/vectors/mageia.svg",
+    "upstream": "lukas-w/font-logos",
+    "commit": "d3bf5d299e54595db1b19681a0cc57ab10454857",
+    "sha256": "709b7cba12dbf1372ac3bf3dbe877cb7f7d2c1a1734e5bd25f7ebcd5d030c163"
+  },
+  {
+    "id": "distro-mandriva",
+    "asset": "assets/brands/distro-mandriva.svg",
+    "source": "https://raw.githubusercontent.com/lukas-w/font-logos/d3bf5d299e54595db1b19681a0cc57ab10454857/vectors/mandriva.svg",
+    "upstream": "lukas-w/font-logos",
+    "commit": "d3bf5d299e54595db1b19681a0cc57ab10454857",
+    "sha256": "3024a40031c9ac2650f0a52b869bfa72acfc716ce3c6698f51f19e5ccefc7a74"
+  },
+  {
+    "id": "distro-manjaro",
+    "asset": "assets/brands/distro-manjaro.svg",
+    "source": "https://raw.githubusercontent.com/lukas-w/font-logos/d3bf5d299e54595db1b19681a0cc57ab10454857/vectors/manjaro.svg",
+    "upstream": "lukas-w/font-logos",
+    "commit": "d3bf5d299e54595db1b19681a0cc57ab10454857",
+    "sha256": "df29bbad6de901aaf8565de7066e177a552b148a5fa3627bf6d47ba4d48b6367"
+  },
+  {
+    "id": "distro-mint",
+    "asset": "assets/brands/distro-mint.svg",
+    "source": "https://raw.githubusercontent.com/lukas-w/font-logos/d3bf5d299e54595db1b19681a0cc57ab10454857/vectors/linuxmint.svg",
+    "upstream": "lukas-w/font-logos",
+    "commit": "d3bf5d299e54595db1b19681a0cc57ab10454857",
+    "sha256": "dbd971882dfd1d59dddf206ecc384ed265116bff5e7dbcc2df775080062c656d"
+  },
+  {
+    "id": "distro-mx",
+    "asset": "assets/brands/distro-mx.svg",
+    "source": "https://raw.githubusercontent.com/lukas-w/font-logos/d3bf5d299e54595db1b19681a0cc57ab10454857/vectors/mxlinux.svg",
+    "upstream": "lukas-w/font-logos",
+    "commit": "d3bf5d299e54595db1b19681a0cc57ab10454857",
+    "sha256": "d5ac7c39a8a55f87cfb170ed1ded7c7791f842fed8c10ce2a0ac36c983574c06"
+  },
+  {
+    "id": "distro-netbsd",
+    "asset": "assets/brands/distro-netbsd.svg",
+    "source": "https://raw.githubusercontent.com/simple-icons/simple-icons/1089fb7d2bf0e323f834c205ab76265005a6d5e8/icons/netbsd.svg",
+    "upstream": "simple-icons/simple-icons",
+    "commit": "1089fb7d2bf0e323f834c205ab76265005a6d5e8",
+    "sha256": "17049a7a40524607e86c04d77036ff976f897c4be6cef25df2fb56aa7ebd9ee1"
+  },
+  {
+    "id": "distro-nobara",
+    "asset": "assets/brands/distro-nobara.svg",
+    "source": "https://raw.githubusercontent.com/lukas-w/font-logos/d3bf5d299e54595db1b19681a0cc57ab10454857/vectors/nobara.svg",
+    "upstream": "lukas-w/font-logos",
+    "commit": "d3bf5d299e54595db1b19681a0cc57ab10454857",
+    "sha256": "5eec89e02a8a574656dc7b731786dec4eb81a485d5015a84d852dda41e840566"
+  },
+  {
+    "id": "distro-openbsd",
+    "asset": "assets/brands/distro-openbsd.svg",
+    "source": "https://raw.githubusercontent.com/lukas-w/font-logos/d3bf5d299e54595db1b19681a0cc57ab10454857/vectors/openbsd.svg",
+    "upstream": "lukas-w/font-logos",
+    "commit": "d3bf5d299e54595db1b19681a0cc57ab10454857",
+    "sha256": "b1bf02144aabecd08f1f5e1a7524eb72c79107e1d56291cf3d8b5e9646eede27"
+  },
+  {
+    "id": "distro-opensuse",
+    "asset": "assets/brands/distro-opensuse.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/7330accdbc47e2dc0c19789a48533c4a3c50fe58/icons/opensuse/opensuse-original.svg",
+    "upstream": "devicons/devicon",
+    "commit": "7330accdbc47e2dc0c19789a48533c4a3c50fe58",
+    "sha256": "f23084ff594f24042a64d096f255e4ce865695c713c23ea64ff9d4454cc0dd9c"
+  },
+  {
+    "id": "distro-parabola",
+    "asset": "assets/brands/distro-parabola.svg",
+    "source": "https://raw.githubusercontent.com/lukas-w/font-logos/d3bf5d299e54595db1b19681a0cc57ab10454857/vectors/parabola.svg",
+    "upstream": "lukas-w/font-logos",
+    "commit": "d3bf5d299e54595db1b19681a0cc57ab10454857",
+    "sha256": "101befaa9d037c12940c4241eaf9e834352fa2d5389fe49f88265798aee1b8fd"
+  },
+  {
+    "id": "distro-parrot",
+    "asset": "assets/brands/distro-parrot.svg",
+    "source": "https://raw.githubusercontent.com/lukas-w/font-logos/d3bf5d299e54595db1b19681a0cc57ab10454857/vectors/parrot.svg",
+    "upstream": "lukas-w/font-logos",
+    "commit": "d3bf5d299e54595db1b19681a0cc57ab10454857",
+    "sha256": "28cbf0d56dbcce7154bc4c7c6d1a73815c7f8788cc3dcb030fb49e2762ada7c8"
+  },
+  {
+    "id": "distro-popos",
+    "asset": "assets/brands/distro-popos.svg",
+    "source": "https://raw.githubusercontent.com/lukas-w/font-logos/d3bf5d299e54595db1b19681a0cc57ab10454857/vectors/pop-os.svg",
+    "upstream": "lukas-w/font-logos",
+    "commit": "d3bf5d299e54595db1b19681a0cc57ab10454857",
+    "sha256": "31ad62214f2a0ba4bdf171e090d4a55875633b45b84b93849889f630faad7b71"
+  },
+  {
+    "id": "distro-postmarketos",
+    "asset": "assets/brands/distro-postmarketos.svg",
+    "source": "https://raw.githubusercontent.com/lukas-w/font-logos/d3bf5d299e54595db1b19681a0cc57ab10454857/vectors/postmarketos.svg",
+    "upstream": "lukas-w/font-logos",
+    "commit": "d3bf5d299e54595db1b19681a0cc57ab10454857",
+    "sha256": "b17f74834af7b64c661459a5c69490ef808f03b3ca4398447c47acd3aa82189d"
+  },
+  {
+    "id": "distro-puppy",
+    "asset": "assets/brands/distro-puppy.svg",
+    "source": "https://raw.githubusercontent.com/lukas-w/font-logos/d3bf5d299e54595db1b19681a0cc57ab10454857/vectors/puppy.svg",
+    "upstream": "lukas-w/font-logos",
+    "commit": "d3bf5d299e54595db1b19681a0cc57ab10454857",
+    "sha256": "9b651f250011f06be39e911cd9468bb5854fdeaa856627b093aaec63b7098a37"
+  },
+  {
+    "id": "distro-qubes",
+    "asset": "assets/brands/distro-qubes.svg",
+    "source": "https://raw.githubusercontent.com/lukas-w/font-logos/d3bf5d299e54595db1b19681a0cc57ab10454857/vectors/qubesos.svg",
+    "upstream": "lukas-w/font-logos",
+    "commit": "d3bf5d299e54595db1b19681a0cc57ab10454857",
+    "sha256": "040e716b11cd81a040d6862ffd4d63d19906e4b0494e13ce321001f0cbd74238"
+  },
+  {
+    "id": "distro-raspbian",
+    "asset": "assets/brands/distro-raspbian.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/7330accdbc47e2dc0c19789a48533c4a3c50fe58/icons/raspberrypi/raspberrypi-original.svg",
+    "upstream": "devicons/devicon",
+    "commit": "7330accdbc47e2dc0c19789a48533c4a3c50fe58",
+    "sha256": "5f6989c03465d053f7bffa570b64061a8ff293fce687eb87140ce76b399068fa"
+  },
+  {
+    "id": "distro-rhel",
+    "asset": "assets/brands/distro-rhel.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/7330accdbc47e2dc0c19789a48533c4a3c50fe58/icons/redhat/redhat-original.svg",
+    "upstream": "devicons/devicon",
+    "commit": "7330accdbc47e2dc0c19789a48533c4a3c50fe58",
+    "sha256": "c7ec409610e7c222191166a5fe7bd52b57e6d057cb8e51ee44d12a2743401e21"
+  },
+  {
+    "id": "distro-rocky",
+    "asset": "assets/brands/distro-rocky.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/7330accdbc47e2dc0c19789a48533c4a3c50fe58/icons/rockylinux/rockylinux-original.svg",
+    "upstream": "devicons/devicon",
+    "commit": "7330accdbc47e2dc0c19789a48533c4a3c50fe58",
+    "sha256": "748f3c1ab46ef03a01b9f315fee680e660366e4d7eaec4dc54c215187b208e13"
+  },
+  {
+    "id": "distro-sabayon",
+    "asset": "assets/brands/distro-sabayon.svg",
+    "source": "https://raw.githubusercontent.com/lukas-w/font-logos/d3bf5d299e54595db1b19681a0cc57ab10454857/vectors/sabayon.svg",
+    "upstream": "lukas-w/font-logos",
+    "commit": "d3bf5d299e54595db1b19681a0cc57ab10454857",
+    "sha256": "28edc37bcd79765a42fed8c4c927c1df75bc5b2a0c5c7aa43208a62252571ee9"
+  },
+  {
+    "id": "distro-slackware",
+    "asset": "assets/brands/distro-slackware.svg",
+    "source": "https://raw.githubusercontent.com/lukas-w/font-logos/d3bf5d299e54595db1b19681a0cc57ab10454857/vectors/slackware.svg",
+    "upstream": "lukas-w/font-logos",
+    "commit": "d3bf5d299e54595db1b19681a0cc57ab10454857",
+    "sha256": "00e77c05b7e5d1115607c6c22735f2c0f6e739ff925454033fe0d78ee8a5b62b"
+  },
+  {
+    "id": "distro-solus",
+    "asset": "assets/brands/distro-solus.svg",
+    "source": "https://raw.githubusercontent.com/lukas-w/font-logos/d3bf5d299e54595db1b19681a0cc57ab10454857/vectors/solus.svg",
+    "upstream": "lukas-w/font-logos",
+    "commit": "d3bf5d299e54595db1b19681a0cc57ab10454857",
+    "sha256": "8504c461c8dfbc78f67b4d5cac50e48276aa041096b3a2de37385efabbe6388f"
+  },
+  {
+    "id": "distro-tails",
+    "asset": "assets/brands/distro-tails.svg",
+    "source": "https://raw.githubusercontent.com/lukas-w/font-logos/d3bf5d299e54595db1b19681a0cc57ab10454857/vectors/tails.svg",
+    "upstream": "lukas-w/font-logos",
+    "commit": "d3bf5d299e54595db1b19681a0cc57ab10454857",
+    "sha256": "d82e6926b397b1f0bcdd8fcc44fd7672603ba346c3879474b9032b728fedda6c"
+  },
+  {
+    "id": "distro-trisquel",
+    "asset": "assets/brands/distro-trisquel.svg",
+    "source": "https://raw.githubusercontent.com/lukas-w/font-logos/d3bf5d299e54595db1b19681a0cc57ab10454857/vectors/trisquel.svg",
+    "upstream": "lukas-w/font-logos",
+    "commit": "d3bf5d299e54595db1b19681a0cc57ab10454857",
+    "sha256": "588a40c9f067b002925e307f570e7a03e595e1740643715ce4aa90d61115449a"
+  },
+  {
+    "id": "distro-tumbleweed",
+    "asset": "assets/brands/distro-tumbleweed.svg",
+    "source": "https://raw.githubusercontent.com/lukas-w/font-logos/d3bf5d299e54595db1b19681a0cc57ab10454857/vectors/tumbleweed.svg",
+    "upstream": "lukas-w/font-logos",
+    "commit": "d3bf5d299e54595db1b19681a0cc57ab10454857",
+    "sha256": "915f64f2b857fde4bb95d0690ee4ab1cc559d86ade4d3b35c59da056a6f573fb"
+  },
+  {
+    "id": "distro-ubuntu",
+    "asset": "assets/brands/distro-ubuntu.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/7330accdbc47e2dc0c19789a48533c4a3c50fe58/icons/ubuntu/ubuntu-original.svg",
+    "upstream": "devicons/devicon",
+    "commit": "7330accdbc47e2dc0c19789a48533c4a3c50fe58",
+    "sha256": "af8ddf6c709f61d1b7ac00d5417cf389ad23db2258f0776e0c7854f37105caed"
+  },
+  {
+    "id": "distro-vanilla",
+    "asset": "assets/brands/distro-vanilla.svg",
+    "source": "https://raw.githubusercontent.com/lukas-w/font-logos/d3bf5d299e54595db1b19681a0cc57ab10454857/vectors/vanilla.svg",
+    "upstream": "lukas-w/font-logos",
+    "commit": "d3bf5d299e54595db1b19681a0cc57ab10454857",
+    "sha256": "6ce9d14a996cf9c0fdacbbea02a6108f6293f5914cd70bbb37e3a36dee8d0ca8"
+  },
+  {
+    "id": "distro-voidlinux",
+    "asset": "assets/brands/distro-voidlinux.svg",
+    "source": "https://raw.githubusercontent.com/lukas-w/font-logos/d3bf5d299e54595db1b19681a0cc57ab10454857/vectors/void.svg",
+    "upstream": "lukas-w/font-logos",
+    "commit": "d3bf5d299e54595db1b19681a0cc57ab10454857",
+    "sha256": "74bd540c8592d5bd89615ca23f165f33978f824ebfec3859578795d64956ed14"
+  },
+  {
+    "id": "distro-windows",
+    "asset": "assets/brands/distro-windows.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/7330accdbc47e2dc0c19789a48533c4a3c50fe58/icons/windows11/windows11-original.svg",
+    "upstream": "devicons/devicon",
+    "commit": "7330accdbc47e2dc0c19789a48533c4a3c50fe58",
+    "sha256": "11ac9b1e84c8c36c21629d03f26ce699b7d2e56bf702ea2e8eb2637cd2271c56"
+  },
+  {
+    "id": "distro-wrt",
+    "asset": "assets/brands/distro-wrt.svg",
+    "source": "https://raw.githubusercontent.com/lukas-w/font-logos/d3bf5d299e54595db1b19681a0cc57ab10454857/vectors/openwrt.svg",
+    "upstream": "lukas-w/font-logos",
+    "commit": "d3bf5d299e54595db1b19681a0cc57ab10454857",
+    "sha256": "d01a54f4f40a78aa5967d280054c9d436dd91f4c26726a38d154ec5f699a6c05"
+  },
+  {
+    "id": "distro-xerolinux",
+    "asset": "assets/brands/distro-xerolinux.svg",
+    "source": "https://raw.githubusercontent.com/lukas-w/font-logos/d3bf5d299e54595db1b19681a0cc57ab10454857/vectors/xerolinux.svg",
+    "upstream": "lukas-w/font-logos",
+    "commit": "d3bf5d299e54595db1b19681a0cc57ab10454857",
+    "sha256": "a6427f757ad3f254aeda3b94638076cb79c05644809137ce0a17349a521181ed"
+  },
+  {
+    "id": "distro-zorin",
+    "asset": "assets/brands/distro-zorin.svg",
+    "source": "https://raw.githubusercontent.com/lukas-w/font-logos/d3bf5d299e54595db1b19681a0cc57ab10454857/vectors/zorin.svg",
+    "upstream": "lukas-w/font-logos",
+    "commit": "d3bf5d299e54595db1b19681a0cc57ab10454857",
+    "sha256": "ca939d74ccb300d9d396feb05a40bced222908d49c100655b2257fd775740662"
+  },
+  {
+    "id": "program-apache",
+    "asset": "assets/brands/program-apache.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/7330accdbc47e2dc0c19789a48533c4a3c50fe58/icons/apache/apache-original.svg",
+    "upstream": "devicons/devicon",
+    "commit": "7330accdbc47e2dc0c19789a48533c4a3c50fe58",
+    "sha256": "843d8cb7cf9a54eb70e09669d2fadf0b1b59419f92526e94b4359d9366b40ece"
+  },
+  {
+    "id": "program-caddy",
+    "asset": "assets/brands/program-caddy.svg",
+    "source": "https://raw.githubusercontent.com/simple-icons/simple-icons/1089fb7d2bf0e323f834c205ab76265005a6d5e8/icons/caddy.svg",
+    "upstream": "simple-icons/simple-icons",
+    "commit": "1089fb7d2bf0e323f834c205ab76265005a6d5e8",
+    "sha256": "3ce50619d72dd473413d0b774f8956691b36f7224f3850a08e23b4da1f69f3ff"
+  },
+  {
+    "id": "program-containerd",
+    "asset": "assets/brands/program-containerd.svg",
+    "source": "https://raw.githubusercontent.com/simple-icons/simple-icons/1089fb7d2bf0e323f834c205ab76265005a6d5e8/icons/containerd.svg",
+    "upstream": "simple-icons/simple-icons",
+    "commit": "1089fb7d2bf0e323f834c205ab76265005a6d5e8",
+    "sha256": "657fd2310063e583e23ff05646f023a1bedc0c638e8bd8c356980cb10caf659b"
+  },
+  {
+    "id": "program-docker",
+    "asset": "assets/brands/program-docker.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/7330accdbc47e2dc0c19789a48533c4a3c50fe58/icons/docker/docker-original.svg",
+    "upstream": "devicons/devicon",
+    "commit": "7330accdbc47e2dc0c19789a48533c4a3c50fe58",
+    "sha256": "3fd830ea69431ed7a0b8d068cd5b34ad3f00a1a78195d50f13ff56713f2462e1"
+  },
+  {
+    "id": "program-elasticsearch",
+    "asset": "assets/brands/program-elasticsearch.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/7330accdbc47e2dc0c19789a48533c4a3c50fe58/icons/elasticsearch/elasticsearch-original.svg",
+    "upstream": "devicons/devicon",
+    "commit": "7330accdbc47e2dc0c19789a48533c4a3c50fe58",
+    "sha256": "7efc44ea67eac2a877248c0502e498bca8f61de490852c1a5c572db0b5d3f84d"
+  },
+  {
+    "id": "program-git",
+    "asset": "assets/brands/program-git.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/7330accdbc47e2dc0c19789a48533c4a3c50fe58/icons/git/git-original.svg",
+    "upstream": "devicons/devicon",
+    "commit": "7330accdbc47e2dc0c19789a48533c4a3c50fe58",
+    "sha256": "717a57ea97bf7e86de721dab3e68afac66332a10676d5c9abce4ae6a5a9c9983"
+  },
+  {
+    "id": "program-grafana",
+    "asset": "assets/brands/program-grafana.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/7330accdbc47e2dc0c19789a48533c4a3c50fe58/icons/grafana/grafana-original.svg",
+    "upstream": "devicons/devicon",
+    "commit": "7330accdbc47e2dc0c19789a48533c4a3c50fe58",
+    "sha256": "2dec200d4e56521bec8dd463173c623b33b8c97e6159cac9b3ed00b6bff0f6ad"
+  },
+  {
+    "id": "program-java",
+    "asset": "assets/brands/program-java.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/7330accdbc47e2dc0c19789a48533c4a3c50fe58/icons/java/java-original.svg",
+    "upstream": "devicons/devicon",
+    "commit": "7330accdbc47e2dc0c19789a48533c4a3c50fe58",
+    "sha256": "7582e518a9c02425f97155e5a3bd39d1a3a7d421b78caf9c8df7443dad3edc5d"
+  },
+  {
+    "id": "program-mariadb",
+    "asset": "assets/brands/program-mariadb.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/7330accdbc47e2dc0c19789a48533c4a3c50fe58/icons/mariadb/mariadb-original.svg",
+    "upstream": "devicons/devicon",
+    "commit": "7330accdbc47e2dc0c19789a48533c4a3c50fe58",
+    "sha256": "90f14c26b478447171ad800791535f5f5ab0f9abf80387edefb410b6fc85cbdc"
+  },
+  {
+    "id": "program-mongodb",
+    "asset": "assets/brands/program-mongodb.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/7330accdbc47e2dc0c19789a48533c4a3c50fe58/icons/mongodb/mongodb-original.svg",
+    "upstream": "devicons/devicon",
+    "commit": "7330accdbc47e2dc0c19789a48533c4a3c50fe58",
+    "sha256": "d9f2bf7041264f4747e9969fb82ede0199c0ac97dfa8632aa0687d702ec05f7b"
+  },
+  {
+    "id": "program-mysql",
+    "asset": "assets/brands/program-mysql.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/7330accdbc47e2dc0c19789a48533c4a3c50fe58/icons/mysql/mysql-original.svg",
+    "upstream": "devicons/devicon",
+    "commit": "7330accdbc47e2dc0c19789a48533c4a3c50fe58",
+    "sha256": "f73fa5d6b9da33fbf540ff96f5360c24b6d29d883ecfe6fcaecf89a8d3456067"
+  },
+  {
+    "id": "program-nginx",
+    "asset": "assets/brands/program-nginx.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/7330accdbc47e2dc0c19789a48533c4a3c50fe58/icons/nginx/nginx-original.svg",
+    "upstream": "devicons/devicon",
+    "commit": "7330accdbc47e2dc0c19789a48533c4a3c50fe58",
+    "sha256": "a28c7002fda6748bb018fa5f89ba3d38c622db720d65aa88668208a3cc839900"
+  },
+  {
+    "id": "program-nodejs",
+    "asset": "assets/brands/program-nodejs.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/7330accdbc47e2dc0c19789a48533c4a3c50fe58/icons/nodejs/nodejs-original.svg",
+    "upstream": "devicons/devicon",
+    "commit": "7330accdbc47e2dc0c19789a48533c4a3c50fe58",
+    "sha256": "3218687c5ea24a4d4c0a33dc5c287da38c33a72dcfe9382469d7ce4e0bf661fb"
+  },
+  {
+    "id": "program-php",
+    "asset": "assets/brands/program-php.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/7330accdbc47e2dc0c19789a48533c4a3c50fe58/icons/php/php-original.svg",
+    "upstream": "devicons/devicon",
+    "commit": "7330accdbc47e2dc0c19789a48533c4a3c50fe58",
+    "sha256": "f22619a19c99a123e4678d71826f65f223721a739631dff46de39827c9ee0633"
+  },
+  {
+    "id": "program-podman",
+    "asset": "assets/brands/program-podman.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/7330accdbc47e2dc0c19789a48533c4a3c50fe58/icons/podman/podman-original.svg",
+    "upstream": "devicons/devicon",
+    "commit": "7330accdbc47e2dc0c19789a48533c4a3c50fe58",
+    "sha256": "d5405e720d60316462b27597ff396bf138286b39cda4fa7095bcc450c96819b7"
+  },
+  {
+    "id": "program-postgresql",
+    "asset": "assets/brands/program-postgresql.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/7330accdbc47e2dc0c19789a48533c4a3c50fe58/icons/postgresql/postgresql-original.svg",
+    "upstream": "devicons/devicon",
+    "commit": "7330accdbc47e2dc0c19789a48533c4a3c50fe58",
+    "sha256": "f220a436258ed014c512ba4f9c0de6b9e5c2c4b55331a0a29f8c7a1a12c36443"
+  },
+  {
+    "id": "program-prometheus",
+    "asset": "assets/brands/program-prometheus.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/7330accdbc47e2dc0c19789a48533c4a3c50fe58/icons/prometheus/prometheus-original.svg",
+    "upstream": "devicons/devicon",
+    "commit": "7330accdbc47e2dc0c19789a48533c4a3c50fe58",
+    "sha256": "cae70cfcf9a8b88de32ab1035819d0c7c9a2b278048112f8c9f99dae42b5b657"
+  },
+  {
+    "id": "program-python",
+    "asset": "assets/brands/program-python.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/7330accdbc47e2dc0c19789a48533c4a3c50fe58/icons/python/python-original.svg",
+    "upstream": "devicons/devicon",
+    "commit": "7330accdbc47e2dc0c19789a48533c4a3c50fe58",
+    "sha256": "71493b4a732f0532b3a03a7a95da3ee11a65766367c8303b901ffbe7bf91a3a2"
+  },
+  {
+    "id": "program-rabbitmq",
+    "asset": "assets/brands/program-rabbitmq.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/7330accdbc47e2dc0c19789a48533c4a3c50fe58/icons/rabbitmq/rabbitmq-original.svg",
+    "upstream": "devicons/devicon",
+    "commit": "7330accdbc47e2dc0c19789a48533c4a3c50fe58",
+    "sha256": "3aad30605375d85bd2fc293880be7e1b07def3f7191c8f063feb775cca5b7006"
+  },
+  {
+    "id": "program-redis",
+    "asset": "assets/brands/program-redis.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/7330accdbc47e2dc0c19789a48533c4a3c50fe58/icons/redis/redis-original.svg",
+    "upstream": "devicons/devicon",
+    "commit": "7330accdbc47e2dc0c19789a48533c4a3c50fe58",
+    "sha256": "4707378b190878f36f7e6e1c01fa3ee7e7884c76101809d191dddd943a2e6bdb"
+  },
+  {
+    "id": "program-ruby",
+    "asset": "assets/brands/program-ruby.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/7330accdbc47e2dc0c19789a48533c4a3c50fe58/icons/ruby/ruby-original.svg",
+    "upstream": "devicons/devicon",
+    "commit": "7330accdbc47e2dc0c19789a48533c4a3c50fe58",
+    "sha256": "74ead50b8f0f31e1b34618088bc0b0e16c04f1d4539039ef9358717d8505a63c"
+  },
+  {
+    "id": "program-traefik",
+    "asset": "assets/brands/program-traefik.svg",
+    "source": "https://raw.githubusercontent.com/simple-icons/simple-icons/1089fb7d2bf0e323f834c205ab76265005a6d5e8/icons/traefikproxy.svg",
+    "upstream": "simple-icons/simple-icons",
+    "commit": "1089fb7d2bf0e323f834c205ab76265005a6d5e8",
+    "sha256": "fd1d5e98ac50b22efb35ba9955f81c2f7c202cf977e8335d92a7b13f3bb4fd8a"
+  }
+]

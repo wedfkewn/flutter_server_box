@@ -34,7 +34,7 @@ extension _WarmDetail on _ServerDetailPageState {
               if (ss.more[StatusCmdType.host] case final host?) Text(host, style: theme.textTheme.bodySmall),
               if (ss.more[StatusCmdType.uptime] case final uptime?) Text(uptime, style: theme.textTheme.bodySmall),
             ]),
-            leading: const Icon(Icons.dns_outlined, size: 20),
+            leading: distIconOf(ss.dist, size: 32),
             children: [
               for (final entry in ss.more.entries)
                 if (entry.key != StatusCmdType.sys && entry.key != StatusCmdType.host && entry.key != StatusCmdType.uptime)

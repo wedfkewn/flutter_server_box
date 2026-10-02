@@ -67,19 +67,19 @@ void main() {
     // Ubuntu is the case people will meet: identified perfectly well, and its
     // logo is not ours to ship. That is not the same as not knowing, and the
     // row should not say it is.
-    expect(Dist.ubuntu.markAsset, isNull, reason: 'the premise of this test');
+    expect(Dist.coreelec.markAsset, isNull, reason: 'the premise of this test');
     expect(Dist.ubuntu.isLinux, isTrue);
-    await pump(tester, Dist.ubuntu);
+    await pump(tester, Dist.coreelec);
     expect(penguin(), findsOneWidget);
   });
 
-  testWidgets('and a recognised non-Linux draws the machine', (tester) async {
+  testWidgets('recognised non-Linux systems draw their own logos', (tester) async {
     // macOS and the BSDs are identified by name and are not Linux; a penguin
     // there would be wrong rather than merely uninformative.
-    for (final dist in [Dist.macos, Dist.freebsd, Dist.windows]) {
+    for (final dist in [Dist.netbsd, Dist.windows]) {
       expect(dist.isLinux, isFalse, reason: 'Dist.${dist.name}');
       await pump(tester, dist);
-      expect(fallback(), findsOneWidget, reason: 'Dist.${dist.name}');
+      expect(find.byType(SvgPicture), findsOneWidget, reason: 'Dist.${dist.name}');
       expect(penguin(), findsNothing, reason: 'Dist.${dist.name}');
     }
   });
@@ -92,7 +92,7 @@ void main() {
     expect(fallback(), findsNothing, reason: 'the mark, not a stand-in for it');
   });
 
-  testWidgets('and it is drawn in one colour', (tester) async {
+  testWidgets('and it retains original colors', (tester) async {
     // A column of full-colour logos at the size of a line of text reads as
     // noise. Every mark takes the row's colour, and the fallback icons take
     // the same one so the column stays a column.
@@ -102,7 +102,7 @@ void main() {
     final svg = tester.widget<SvgPicture>(find.byType(SvgPicture));
     expect(
       svg.colorFilter,
-      isNotNull,
+      isNull,
       reason: 'no filter means the mark is drawn in its own colours',
     );
   });
@@ -155,7 +155,7 @@ void main() {
 
   testWidgets('and for one with no mark, the icon', (tester) async {
     GetIt.instance<SettingStore>().serverMarkUrl.put('httpx://elsewhere/a.svg');
-    await pump(tester, Dist.ubuntu);
+    await pump(tester, Dist.coreelec);
     await tester.pump();
 
     expect(penguin(), findsOneWidget);

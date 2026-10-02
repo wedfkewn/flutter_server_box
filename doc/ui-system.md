@@ -51,3 +51,10 @@ Windows-hosted widget tests.
 - 按 [Flutter 官方 CustomClipper](https://api.flutter.dev/flutter/rendering/CustomClipper-class.html) 的 `reclip` 方式更新裁剪，动画期间不逐帧重建导航、终端或监控页面。关闭 MaterialApp 与 ForUI 的并行主题插值，缓存主题和 ForUI 配置；截图纹理限制在最多约 200 万像素。
 - 系统“减少动态效果”启用时立即切换。AMOLED 保留原控件文字、圆角和布局，仅调整背景，避免文字样式插值冲突。
 - 验证：`test/theme_reveal_test.dart`、`test/app_theme_test.dart` 覆盖扩散方向、页面重建次数、输入状态、快速切换、尺寸变化、弹窗退出与实际种子色生效；真机 GPU 帧耗时需要用 release/profile 版本另外测量。
+
+## 发行版与程序图标
+
+- 本地图标保留源素材颜色，以固定大小的中性底板适配浅色和深色界面。资源来源、不可变提交与 SHA256 见 `assets/brands/manifest.json`；许可说明见同目录 README 和 LICENSE 文件。
+- 首页与详情使用发行版图标；进程和服务列表按可执行文件名或 service/socket 单元识别程序，不扫描命令参数。未知程序使用原通用图标，业务命令和采集协议保持原样。
+- 设置中的“程序图标”提供全局进程/服务独立映射，可选择内置图标或 HTTPS 图片。内置素材离线可用；自定义图片按 URL 缓存，最多 64 项、每项 512 KiB，失败时保持尺寸并显示通用图标。
+- v24 迁移仅首次开启图标，此后保留用户开关。自定义规则和开关参与备份，迁移标记仅留在本机。旧发行版 URL 与名称映射仍然兼容。

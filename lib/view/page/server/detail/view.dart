@@ -34,6 +34,7 @@ import 'package:server_box/data/res/store.dart';
 import 'package:server_box/view/page/pve.dart';
 import 'package:server_box/view/page/server/edit/edit.dart';
 import 'package:server_box/view/widget/app_ui.dart';
+import 'package:server_box/view/widget/dist_icon.dart';
 import 'package:server_box/view/widget/server_func_btns.dart';
 import 'package:server_box/view/widget/server_group.dart';
 import 'package:server_box/view/widget/server_share.dart';
@@ -566,7 +567,7 @@ ${err.message ?? 'null'}
     final ss = si.status;
     final publicIp = SelfAddr.pick(ss.ips);
     return ExpandTile(
-      leading: const Icon(MingCute.information_fill, size: 20),
+      leading: distIconOf(ss.dist, size: 32),
       controller: _expand('about', _getInitExpand(ss.more.entries.length)),
       title: Text(libL10n.about),
       childrenPadding: const EdgeInsets.symmetric(horizontal: 17, vertical: 11),

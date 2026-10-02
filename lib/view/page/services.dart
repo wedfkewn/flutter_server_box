@@ -7,6 +7,7 @@ import 'package:server_box/data/model/server/service.dart';
 import 'package:server_box/data/provider/services.dart';
 import 'package:server_box/data/ssh/terminal_source.dart';
 import 'package:server_box/view/page/ssh/page/page.dart';
+import 'package:server_box/view/widget/brand_logo.dart';
 
 final class ServicesPage extends ConsumerStatefulWidget {
   const ServicesPage({super.key, required this.args});
@@ -203,8 +204,7 @@ final class _ServicesPageState extends ConsumerState<ServicesPage> {
             return Column(children: [
               ListTile(
                 contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                leading: Icon(unit.type == ServiceUnitType.service ? Icons.miscellaneous_services_outlined : Icons.description_outlined,
-                  size: 22, color: scheme.onSurface),
+                leading: ProgramLogo(unit.name, service: true, type: unit.type),
                 title: unit.description != null ? TipText(unit.name, unit.description!) : Text(unit.name),
                 subtitle: Padding(padding: const EdgeInsets.only(top: 6), child: Wrap(
                   spacing: 8, runSpacing: 4, crossAxisAlignment: WrapCrossAlignment.center,
@@ -232,9 +232,7 @@ final class _ServicesPageState extends ConsumerState<ServicesPage> {
       delegate: SliverChildBuilderDelegate((context, index) {
         final unit = filteredUnits[index];
         return ListTile(
-          leading: manager?.supportsUserScope == true
-              ? _buildTag(unit.scope.name.capitalize, unit.scope.color, true)
-              : const Icon(Icons.miscellaneous_services),
+          leading: ProgramLogo(unit.name, service: true, type: unit.type),
           title: unit.description != null
               ? TipText(unit.name, unit.description!)
               : Text(unit.name),

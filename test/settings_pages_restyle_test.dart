@@ -19,6 +19,7 @@ import 'package:server_box/data/store/server.dart';
 import 'package:server_box/data/store/setting.dart';
 import 'package:server_box/generated/l10n/l10n.dart';
 import 'package:server_box/view/page/backup.dart';
+import 'package:server_box/view/page/brand_icons.dart';
 import 'package:server_box/view/page/setting/entry.dart';
 import 'package:server_box/view/page/setting/platform/ios.dart';
 import 'package:server_box/view/page/setting/seq/srv_detail_seq.dart';
@@ -126,6 +127,18 @@ void main() {
     '详情卡片': const ServerDetailOrderPage(embedded: true),
     '功能按钮': const ServerFuncBtnsOrderPage(embedded: true),
   };
+  testWidgets('server groups preserve every existing row and open global program rules', (tester) async {
+    await pump(tester, const AppSettingsPage(section: SettingsSection.server), '服务器设置');
+    expect(find.text('程序图标'), findsOneWidget);
+    expect(find.text('服务器管理'), findsOneWidget);
+    expect(find.text(app_locale.l10n.netViewType), findsOneWidget);
+    expect(find.text(app_locale.l10n.connectionStats), findsOneWidget);
+    await tester.tap(find.text('程序图标'));
+    await frames(tester);
+    expect(find.byType(BrandIconsPage), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('all selected settings pages render and capture without layout errors', (tester) async {
     addTearDown(tester.view.reset);
     addTearDown(() => tester.pumpWidget(const SizedBox.shrink()));

@@ -1,14 +1,13 @@
 # Distribution marks
 
-Four logos, shipped with the app and drawn beside a server's name when nothing
-else says where a mark comes from — **in one colour**, taking the colour of the
-text beside them. A column of full-colour logos at the size of a line of text
-reads as noise rather than as information, and that single decision is half the
-reason this list is four and not five. Every other distribution is fetched from an
-address the user configures — `serverMarkUrl`, expanding `{DIST}` — and this
-directory has nothing to do with it.
+The four original assets in this directory retain their individual source and
+license records below. They now render in their native colors. Additional
+system and program artwork is bundled under `assets/brands`; its manifest
+records exact source commits and SHA-256 hashes, and its license texts are
+available in the app's open-source notices. Custom distribution URLs retain
+priority over bundled artwork.
 
-## Why four
+## Original asset selection (historical)
 
 Three questions have to be answered before a logo can be *shipped* here, and
 only the first is easy.

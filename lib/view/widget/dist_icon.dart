@@ -1,12 +1,10 @@
 import 'dart:async';
 
-import 'package:extended_image/extended_image.dart';
 import 'package:fl_lib/fl_lib.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:icons_plus/icons_plus.dart';
 import 'package:server_box/core/extension/context/locale.dart';
 import 'package:server_box/core/utils/logo_url.dart';
@@ -15,24 +13,10 @@ import 'package:server_box/data/provider/server/all.dart';
 import 'package:server_box/data/provider/server/single.dart';
 import 'package:server_box/data/res/store.dart';
 import 'package:server_box/generated/l10n/l10n.dart';
+import 'package:server_box/view/widget/brand_logo.dart';
 
-/// The address a server's mark is fetched from, or null if there is none.
-///
-/// Four marks ship with the app — the ones whose artwork carries a licence
-/// permitting it, see [Dist.markAsset] — and everything else is drawn from an
-/// address the user configured. This resolves that address; the shipped files
-/// are the fallback when there is none.
-///
-/// **A mark is not the logo.** The logo is the large image at the top of a
-/// server's own page and comes from `serverLogoUrl`; this is the small one
-/// beside its name in a list, and comes from `serverMarkUrl`. Two addresses
-/// because they want two pictures: artwork that reads at full width is a
-/// smudge at 20px, and an icon that works at 20px is lost on a detail page.
-///
-/// Null in three cases, all of which draw nothing: no address configured, an
-/// address that wants `{DIST}` for a machine whose distribution is not known,
-/// and one whose scheme is neither http nor https. The last is a guard rather
-/// than a nicety — the value is user-entered and reaches an image loader.
+/// User-configured distribution image URL; bundled original-color SVGs are
+/// used when no valid URL is configured. Existing URL tokens stay compatible.
 String? distMarkUrl({required Dist? dist, required bool dark}) {
   final configured = Stores.setting.serverMarkUrl.fetch();
   if (configured.isEmpty) return null;
@@ -64,15 +48,6 @@ String? distMarkUrl({required Dist? dist, required bool dark}) {
 String distFileName(Dist dist) =>
     Stores.setting.distNameMap.fetch()[dist.name] ?? dist.name;
 
-/// Whether the address names an SVG, which needs a different loader.
-///
-/// The path rather than the whole string: a query or a fragment after it is
-/// common on a CDN and says nothing about the format.
-bool _isSvgUrl(String url) {
-  final path = Uri.tryParse(url)?.path.toLowerCase() ?? url.toLowerCase();
-  return path.endsWith('.svg');
-}
-
 const _distToken = '{DIST}';
 const _brightToken = '{BRIGHT}';
 
@@ -89,17 +64,7 @@ Widget? distIcon(String serverId, {double size = 20}) =>
 Widget? distIconOf(Dist? dist, {double size = 20}) =>
     Stores.setting.showDistMark.fetch() ? DistIconOf(dist, size: size) : null;
 
-/// Which distribution a server runs, as the mark its own project publishes —
-/// fetched from wherever the person using this app pointed it.
-///
-/// Nothing in a `Spi` says what is installed on the far end; it is observed,
-/// not configured. So this reads the live status when there is one and the
-/// cache when there is not, which is what lets a mark appear on rows that
-/// never hold a status: the known-hosts page, the order page, and every picker
-/// showing a server that is not currently connected.
-///
-/// Draws nothing at all when there is no address, which out of the box is
-/// every server. That is the arrangement, not a gap — see [distMarkUrl].
+/// Live distribution first, persisted identity while a server is offline.
 class DistIcon extends ConsumerWidget {
   const DistIcon(this.serverId, {super.key, this.size = 20});
 
@@ -147,129 +112,27 @@ class DistIconOf extends StatelessWidget {
   final Dist? dist;
   final double size;
 
-  /// One colour for every mark, taken from the text beside it.
-  ///
-  /// The mark only. The large logo on a server's own page is drawn as
-  /// published — see `_buildLogo` in `view/page/server/detail/view.dart`,
-  /// which says why the two differ.
-  ///
-  /// The marks are drawn in a list, at the size of a line of text, next to
-  /// icons that all follow the row's colour; a column of full-colour logos at
-  /// 20px reads as noise rather than as information. Each of the four shipped
-  /// licences permits modification and none of those four projects forbids it
-  /// — Rocky's did, in as many words, which is why Rocky is no longer among
-  /// them. A fetched mark is whatever the user pointed at, and is treated the
-  /// same.
-  ColorFilter _tint(BuildContext context) =>
-      ColorFilter.mode(_tintColor(context), BlendMode.srcIn);
-
-  Color _tintColor(BuildContext context) =>
-      IconTheme.of(context).color ??
-      Theme.of(context).colorScheme.onSurfaceVariant;
-
-  /// Drawn wherever there is no mark: no address and no shipped file, an
-  /// address that could not be fetched, or a distribution nothing recognised.
-  ///
-  /// A blank of the same size would keep the row from shifting just as well,
-  /// but it reads as something missing; an icon reads as "not known", which is
-  /// the truth.
-  ///
-  /// Two of them, because there are two different things not to know. A
-  /// distribution that *was* recognised and simply has no mark here — Ubuntu
-  /// is the case most people will meet — is a Linux for certain, and a penguin
-  /// says so. One that was not recognised at all might be a BSD, macOS or
-  /// Windows, all of which `uname -or` reaches, so the penguin would be a
-  /// guess and the machine is all that can be claimed.
-  ///
-  /// Takes the same colour as the marks, so a column of them is one column.
-  Widget _fallback(BuildContext context) => Icon(
-    dist?.isLinux == true ? MingCute.linux_fill : BoxIcons.bxs_server,
-    size: size,
-    color: _tintColor(context),
-  );
-
   @override
   Widget build(BuildContext context) {
-    // Belt and braces. Every call site goes through `distIconOf`, which answers
-    // null and lets the slot be omitted — but a widget built directly must not
-    // draw a mark the switch says is off.
-    if (!Stores.setting.showDistMark.fetch()) return const SizedBox.shrink();
-
-    final url = distMarkUrl(
-      dist: dist,
-      dark: Theme.of(context).brightness == Brightness.dark,
-    );
-    // No address: the mark shipped for this distribution, if there is one.
-    // Four have a logo whose licence permits redistribution — see
-    // `Dist.markAsset`. An address, once set, wins over all of them: somebody
-    // who chose a collection wants it used for every row, not four exceptions.
-    if (url == null) {
-      final asset = dist?.markAsset;
-      if (asset == null) return _fallback(context);
-      return SvgPicture.asset(
-        asset,
-        width: size,
-        height: size,
-        fit: BoxFit.contain,
-        colorFilter: _tint(context),
-        semanticsLabel: dist?.name,
+    final settings = Stores.setting;
+    return ListenableBuilder(listenable: Listenable.merge([
+      settings.showDistMark.listenable(), settings.serverMarkUrl.listenable(),
+      settings.distNameMap.listenable(),
+    ]), builder: (context, _) {
+      if (!settings.showDistMark.fetch()) return const SizedBox.shrink();
+      return BrandLogo(
+        source: distMarkUrl(dist: dist, dark: Theme.of(context).brightness == Brightness.dark) ?? dist?.markAsset,
+        size: size,
+        label: dist?.name,
+        fallback: dist?.isLinux == true ? MingCute.linux_fill : BoxIcons.bxs_server,
       );
-    }
-
-    return SizedBox.square(
-      dimension: size,
-      child: _isSvgUrl(url)
-          ? SvgPicture.network(
-              url,
-              width: size,
-              height: size,
-              fit: BoxFit.contain,
-              colorFilter: _tint(context),
-              // Named for the reader that speaks the row aloud: the mark is
-              // the only thing on it that says which distribution.
-              semanticsLabel: dist?.name,
-              // Blank while it loads rather than the outline: a fallback that
-              // appears and is replaced a moment later reads as a glitch, and
-              // most of these come from a cache and never draw this at all.
-              placeholderBuilder: (_) => SizedBox.square(dimension: size),
-              errorBuilder: (_, _, _) => _fallback(context),
-            )
-          : ExtendedImage.network(
-              url,
-              cache: true,
-              cacheWidth:
-                  (size * MediaQuery.devicePixelRatioOf(context)).round(),
-              cacheHeight:
-                  (size * MediaQuery.devicePixelRatioOf(context)).round(),
-              clearMemoryCacheWhenDispose: true,
-              width: size,
-              height: size,
-              fit: BoxFit.contain,
-              // Same tint. On a raster it works off the alpha channel, so a
-              // PNG with a solid background becomes a solid block — a thing to
-              // know when configuring an address, not something to correct
-              // for here.
-              color: _tintColor(context),
-              colorBlendMode: BlendMode.srcIn,
-              semanticLabel: dist?.name,
-              // Blank while it loads, the outline if it fails. A broken-image
-              // box on every row reads as the app being wrong; the outline
-              // reads as "not known", which is what a failed address means.
-              loadStateChanged: (state) => switch (state
-                  .extendedImageLoadState) {
-                LoadState.completed => null,
-                LoadState.failed => _fallback(context),
-                LoadState.loading => SizedBox.square(dimension: size),
-              },
-            ),
-    );
+    });
   }
 }
 
 /// What the marks are and what they are not.
 ///
-/// One string, used in both a markdown slot and a plain one — it carries no
-/// link any more, because there is no bundled source to point at.
+/// Legacy notice shared by the custom-image configuration flows.
 String distLegalMarkdown(AppLocalizations l10n) => l10n.distIconIntroLegal;
 
 /// The same notice for a plain-text slot.

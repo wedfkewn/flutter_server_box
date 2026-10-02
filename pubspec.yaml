@@ -171,6 +171,7 @@ flutter:
     # in there — see the README beside them, which Flutter leaves out because
     # it only bundles files it can load.
     - assets/distro/
+    - assets/brands/
     # What the globe draws: the coastline outline and nothing else, 20 KB,
     # built by `scripts/build_land_asset.py` from Natural Earth 110m.
     #

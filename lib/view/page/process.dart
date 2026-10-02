@@ -12,6 +12,7 @@ import 'package:server_box/data/model/server/proc.dart';
 import 'package:server_box/data/model/server/server.dart';
 import 'package:server_box/data/model/server/system.dart';
 import 'package:server_box/data/provider/server/single.dart';
+import 'package:server_box/view/widget/brand_logo.dart';
 
 const _compactBreakpoint = 700.0;
 const _rssBreakpoint = 840.0;
@@ -461,7 +462,7 @@ extension _ProcessPageStateWidgets on _ProcessPageState {
                 onTap: () => _showProcessDetails(proc),
                 child: Padding(padding: const EdgeInsets.fromLTRB(8, 12, 4, 12),
                   child: Row(children: [
-                    Icon(Icons.terminal, size: 20, color: theme.colorScheme.onSurfaceVariant),
+                    ProgramLogo(proc.command),
                     const SizedBox(width: 8),
                     Expanded(child: name),
                     if (!largeText) ...[
@@ -664,7 +665,7 @@ extension _ProcessPageStateWidgets on _ProcessPageState {
       },
     );
     if (column.style != _ProcColumnStyle.command) return text;
-    return Column(
+    final command = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -675,6 +676,11 @@ extension _ProcessPageStateWidgets on _ProcessPageState {
         ],
       ],
     );
+    return Row(children: [
+      ProgramLogo(proc.command),
+      const SizedBox(width: 10),
+      Expanded(child: command),
+    ]);
   }
 
   Widget _buildCompactMetadata(Proc proc) {
@@ -706,6 +712,9 @@ extension _ProcessPageStateWidgets on _ProcessPageState {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
+            Row(children: [ProgramLogo(proc.command, size: 32), const SizedBox(width: 10),
+              Expanded(child: Text(proc.binary, maxLines: 2, overflow: TextOverflow.ellipsis))]),
+            const SizedBox(height: 12),
             _buildDetailLine('PID', proc.pid.toString()),
             if (proc.user != null) _buildDetailLine('USER', proc.user!),
             if (proc.cpu != null) _buildDetailLine('CPU', _formatCpu(proc.cpu)),

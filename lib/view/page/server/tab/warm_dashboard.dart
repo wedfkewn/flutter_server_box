@@ -325,6 +325,9 @@ extension _WarmDashboard on _ServerPageState {
             children: [
               Row(
                 children: [
+                  if (distIcon(srv.spi.id, size: 24) case final logo?) ...[
+                    logo, const SizedBox(width: 10),
+                  ],
                   Expanded(
                     child: Text(
                       srv.spi.name,

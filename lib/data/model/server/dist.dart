@@ -1,13 +1,6 @@
-/// A distribution this app can recognise.
-///
-/// The name of each case is part of the app's contract with its users: it is
-/// what `{DIST}` expands to in a custom logo URL. **Renaming one breaks every
-/// URL template pointing at it**, so a case is added, never renamed.
-///
-/// Recognising a distribution and drawing its mark are separate things, and
-/// only the first happens here. Four marks ship with the app — see
-/// [markAsset] — and every other distribution is drawn from an address the
-/// user configures. See `lib/view/widget/dist_icon.dart`.
+import 'package:server_box/data/res/brand_assets.dart';
+
+/// Recognized system identities; enum names remain stable for URL templates.
 enum Dist {
   // The original thirteen, in their original order, because these names have
   // been in users' logo URLs since before the rest of this list existed.
@@ -94,24 +87,9 @@ enum Dist {
   macos,
   windows;
 
-  /// The mark shipped for this distribution, or null for the great majority.
-  ///
-  /// Four files, and the list is short for two reasons: the artwork has to
-  /// carry an explicit copyright licence permitting redistribution, and the
-  /// owner's own terms have to permit what this app does with it — which
-  /// includes drawing it in one colour.
-  ///
-  /// Trademark permission is a separate question and a much easier one —
-  /// nominative use covers showing a mark to say which system a server runs —
-  /// but shipping the file needs the copyright answered too, and almost no
-  /// project answers it.
-  ///
-  /// Ubuntu, Fedora, Arch and openSUSE are absent for the first reason and
-  /// Rocky for the second; `assets/distro/README.md` quotes each licence and
-  /// records what the rejected ones say instead. Everything else is drawn from
-  /// the address the user configures, which is what `Dist` mostly exists for.
+  /// Bundled native artwork, or null for a system without an available asset.
   String? get markAsset =>
-      _bundled.contains(this) ? 'assets/distro/$name.svg' : null;
+      _bundled.contains(this) ? 'assets/distro/$name.svg' : bundledDistroLogos[name];
 
   /// Whether this is a Linux at all.
   ///
@@ -121,7 +99,7 @@ enum Dist {
   bool get isLinux => !_notLinux.contains(this);
 }
 
-/// The distributions whose logo may be redistributed — see [Dist.markAsset].
+/// The four original assets; additional artwork is registered in brand_assets.
 const _bundled = {
   Dist.debian,
   Dist.gentoo,

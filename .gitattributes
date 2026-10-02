@@ -10,3 +10,6 @@
 # SHA-384 from ac7a765b… to 1ca2d91b…. Pin the bytes so every platform hashes
 # the same file.
 monitor/migrations/*.sql text eol=lf
+
+# Vendored original SVG bytes are verified against upstream SHA256 hashes.
+assets/brands/*.svg -text

@@ -25,6 +25,12 @@ import 'package:server_box/data/store/schema.dart';
 List<String> _virtKeyNames(Object? raw) =>
     raw is List ? raw.whereType<String>().toList() : const [];
 
+Map<String, String> _logoMap(Object? raw) => raw is Map ? {
+  for (final entry in raw.entries)
+    if (entry.key is String && entry.value is String)
+      entry.key as String: entry.value as String,
+} : {};
+
 class SettingStore extends SqliteStore {
   SettingStore([super.storeName = 'setting']);
 
@@ -590,7 +596,7 @@ class SettingStore extends SqliteStore {
   /// Handled beside the internal keys rather than by giving them internal
   /// names, so an install that has already answered the question keeps its
   /// answer instead of being quietly reset by a rename.
-  static const deviceLocalKeys = {'agentLocalExec', 'liveActivity'};
+  static const deviceLocalKeys = {'agentLocalExec', 'liveActivity', 'brandLogosEnabledV1'};
 
   /// The floating Agent's placement and size, as one row.
   ///
@@ -860,22 +866,17 @@ class SettingStore extends SqliteStore {
   /// that governs whether any of it is drawn at all.
   late final serverMarkUrl = propertyDefault('serverMarkUrl', '');
 
-  /// Whether to draw a mark beside a server's name at all.
-  ///
-  /// **Off by default.** Five distributions' logos ship with the app and the
-  /// rest fall back to an icon, so this is the difference between a column of
-  /// marks and no column — not, as an earlier version of it was, a second gate
-  /// over an address that was already blank. Turning it on shows the terms
-  /// first; turning it off is agreement to nothing and asks nothing.
-  ///
-  /// Off means *nothing*, not a blank of the same size: the callers ask for
-  /// `distIcon(...)`, which answers null, and leave the slot out entirely.
-  ///
-  /// A new key rather than the old `showDistIcon`, which defaulted to on and
-  /// would have carried that answer past the terms for anyone who had it
-  /// stored. TODO: the old key sits unread in the `setting` table on installs
-  /// that wrote it; nothing looks at it.
-  late final showDistMark = propertyDefault('showDistMark', false);
+  /// Native-color distribution logos, enabled once by the v24 upgrade.
+  late final showDistMark = propertyDefault('showDistMark', true);
+
+  late final showProgramLogos = propertyDefault('showProgramLogos', true);
+
+  late final processLogoMap = propertyDefault<Map<String, String>>(
+    'processLogoMap', const {}, fromObj: _logoMap,
+  );
+  late final serviceLogoMap = propertyDefault<Map<String, String>>(
+    'serviceLogoMap', const {}, fromObj: _logoMap,
+  );
 
   /// Hide port forward beta warning
   late final portForwardBetaWarned = propertyDefault(

@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart' show rootBundle;
 
 /// Puts the shipped marks' terms where the person running the app can read
 /// them: Settings → About → License, which is Flutter's `showLicensePage` over
@@ -21,6 +22,12 @@ void registerDistMarkLicenses() {
     yield const LicenseEntryWithLineBreaks([_package], _gentoo);
     yield const LicenseEntryWithLineBreaks([_package], _nixos);
     yield const LicenseEntryWithLineBreaks([_package], _alpine);
+    yield LicenseEntryWithLineBreaks(['Brand logos (assets/brands)'],
+      await rootBundle.loadString('assets/brands/README.md'));
+    for (final source in ['devicon', 'font-logos', 'simple-icons']) {
+      yield LicenseEntryWithLineBreaks(['Brand logos ($source)'],
+        await rootBundle.loadString('assets/brands/$source-LICENSE.txt'));
+    }
   });
 }
 
@@ -29,20 +36,12 @@ void registerDistMarkLicenses() {
 const _package = 'Distribution marks (assets/distro)';
 
 const _preamble = '''
-Four distribution logos are shipped with this app. They are the ones whose
-artwork carries an explicit copyright licence permitting redistribution and
-whose owners do not forbid what is done with it here; every other
-distribution's mark is fetched from an address the user configures.
-
-Each is used only to refer to the system it identifies, which is nominative
-use. Each remains a trademark of its owner, and a copyright licence is not a
-trademark licence. The files are shipped as published — including their
-metadata, which is where some of them carry their own attribution — except
-where a file could not be parsed at all, which is noted with it below.
-
-Changed: all of them are drawn in a single colour, taking the colour of the
-text beside them. Each of the licences above permits modification; none of
-these four projects' own terms forbid it.''';
+Four original distribution logos live in assets/distro, with the individual
+notices below. Additional original-color system and program logos live in
+assets/brands, with their source manifest and upstream license texts.
+Each logo identifies the installed system or program, without endorsement.
+The original artwork colors and aspect ratio are preserved.
+''';
 
 const _debian = '''
 The Debian Open Use Logo — (c) the Debian Project.

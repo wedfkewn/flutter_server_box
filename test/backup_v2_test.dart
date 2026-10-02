@@ -298,6 +298,23 @@ void main() {
       expect(backup.settings['timeOut'], 11);
     });
 
+    test('logo rules and switches round trip, without the local migration marker', () async {
+      Stores.setting.processLogoMap.put({'my-api': 'python'});
+      Stores.setting.serviceLogoMap.put({'my-api': 'nginx'});
+      Stores.setting.showProgramLogos.put(false);
+      Stores.setting.set('brandLogosEnabledV1', true);
+      final backup = BackupV2.fromJsonString((await BackupV2.loadFromStore()).toJsonString());
+      expect(backup.settings.containsKey('brandLogosEnabledV1'), isFalse);
+      Stores.setting.processLogoMap.put({});
+      Stores.setting.serviceLogoMap.put({});
+      Stores.setting.showProgramLogos.put(true);
+      await backup.merge(force: true);
+      expect(Stores.setting.processLogoMap.fetch(), {'my-api': 'python'});
+      expect(Stores.setting.serviceLogoMap.fetch(), {'my-api': 'nginx'});
+      expect(Stores.setting.showProgramLogos.fetch(), isFalse);
+      expect(Stores.setting.get<bool>('brandLogosEnabledV1'), isTrue);
+    });
+
     test('leaves the Agent local-exec permission out of the file', () async {
       Stores.setting.agentLocalExec.put(true);
 

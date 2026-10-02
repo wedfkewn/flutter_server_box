@@ -44,34 +44,10 @@ void main() {
       expect(_shipped(), {for (final d in bundled) '${d.name}.svg'});
     });
 
-    test('the set is what `markAsset` answers for, and nothing else', () {
-      // The literal set above is deliberate: derived from `Dist.markAsset` it
-      // would agree with whatever the code says, including when the code is
-      // wrong. This is the direction that catches a file shipped without a
-      // licence recorded for it.
-      expect(
-        {for (final d in Dist.values) if (d.markAsset != null) d},
-        bundled,
-      );
-    });
-
-    test('everything else has no mark and is not meant to', () {
-      // Ubuntu, Fedora, Arch and openSUSE are the ones people will ask about.
-      // Each permits referring to it and reserves the artwork; see README.md.
-      for (final dist in [
-        Dist.ubuntu,
-        Dist.fedora,
-        Dist.arch,
-        Dist.opensuse,
-        Dist.rhel,
-        Dist.kali,
-        // Rocky is the one dropped for a different reason: its licence does
-        // permit redistribution, and its trademark policy says the mark may
-        // not be altered "in any way" — which is what drawing it in one
-        // colour is.
-        Dist.rocky,
-      ]) {
-        expect(dist.markAsset, isNull, reason: 'Dist.${dist.name}');
+    test('additional common distribution logos are bundled separately', () {
+      for (final dist in [Dist.ubuntu, Dist.fedora, Dist.arch, Dist.opensuse, Dist.rhel, Dist.kali, Dist.rocky]) {
+        expect(dist.markAsset, isNotNull, reason: dist.name);
+        expect(File(dist.markAsset!).existsSync(), isTrue);
       }
     });
 
