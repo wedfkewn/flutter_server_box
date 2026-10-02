@@ -15,6 +15,7 @@ import 'package:forui/localizations.dart';
 import 'package:server_box/core/extension/context/locale.dart' as app_locale;
 import 'package:server_box/core/route.dart';
 import 'package:server_box/core/warm_theme.dart';
+import 'package:server_box/data/model/app/menu/server_func.dart';
 import 'package:server_box/data/model/app/scripts/cmd_types.dart';
 import 'package:server_box/data/model/server/net_speed.dart';
 import 'package:server_box/data/model/server/port_forward.dart';
@@ -229,6 +230,30 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink()); await frames(tester);
   });
 
+  testWidgets('server editor selection menu stays compact with the keyboard open', (tester) async {
+    await pump(tester, 'editor');
+    tester.view.viewInsets = const FakeViewPadding(bottom: 300);
+    addTearDown(tester.view.resetViewInsets);
+    await frames(tester);
+    final name = find.byWidgetPredicate((w) => w is EditableText && w.controller.text == '123');
+    await tester.ensureVisible(name);
+    await tester.tap(name);
+    await frames(tester);
+    final state = tester.state<EditableTextState>(name);
+    state.widget.controller.selection = const TextSelection(baseOffset: 0, extentOffset: 3);
+    await tester.pump();
+    state.showToolbar();
+    await frames(tester);
+    final toolbar = find.byType(TextSelectionToolbar);
+    expect(toolbar, findsOneWidget);
+    final surface = find.descendant(of: toolbar, matching: find.byType(Material)).first;
+    expect(tester.getSize(surface).height, lessThan(100));
+    expect(state.widget.controller.text, '123');
+    expect(tester.takeException(), isNull);
+    await capture(tester, 'editor-keyboard-menu');
+    await tester.pumpWidget(const SizedBox.shrink()); await frames(tester);
+  });
+
   testWidgets('detail exposes all permitted configured tools without a floating strip', (tester) async {
     await pump(tester, 'detail');
     expect(tester.widget<ServerFuncBtns>(find.byType(ServerFuncBtns)).menu, isTrue);
@@ -252,6 +277,51 @@ void main() {
     await capture(tester, 'tools-audit-large');
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox.shrink()); await frames(tester);
+  });
+
+  testWidgets('tools dialog scrolls with a fixed close button and returns only a selection', (tester) async {
+    await pump(tester, 'detail');
+    final selected = showDialog<ServerFuncBtn>(
+      context: tester.element(find.byType(ServerDetailPage)),
+      builder: (_) => ServerToolsDialog(serverName: spi.name, items: ServerFuncBtn.values));
+    await frames(tester);
+    final close = find.byKey(const ValueKey('floating-dialog-close'));
+    final before = tester.getTopLeft(close);
+    final last = find.byKey(const ValueKey('server-tool-scheduledTasks'));
+    await tester.ensureVisible(last); await frames(tester);
+    expect(tester.getTopLeft(close), before);
+    await tester.tap(last); await frames(tester);
+    expect(await selected, ServerFuncBtn.scheduledTasks);
+    expect(find.byType(ServerToolsDialog), findsNothing);
+    expect(find.byType(ServerDetailPage), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('server-tools-button'))); await frames(tester);
+    await tester.tap(close); await frames(tester);
+    expect(find.byType(ServerToolsDialog), findsNothing);
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink()); await frames(tester);
+  });
+
+  testWidgets('tools dialog follows dark theme and fits landscape', (tester) async {
+    for (final size in [const Size(393, 852), const Size(740, 320)]) {
+      await pump(tester, 'detail', size: size, dark: true);
+      if (size.width < 600) {
+        await tester.tap(find.byKey(const ValueKey('server-tools-button')));
+      } else {
+        // The wider detail layout retains its existing horizontal tool bar.
+        showDialog<ServerFuncBtn>(context: tester.element(find.byType(ServerDetailPage)),
+          builder: (_) => ServerToolsDialog(serverName: spi.name, items: ServerFuncBtn.values));
+      }
+      await frames(tester);
+      expect(find.byType(ServerToolsDialog), findsOneWidget);
+      await capture(tester, size.height > size.width ? 'tools-dark' : 'tools-landscape');
+      final dialog = tester.widget<AlertDialog>(find.byType(AlertDialog));
+      final theme = Theme.of(tester.element(find.byType(ServerToolsDialog)));
+      expect(theme.brightness, Brightness.dark);
+      expect(dialog.backgroundColor, theme.colorScheme.surfaceContainerLow);
+      expect(tester.takeException(), isNull);
+      await tester.tap(find.byKey(const ValueKey('floating-dialog-close'))); await frames(tester);
+      await tester.pumpWidget(const SizedBox.shrink()); await frames(tester);
+    }
   });
 
   testWidgets('detail charts preserve gaps and irregular sampling times', (tester) async {

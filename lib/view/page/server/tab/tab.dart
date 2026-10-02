@@ -43,6 +43,7 @@ import 'package:server_box/view/widget/external_probe_badges.dart';
 import 'package:server_box/view/widget/floating_dialog.dart';
 import 'package:server_box/view/widget/pane_settings.dart';
 import 'package:server_box/view/widget/percent_circle.dart';
+import 'package:server_box/view/widget/server_distribution.dart';
 import 'package:server_box/view/widget/server_globe.dart';
 import 'package:server_box/view/widget/server_power.dart';
 import 'package:server_box/view/widget/server_share.dart';

@@ -6,10 +6,11 @@ import 'package:flutter/material.dart';
 class AppFloatingDialog extends StatelessWidget {
   const AppFloatingDialog({super.key, this.title, this.content, this.actions,
     this.icon, this.dismissible = true, this.insetPadding,
-    this.titlePadding, this.contentPadding, this.actionsPadding});
+    this.titlePadding, this.contentPadding, this.actionsPadding, this.scrollable = true});
   final Widget? title, content, icon;
   final List<Widget>? actions;
   final bool dismissible;
+  final bool scrollable;
   final EdgeInsets? insetPadding;
   final EdgeInsetsGeometry? titlePadding, contentPadding, actionsPadding;
 
@@ -27,7 +28,7 @@ class AppFloatingDialog extends StatelessWidget {
       surfaceTintColor: Colors.transparent,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
       clipBehavior: Clip.antiAlias,
-      scrollable: true,
+      scrollable: scrollable,
       titlePadding: titlePadding ?? const EdgeInsets.fromLTRB(20, 12, 12, 12),
       contentPadding: contentPadding ?? const EdgeInsets.fromLTRB(20, 0, 20, 20),
       actionsPadding: actionsPadding ?? const EdgeInsets.fromLTRB(16, 8, 16, 12),

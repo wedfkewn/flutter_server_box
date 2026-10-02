@@ -124,6 +124,11 @@ class ProbeConfig {
   List<ProbeTarget> get enabled => targets.where((e) => selected.contains(e.id)).toList();
   List<ProbeTarget> get favorites => [for (final id in pinned.take(4))
     ...enabled.where((e) => e.id == id)];
+  List<ProbeTarget> get homepageTargets => [
+    ...favorites,
+    ...enabled.where((target) => target.isCustom &&
+      !favorites.any((favorite) => favorite.id == target.id)),
+  ];
   Map<String, Object> toJson() => {'selected': selected.toList(),
     'pinned': pinned.take(4).toList(), 'custom': custom.map((e) => e.toJson()).toList(),
     'autoCheck': autoCheck};

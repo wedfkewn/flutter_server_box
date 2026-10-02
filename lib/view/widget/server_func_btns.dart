@@ -31,10 +31,16 @@ import 'package:server_box/view/page/ssh/snippet_run.dart';
 import 'package:server_box/view/page/users.dart';
 import 'package:server_box/view/widget/app_dialog.dart';
 import 'package:server_box/view/widget/edge_fade_scroll.dart';
+import 'package:server_box/view/widget/floating_dialog.dart';
 import 'package:server_box/view/widget/server_power.dart';
 
 class ServerFuncBtns extends StatelessWidget {
-  const ServerFuncBtns({super.key, required this.spi, this.granted, this.menu = false});
+  const ServerFuncBtns({
+    super.key,
+    required this.spi,
+    this.granted,
+    this.menu = false,
+  });
 
   final bool menu;
 
@@ -50,38 +56,46 @@ class ServerFuncBtns extends StatelessWidget {
     if (btns.isEmpty) return UIs.placeholder;
 
     if (menu) {
-      return Consumer(builder: (context, ref, _) => Wrap(
-      spacing: 8,
-      runSpacing: 6,
-      children: [
-        if (btns.contains(ServerFuncBtn.terminal)) OutlinedButton.icon(
-          onPressed: () => _onTapMoreBtns(ServerFuncBtn.terminal, context, ref),
-          icon: const Icon(Icons.terminal, size: 18),
-          label: Text(libL10n.terminal),
-        ),
-        PopupMenuButton<ServerFuncBtn>(
-          tooltip: l10n.warmTools,
-          onSelected: (value) => _onTapMoreBtns(value, context, ref),
-          itemBuilder: (_) => [
-            for (final btn in btns) PopupMenuItem(value: btn, child: Row(children: [
-              Icon(btn.icon, size: 20), const SizedBox(width: 12), Text(btn.toStr),
-            ])),
-          ],
-          child: Container(
-            constraints: const BoxConstraints(minHeight: 44),
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            decoration: BoxDecoration(
-              border: Border.all(color: Theme.of(context).colorScheme.outline),
-              borderRadius: BorderRadius.circular(20),
+      return Consumer(
+        builder: (context, ref, _) => Wrap(
+          spacing: 8,
+          runSpacing: 6,
+          children: [
+            if (btns.contains(ServerFuncBtn.terminal))
+              OutlinedButton.icon(
+                onPressed: () =>
+                    _onTapMoreBtns(ServerFuncBtn.terminal, context, ref),
+                icon: const Icon(Icons.terminal, size: 18),
+                label: Text(libL10n.terminal),
+              ),
+            Tooltip(
+              message: l10n.warmTools,
+              child: OutlinedButton.icon(
+                key: const ValueKey('server-tools-button'),
+                onPressed: () async {
+                  final selected = await showDialog<ServerFuncBtn>(
+                    context: context,
+                    builder: (_) =>
+                        ServerToolsDialog(serverName: spi.name, items: btns),
+                  );
+                  if (selected != null && context.mounted) {
+                    _onTapMoreBtns(selected, context, ref);
+                  }
+                },
+                icon: const Icon(Icons.apps, size: 18),
+                label: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(l10n.warmTools),
+                    const SizedBox(width: 4),
+                    const Icon(Icons.expand_more, size: 18),
+                  ],
+                ),
+              ),
             ),
-            child: Row(mainAxisSize: MainAxisSize.min, children: [
-              const Icon(Icons.apps, size: 18), const SizedBox(width: 6),
-              Text(l10n.warmTools), const Icon(Icons.expand_more, size: 18),
-            ]),
-          ),
+          ],
         ),
-      ],
-      ));
+      );
     }
 
     final items = [
@@ -111,6 +125,100 @@ class ServerFuncBtns extends StatelessWidget {
         itemCount: items.length,
         itemBuilder: (_, i) => items[i],
         separatorBuilder: (_, _) => const SizedBox(width: _kGap),
+      ),
+    );
+  }
+}
+
+/// Uses the same floating surface as the settings and selection dialogs.
+/// This only returns a choice; connection and tool actions remain with the caller.
+class ServerToolsDialog extends StatelessWidget {
+  const ServerToolsDialog({
+    super.key,
+    required this.serverName,
+    required this.items,
+  });
+  final String serverName;
+  final List<ServerFuncBtn> items;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    return AppFloatingDialog(
+      key: const ValueKey('server-tools-dialog'),
+      title: Text(l10n.warmTools),
+      scrollable: false,
+      content: SingleChildScrollView(
+        child: SizedBox(
+          width: 360,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                serverName,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: colors.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 14),
+              for (final item in items)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: Material(
+                    color: colors.surface,
+                    borderRadius: BorderRadius.circular(16),
+                    clipBehavior: Clip.antiAlias,
+                    child: InkWell(
+                      key: ValueKey('server-tool-${item.name}'),
+                      onTap: () => Navigator.of(context).pop(item),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 10,
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 36,
+                              height: 36,
+                              decoration: BoxDecoration(
+                                color: colors.primary.withValues(alpha: .10),
+                                borderRadius: BorderRadius.circular(11),
+                              ),
+                              child: Icon(
+                                item.icon,
+                                size: 20,
+                                color: colors.primary,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                item.toStr,
+                                style: theme.textTheme.bodyLarge?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Icon(
+                              Icons.chevron_right,
+                              size: 18,
+                              color: colors.onSurfaceVariant,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -333,8 +441,7 @@ void _gotoSSH(Spi spi, BuildContext context, WidgetRef ref) async {
   // agent's WebSocket, which only this app speaks. The built-in terminal is
   // the only option for them regardless of the setting.
   final ssh = spi.ssh;
-  final useBuiltin =
-      isMobile || !useSystemSsh || ssh == null;
+  final useBuiltin = isMobile || !useSystemSsh || ssh == null;
 
   // One way in. A terminal opened from here used to be a page pushed over
   // whatever was on screen, unknown to the SSH tab and its sessions, so the
@@ -633,9 +740,7 @@ Future<bool> _ensure(
   } catch (e, s) {
     Loggers.app.warning('Connect $id for a server function', e, s);
     if (context.mounted) {
-      Toast.error(
-        e is SSHErr ? (e.message ?? e.type.name) : e.toString(),
-      );
+      Toast.error(e is SSHErr ? (e.message ?? e.type.name) : e.toString());
     }
     return false;
   }

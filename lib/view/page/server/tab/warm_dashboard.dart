@@ -12,7 +12,7 @@ extension _WarmDashboard on _ServerPageState {
 
     return Scaffold(
       body: ListenableBuilder(
-        listenable: Listenable.merge([_tag, _tags, _search, _ipLookupRevision]),
+        listenable: Listenable.merge([_tag, _tags, _search, _ipLookupRevision, _sortVersion]),
         builder: (context, _) {
           final filtered = _filterServers(order);
 
@@ -47,6 +47,10 @@ extension _WarmDashboard on _ServerPageState {
                             );
                           },
                         ),
+                        if (Stores.setting.globeEnabled.fetch()) ...[
+                          const SizedBox(height: 16),
+                          ServerDistributionCard(ids: filtered),
+                        ],
                         const SizedBox(height: 20),
                         _warmServerHeader(),
                         const SizedBox(height: 12),

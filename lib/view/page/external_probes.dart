@@ -39,7 +39,8 @@ class _ExternalProbesPageState extends ConsumerState<ExternalProbesPage> {
     final server = ref.watch(serverProvider(widget.serverId));
     return ListenableBuilder(listenable: controller, builder: (context, _) {
       final config = controller.config;
-      final visible = (_manage ? config.targets : config.enabled).where((target) =>
+      final visible = [...config.enabled,
+        ...config.targets.where((target) => !config.selected.contains(target.id))].where((target) =>
         (_category == null || (_category == ProbeCategory.custom ? target.isCustom : target.category == _category)) &&
         '${target.name} ${target.address}'.toLowerCase().contains(_query.toLowerCase())).toList();
       final cooldown = controller.retryAfter(config.selected);
@@ -81,6 +82,10 @@ class _ExternalProbesPageState extends ConsumerState<ExternalProbesPage> {
               subtitle: Text(_t('仅检测所选项目，优先使用有效缓存', 'Selected checks only; fresh cached results are reused')),
               value: config.autoCheck, onChanged: (value) => _save(controller, ProbeConfig(
                 selected: config.selected, pinned: config.pinned, custom: config.custom, autoCheck: value))),
+            if (_manage) Padding(padding: const EdgeInsets.only(bottom: 8),
+              child: Text(_t('勾选自定义检测后会自动显示在首页小卡片；内置服务可置顶最多四项。',
+                'Selected custom checks appear on the homepage; pin up to four built-in services.'),
+                style: Theme.of(context).textTheme.bodySmall)),
             TextField(onChanged: (value) => setState(() => _query = value),
               decoration: InputDecoration(prefixIcon: const Icon(Icons.search),
                 hintText: _t('搜索服务或地址', 'Search services or addresses'), isDense: true)),
@@ -97,7 +102,7 @@ class _ExternalProbesPageState extends ConsumerState<ExternalProbesPage> {
                 style: TextStyle(color: Theme.of(context).colorScheme.error))),
           ])),
           Expanded(child: visible.isEmpty
-            ? Center(child: Text(_t('暂无项目，点击右上角管理检测项目', 'No checks; use Manage to select services')))
+            ? Center(child: Text(_t('没有匹配项目，请调整搜索或分类', 'No matching checks; change the search or category')))
             : ListView.builder(padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
               itemCount: visible.length, itemBuilder: (context, index) => _row(controller, visible[index]))),
         ]),
@@ -105,6 +110,8 @@ class _ExternalProbesPageState extends ConsumerState<ExternalProbesPage> {
           child: _manage ? FilledButton.icon(onPressed: () => _edit(controller), icon: const Icon(Icons.add),
             label: Text(_t('添加自定义检测', 'Add custom check')))
           : Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            if (!controller.running) TextButton.icon(onPressed: () => _edit(controller),
+              icon: const Icon(Icons.add, size: 18), label: Text(_t('添加自定义检测', 'Add custom check'))),
             if (!controller.running && controller.results.values.any((e) => e.state != ProbeState.reachable))
               TextButton.icon(onPressed: () {
                 final failed = controller.config.enabled.where((target) =>
@@ -144,7 +151,7 @@ class _ExternalProbesPageState extends ConsumerState<ExternalProbesPage> {
         }), title: Text(target.name, style: const TextStyle(fontWeight: FontWeight.w700)),
         subtitle: Text(target.address, maxLines: 1, overflow: TextOverflow.ellipsis),
         trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-          IconButton(tooltip: _t('首页置顶（最多四项）', 'Pin to homepage (up to four)'),
+          if (!target.isCustom) IconButton(tooltip: _t('首页置顶（最多四项）', 'Pin to homepage (up to four)'),
             onPressed: !selected ? null : () {
               final pinned = [...config.pinned];
               if (pinned.contains(target.id)) { pinned.remove(target.id); }
@@ -161,11 +168,25 @@ class _ExternalProbesPageState extends ConsumerState<ExternalProbesPage> {
           ]),
         ]))
       : ExpansionTile(key: ValueKey('probe-${target.id}'),
-        leading: checking ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-          : Icon(result?.state == ProbeState.reachable ? Icons.check_circle_outline : Icons.public, color: color),
+        leading: Checkbox(value: selected, onChanged: (value) {
+          final next = {...config.selected};
+          if (value == true) { next.add(target.id); } else { next.remove(target.id); }
+          _save(controller, ProbeConfig(selected: next,
+            pinned: config.pinned.where(next.contains).toList(), custom: config.custom,
+            autoCheck: config.autoCheck));
+        }),
+        trailing: target.isCustom ? Row(mainAxisSize: MainAxisSize.min, children: [
+          PopupMenuButton<String>(onSelected: (action) {
+            if (action == 'edit') { _edit(controller, target); } else { _delete(controller, target); }
+          }, itemBuilder: (_) => [
+            PopupMenuItem(value: 'edit', child: Text(_t('编辑', 'Edit'))),
+            PopupMenuItem(value: 'delete', child: Text(_t('删除', 'Delete'))),
+          ]),
+          const Icon(Icons.expand_more),
+        ]) : null,
         title: Text(target.name, style: const TextStyle(fontWeight: FontWeight.w700)),
         subtitle: Text(checking ? _t('正在更新，上次结果保留', 'Updating; previous result retained')
-          : '${probeStateLabel(context, result, tcp: target.protocol == ProbeProtocol.tcp)}${stale ? ' · ${_t('上次结果', 'Previous result')}' : ''}',
+          : '${probeStateLabel(context, result, tcp: target.protocol == ProbeProtocol.tcp)}${stale ? ' · ${_t('结果过期', 'Expired')}' : ''}',
           style: TextStyle(color: color)),
         childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
         expandedCrossAxisAlignment: CrossAxisAlignment.start,
@@ -180,7 +201,7 @@ class _ExternalProbesPageState extends ConsumerState<ExternalProbesPage> {
             Text('${result.transport ?? '—'} · ${result.checkedAt.toLocal().toString().split('.').first}'),
           ],
           Align(alignment: Alignment.centerRight, child: TextButton.icon(
-            onPressed: controller.running || controller.retryAfter({target.id}) > 0
+            onPressed: !selected || controller.running || controller.retryAfter({target.id}) > 0
               ? null : () => controller.run(ids: {target.id}),
             icon: const Icon(Icons.refresh, size: 18), label: Text(_t('单项重试', 'Retry check')))),
         ]));

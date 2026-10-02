@@ -34,6 +34,22 @@ final class GlobeItem {
   final Widget card;
 }
 
+class GlobeViewController extends ChangeNotifier {
+  GeoCoord? coordinate;
+  bool resetZoom = false;
+  void focus(GeoCoord coordinate) {
+    this.coordinate = coordinate;
+    resetZoom = false;
+    notifyListeners();
+  }
+
+  void reset() {
+    coordinate = null;
+    resetZoom = true;
+    notifyListeners();
+  }
+}
+
 /// The globe, with servers floating over it on leader lines.
 ///
 /// Everything about how it is drawn is in `painter.dart`; everything about
@@ -53,9 +69,25 @@ class GlobeView extends StatefulWidget {
     this.unplacedLabel,
     this.unplacedAction,
     this.action,
+    this.interactive = true,
+    this.autoRotate = true,
+    this.showLabels = true,
+    this.clusterMarkers = false,
+    this.animateEntrance = true,
+    this.radiusFactor = .62,
+    this.controller,
+    this.onTapGroup,
   });
 
   final List<GlobeItem> items;
+  final bool interactive,
+      autoRotate,
+      showLabels,
+      clusterMarkers,
+      animateEntrance;
+  final double radiusFactor;
+  final GlobeViewController? controller;
+  final ValueChanged<List<String>>? onTapGroup;
 
   /// Servers nothing could place, along the bottom.
   ///
@@ -129,7 +161,11 @@ class GlobeView extends StatefulWidget {
   State<GlobeView> createState() => _GlobeViewState();
 }
 
-class _GlobeViewState extends State<GlobeView> with TickerProviderStateMixin {
+class _GlobeViewState extends State<GlobeView>
+    with TickerProviderStateMixin, WidgetsBindingObserver {
+  bool _active = true;
+  bool _foreground = true;
+
   /// Where the globe is facing. Only the angles: the centre and the radius
   /// come from the layout on every build.
   double _lat = 20;
@@ -211,8 +247,7 @@ class _GlobeViewState extends State<GlobeView> with TickerProviderStateMixin {
   void _scheduleUnplacedMeasure() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      final box =
-          _unplacedKey.currentContext?.findRenderObject() as RenderBox?;
+      final box = _unplacedKey.currentContext?.findRenderObject() as RenderBox?;
       final height = box?.hasSize == true ? box!.size.height : 0.0;
       // Sub-pixel changes are not worth a rebuild, and comparing exactly would
       // make this loop on a fractional layout.
@@ -249,6 +284,12 @@ class _GlobeViewState extends State<GlobeView> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    widget.controller?.addListener(_onViewCommand);
+    if (!widget.animateEntrance) {
+      _entrance.stop();
+      _entrance.value = 1;
+    }
     final start = widget.initialCoord ?? widget.items.firstOrNull?.coord;
     if (start != null) {
       _lat = start.lat;
@@ -276,6 +317,11 @@ class _GlobeViewState extends State<GlobeView> with TickerProviderStateMixin {
   @override
   void didUpdateWidget(GlobeView old) {
     super.didUpdateWidget(old);
+    if (!widget.interactive) _stopCoasting();
+    if (old.controller != widget.controller) {
+      old.controller?.removeListener(_onViewCommand);
+      widget.controller?.addListener(_onViewCommand);
+    }
     // Before the early return below: the servers this is given change while
     // the lookups come back, and whether any of them is hidden changes with
     // them — including from "none" to "some" long after the globe was faced.
@@ -303,6 +349,8 @@ class _GlobeViewState extends State<GlobeView> with TickerProviderStateMixin {
 
   @override
   void dispose() {
+    widget.controller?.removeListener(_onViewCommand);
+    WidgetsBinding.instance.removeObserver(this);
     _coast?.dispose();
     _auto?.dispose();
     _entrance.dispose();
@@ -311,9 +359,46 @@ class _GlobeViewState extends State<GlobeView> with TickerProviderStateMixin {
     super.dispose();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _active = TickerMode.valuesOf(context).enabled;
+    if (!_active) _stopCoasting();
+    _syncAutoRotation();
+    if (MediaQuery.maybeOf(context)?.disableAnimations == true) {
+      _entrance.stop();
+      _entrance.value = 1;
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    _foreground = state == AppLifecycleState.resumed;
+    if (!_foreground) _stopCoasting();
+    _syncAutoRotation();
+  }
+
+  void _onViewCommand() {
+    _stopCoasting();
+    _stopAutoRotation();
+    final command = widget.controller!;
+    final coord =
+        command.coordinate ??
+        widget.initialCoord ??
+        widget.items.firstOrNull?.coord;
+    setState(() {
+      _lat = coord?.lat ?? 20;
+      _lon = coord?.lon ?? 0;
+      if (command.resetZoom) _zoom = 1;
+      _faced = coord != null;
+    });
+  }
+
   Future<void> _loadShader() async {
     try {
-      final program = await ui.FragmentProgram.fromAsset('assets/shaders/globe.frag');
+      final program = await ui.FragmentProgram.fromAsset(
+        'assets/shaders/globe.frag',
+      );
       if (!mounted) return;
       setState(() => _shader = program.fragmentShader());
     } catch (e, s) {
@@ -378,7 +463,10 @@ class _GlobeViewState extends State<GlobeView> with TickerProviderStateMixin {
       if (details.scale != 1) {
         _zoom = (_scaleAtStart * details.scale).clamp(minZoom, maxZoom);
       }
-      final moved = _cameraFor(radius, Offset.zero).drag(details.focalPointDelta);
+      final moved = _cameraFor(
+        radius,
+        Offset.zero,
+      ).drag(details.focalPointDelta);
       _lat = moved.lat;
       _lon = moved.lon;
     });
@@ -501,7 +589,14 @@ class _GlobeViewState extends State<GlobeView> with TickerProviderStateMixin {
   /// list of servers, and each tick — rather than from `build`, which must not
   /// start tickers and would ask on every frame of an unrelated animation.
   void _syncAutoRotation() {
-    final want = _autoAllowed && _coast == null && _anyHidden;
+    final want =
+        widget.interactive &&
+        widget.autoRotate &&
+        _active &&
+        _foreground &&
+        _autoAllowed &&
+        _coast == null &&
+        _anyHidden;
     if (want == (_auto != null)) return;
     if (want) {
       _lastAutoTick = Duration.zero;
@@ -560,6 +655,19 @@ class _GlobeViewState extends State<GlobeView> with TickerProviderStateMixin {
       if (_selected != null) setState(() => _selected = null);
       return;
     }
+    if (widget.onTapGroup != null) {
+      _stopCoasting();
+      final coord = widget.items.firstWhere((item) => item.id == hit).coord;
+      widget.onTapGroup!([
+        for (final item in widget.items)
+          if (item.coord == coord) item.id,
+      ]);
+      return;
+    }
+    if (!widget.showLabels) {
+      widget.onTapItem?.call(hit);
+      return;
+    }
     if (_labelsEverything) {
       widget.onTapItem?.call(hit);
     } else {
@@ -585,7 +693,7 @@ class _GlobeViewState extends State<GlobeView> with TickerProviderStateMixin {
         final center = Offset(size.width / 2, size.height / 2);
         // A disc that leaves room around it for the cards, which sit outside
         // the globe rather than on its face.
-        final radius = size.shortestSide / 2 * 0.62 * _zoom;
+        final radius = size.shortestSide / 2 * widget.radiusFactor * _zoom;
         final camera = _cameraFor(radius, center);
         final projection = GlobeProjection(camera);
 
@@ -601,105 +709,113 @@ class _GlobeViewState extends State<GlobeView> with TickerProviderStateMixin {
               // Outside the `GestureDetector` rather than inside: a signal is
               // not routed through the gesture arena at all, so there is no
               // competition to lose and nothing to disambiguate.
-              onPointerSignal: _onPointerSignal,
+              onPointerSignal: widget.interactive ? _onPointerSignal : null,
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
-                onScaleStart: _onScaleStart,
-                onScaleUpdate: (d) => _onScaleUpdate(d, radius),
-                onScaleEnd: (d) => _onScaleEnd(d, radius),
-                onTapUp: (d) => _onTapUp(d, radius, center),
+                onScaleStart: widget.interactive ? _onScaleStart : null,
+                onScaleUpdate: widget.interactive
+                    ? (d) => _onScaleUpdate(d, radius)
+                    : null,
+                onScaleEnd: widget.interactive
+                    ? (d) => _onScaleEnd(d, radius)
+                    : null,
+                onTapUp: widget.interactive
+                    ? (d) => _onTapUp(d, radius, center)
+                    : null,
                 child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  Positioned.fill(
-                    // Clipped, and only this layer is. The `Stack` above is
-                    // `Clip.none` so a card near the rim is not cut off — but
-                    // the sphere is wider than the box past about 1.6x zoom,
-                    // and unclipped it paints over whatever is beside the
-                    // globe: the actions row above it, the pane next to it.
-                    child: ClipRect(
-                      // Scaled about the middle, so the globe opens out of the
-                      // page rather than sliding in from an edge.
-                      child: Transform.scale(
-                        scale: 0.86 + 0.14 * t,
-                        child: CustomPaint(
-                        painter: GlobePainter(
-                          projection: projection,
-                          land: _land,
-                          markers: [
-                            for (final item in widget.items)
-                              (
-                                id: item.id,
-                                coord: item.coord,
-                                color: item.color,
-                              ),
-                          ],
-                          leaders: [
-                            for (final p in placements)
-                              (
-                                card: p.rect,
-                                anchor: p.anchor,
-                                fade: horizonFadeAt(p.depth),
-                              ),
-                          ],
-                          palette: palette,
-                          shader: _shader,
-                          opacity: t,
+                  clipBehavior: Clip.none,
+                  children: [
+                    Positioned.fill(
+                      // Clipped, and only this layer is. The `Stack` above is
+                      // `Clip.none` so a card near the rim is not cut off — but
+                      // the sphere is wider than the box past about 1.6x zoom,
+                      // and unclipped it paints over whatever is beside the
+                      // globe: the actions row above it, the pane next to it.
+                      child: ClipRect(
+                        // Scaled about the middle, so the globe opens out of the
+                        // page rather than sliding in from an edge.
+                        child: Transform.scale(
+                          scale: 0.86 + 0.14 * t,
+                          child: CustomPaint(
+                            painter: GlobePainter(
+                              projection: projection,
+                              land: _land,
+                              markers: [
+                                for (final item in widget.items)
+                                  (
+                                    id: item.id,
+                                    coord: item.coord,
+                                    color: item.color,
+                                  ),
+                              ],
+                              leaders: [
+                                for (final p in placements)
+                                  (
+                                    card: p.rect,
+                                    anchor: p.anchor,
+                                    fade: horizonFadeAt(p.depth),
+                                  ),
+                              ],
+                              palette: palette,
+                              shader: _shader,
+                              opacity: t,
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                  for (final placement in placements)
-                    Positioned(
-                      // Keyed, and it is not decoration: the placements are
-                      // sorted front to back, so two servers swapping depth
-                      // mid-rotation swaps their position in this list. With
-                      // no key Flutter matches children by index and hands one
-                      // card's element the other card's widget — ink splashes
-                      // and any per-card state jump between cards as the globe
-                      // turns.
-                      key: ValueKey(placement.id),
-                      left: placement.rect.left,
-                      top: placement.rect.top,
-                      width: placement.rect.width,
-                      height: placement.rect.height,
-                      child: Opacity(
-                        // The entrance and the horizon, multiplied: a card
-                        // near the limb during the opening animation is dim
-                        // for both reasons and should not be full strength
-                        // for either.
-                        opacity: t * horizonFadeAt(placement.depth),
-                        // By map rather than `firstWhere`, which is a linear
-                        // scan per card inside a build that runs every frame.
-                        child: byId[placement.id]?.card ?? const SizedBox(),
-                      ),
-                    ),
-                  if (widget.unplaced.isNotEmpty)
-                    Positioned(
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      child: Opacity(
-                        opacity: t,
-                        child: KeyedSubtree(
-                          key: _unplacedKey,
-                          child: _buildUnplaced(),
+                    for (final placement in placements)
+                      Positioned(
+                        // Keyed, and it is not decoration: the placements are
+                        // sorted front to back, so two servers swapping depth
+                        // mid-rotation swaps their position in this list. With
+                        // no key Flutter matches children by index and hands one
+                        // card's element the other card's widget — ink splashes
+                        // and any per-card state jump between cards as the globe
+                        // turns.
+                        key: ValueKey(placement.id),
+                        left: placement.rect.left,
+                        top: placement.rect.top,
+                        width: placement.rect.width,
+                        height: placement.rect.height,
+                        child: Opacity(
+                          // The entrance and the horizon, multiplied: a card
+                          // near the limb during the opening animation is dim
+                          // for both reasons and should not be full strength
+                          // for either.
+                          opacity: t * horizonFadeAt(placement.depth),
+                          // By map rather than `firstWhere`, which is a linear
+                          // scan per card inside a build that runs every frame.
+                          child: byId[placement.id]?.card ?? const SizedBox(),
                         ),
                       ),
+                    if (widget.clusterMarkers)
+                      ..._clusterWidgets(projection, t),
+                    if (widget.unplaced.isNotEmpty)
+                      Positioned(
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        child: Opacity(
+                          opacity: t,
+                          child: KeyedSubtree(
+                            key: _unplacedKey,
+                            child: _buildUnplaced(),
+                          ),
+                        ),
                       ),
-                  // Last, so it is above every card. It is the way off this
-                  // screen where there is one, and a card that happened to be
-                  // laid out over it would take the taps.
-                  if (widget.action case final action?)
-                    Positioned(
-                      top: _kActionInset,
-                      right: _kActionInset,
-                      child: Opacity(
-                        opacity: t,
-                        child: KeyedSubtree(key: _actionKey, child: action),
+                    // Last, so it is above every card. It is the way off this
+                    // screen where there is one, and a card that happened to be
+                    // laid out over it would take the taps.
+                    if (widget.action case final action?)
+                      Positioned(
+                        top: _kActionInset,
+                        right: _kActionInset,
+                        child: Opacity(
+                          opacity: t,
+                          child: KeyedSubtree(key: _actionKey, child: action),
+                        ),
                       ),
-                    ),
                   ],
                 ),
               ),
@@ -754,10 +870,7 @@ class _GlobeViewState extends State<GlobeView> with TickerProviderStateMixin {
             ),
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
-              child: Row(
-                spacing: 8,
-                children: widget.unplaced,
-              ),
+              child: Row(spacing: 8, children: widget.unplaced),
             ),
           ],
         ),
@@ -770,10 +883,59 @@ class _GlobeViewState extends State<GlobeView> with TickerProviderStateMixin {
   /// Everything, until there are more than [GlobeView.labelLimit] of them —
   /// past which it is whichever one was tapped, and nothing if none was.
   List<GlobeItem> _labelledItems() {
+    if (!widget.showLabels) return const [];
     if (_labelsEverything) return widget.items;
     final selected = _selected;
     if (selected == null) return const [];
     return widget.items.where((item) => item.id == selected).toList();
+  }
+
+  List<Widget> _clusterWidgets(GlobeProjection projection, double opacity) {
+    final groups = <GeoCoord, List<String>>{};
+    for (final item in widget.items) {
+      (groups[item.coord] ??= []).add(item.id);
+    }
+    return [
+      for (final entry in groups.entries)
+        if (entry.value.length > 1 && projection.project(entry.key).visible)
+          Positioned(
+            left: projection.project(entry.key).offset.dx - 18,
+            top: projection.project(entry.key).offset.dy - 18,
+            width: 36,
+            height: 36,
+            child: Opacity(
+              opacity: opacity * projection.project(entry.key).horizonFade,
+              child: Semantics(
+                label: '${entry.value.length} servers',
+                button: true,
+                child: Material(
+                  color: Theme.of(context).colorScheme.primary,
+                  shape: const CircleBorder(),
+                  clipBehavior: Clip.antiAlias,
+                  child: InkWell(
+                    onTap: !widget.interactive
+                        ? null
+                        : () {
+                            _stopCoasting();
+                            _stopAutoRotation();
+                            widget.onTapGroup?.call(entry.value);
+                          },
+                    child: Center(
+                      child: Text(
+                        '${entry.value.length}',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onPrimary,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+    ];
   }
 
   List<GlobePlacement> _place(
@@ -804,7 +966,10 @@ class _GlobeViewState extends State<GlobeView> with TickerProviderStateMixin {
     // Only the *cards* are kept out. The dots stay where the projection puts
     // them, because a dot is on the globe rather than beside it, and moving one
     // would be drawing the server somewhere it is not.
-    final free = math.max(size.height - _unplacedHeight, widget.cardSize.height);
+    final free = math.max(
+      size.height - _unplacedHeight,
+      widget.cardSize.height,
+    );
     return layoutGlobeCards(
       anchors: anchors,
       bounds: Rect.fromLTWH(0, 0, size.width, free),

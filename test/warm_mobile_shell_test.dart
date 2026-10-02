@@ -14,6 +14,7 @@ import 'package:server_box/data/res/store.dart';
 import 'package:server_box/data/store/private_key.dart';
 import 'package:server_box/data/store/self_addr.dart';
 import 'package:server_box/data/store/server.dart';
+import 'package:server_box/data/store/server_dist.dart';
 import 'package:server_box/data/store/service_reachability_cache.dart';
 import 'package:server_box/data/store/setting.dart';
 import 'package:server_box/generated/l10n/l10n.dart';
@@ -63,9 +64,12 @@ void main() {
     await openTestDb();
     getIt.registerSingleton<SettingStore>(SettingStore('setting_test'));
     getIt.registerSingleton<ServerStore>(ServerStore());
+    getIt.registerSingleton<ServerDistStore>(ServerDistStore());
     getIt.registerSingleton<PrivateKeyStore>(PrivateKeyStore());
     getIt.registerSingleton<SelfAddrStore>(SelfAddrStore('self_addr_test'));
-    getIt.registerSingleton<ServiceReachabilityCacheStore>(ServiceReachabilityCacheStore('mobile_probe_test'));
+    getIt.registerSingleton<ServiceReachabilityCacheStore>(
+      ServiceReachabilityCacheStore('mobile_probe_test'),
+    );
     Stores.setting.serverStatusUpdateInterval.put(0);
     Stores.server.put(
       spiFixture(
@@ -116,12 +120,14 @@ void main() {
               ),
             ),
             localizationsDelegates: const [
-              FLocalizations.delegate, LibLocalizations.delegate,
+              FLocalizations.delegate,
+              LibLocalizations.delegate,
               ...AppLocalizations.localizationsDelegates,
             ],
             locale: const Locale('zh'),
             supportedLocales: AppLocalizations.supportedLocales,
-            builder: (context, child) => AppUiScope(child: ResponsivePoints.builder(context, child)),
+            builder: (context, child) =>
+                AppUiScope(child: ResponsivePoints.builder(context, child)),
             home: child,
           ),
         ),
@@ -156,10 +162,18 @@ void main() {
     expect(find.text('告警'), findsOneWidget);
     expect(find.text('编辑'), findsOneWidget);
     expect(find.text('删除'), findsOneWidget);
-    expect(find.descendant(of: find.byType(ActionChip), matching: find.byIcon(Icons.public)), findsNWidgets(4));
+    expect(
+      find.descendant(
+        of: find.byType(ActionChip),
+        matching: find.byIcon(Icons.public),
+      ),
+      findsNWidgets(4),
+    );
     expect(find.byIcon(Icons.travel_explore), findsOneWidget);
     await capture(tester, 'implementation-dashboard.png');
 
+    await tester.ensureVisible(find.text('告警'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('告警'));
     for (var i = 0; i < 8; i++) {
       await tester.pump(const Duration(milliseconds: 50));

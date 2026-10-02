@@ -96,6 +96,8 @@ void main() {
   testWidgets('server center shows diagnostics and categories without claiming unlock', (tester) async {
     await pump(tester);
     expect(find.text('外网服务检测'), findsOneWidget);
+    await tester.scrollUntilVisible(find.text('Google'), 150,
+      scrollable: find.descendant(of: find.byType(ListView), matching: find.byType(Scrollable)));
     expect(find.text('Google'), findsOneWidget);
     await capture(tester, 'external-probes-center');
     await tester.tap(find.text('Google')); await frames(tester);
@@ -134,6 +136,47 @@ void main() {
     expect(find.text('外网服务检测'), findsOneWidget); expect(find.byType(BackButton), findsOneWidget);
     await tester.tap(find.byType(BackButton)); await frames(tester);
     expect(find.text('外网服务'), findsOneWidget); expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('custom checkbox updates homepage even when four services are pinned', (tester) async {
+    const custom = ProbeTarget(id: 'custom_home', name: 'My API',
+      address: 'https://example.com/health', category: ProbeCategory.custom);
+    controller.updateConfig(ProbeConfig(selected: controller.config.selected,
+      pinned: controller.config.pinned, custom: [custom]));
+    await pump(tester, home: const Scaffold(body: SafeArea(child: Padding(
+      padding: EdgeInsets.all(20), child: ExternalProbeBadges(serverId: id)))));
+    expect(find.byType(ActionChip), findsNWidgets(4));
+    await tester.tap(find.text('查看全部 ›')); await frames(tester);
+    await tester.enterText(find.byType(TextField).first, 'My API'); await frames(tester);
+    await tester.tap(find.byType(Checkbox)); await frames(tester);
+    expect(controller.config.homepageTargets.map((e) => e.id), contains('custom_home'));
+    await tester.tap(find.byType(BackButton)); await frames(tester);
+    expect(find.byType(ActionChip), findsNWidgets(4));
+    await tester.tap(find.text('另有 1 项 · 展开')); await frames(tester);
+    expect(find.byType(ActionChip), findsNWidgets(5));
+    expect(find.textContaining('My API ·'), findsOneWidget);
+    await tester.tap(find.text('查看全部 ›')); await frames(tester);
+    await tester.enterText(find.byType(TextField).first, 'My API'); await frames(tester);
+    await tester.tap(find.byType(Checkbox)); await frames(tester);
+    await tester.tap(find.byType(BackButton)); await frames(tester);
+    expect(find.byType(ActionChip), findsNWidgets(4));
+    expect(find.textContaining('My API ·'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('homepage truncates long names and labels expired results', (tester) async {
+    final custom = ProbeTarget(id: 'custom_long', name: '自定义健康检查' * 10,
+      address: 'https://example.com/health', category: ProbeCategory.custom);
+    controller.updateConfig(ProbeConfig(selected: {'google', custom.id},
+      pinned: ['google'], custom: [custom]));
+    controller.results['google'] = ProbeResult(id: 'google', state: ProbeState.reachable,
+      reason: 'httpResponse', checkedAt: DateTime.now().subtract(const Duration(days: 1)));
+    await pump(tester, size: const Size(320, 740), scale: 1.3, dark: true,
+      home: const Scaffold(body: Padding(padding: EdgeInsets.all(20),
+        child: ExternalProbeBadges(serverId: id))));
+    expect(find.text('Google · 结果过期'), findsOneWidget);
+    expect(find.textContaining('未检测'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('phone center supports dark mode and enlarged text at 320 pixels', (tester) async {

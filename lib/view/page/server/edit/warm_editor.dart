@@ -112,6 +112,7 @@ extension _WarmEditor on _ServerEditPageState {
       control: FTextFieldControl.managed(controller: controller),
       focusNode: node, keyboardType: type, hint: hint,
       obscureText: obscure, autocorrect: false, enableSuggestions: false,
+      contextMenuBuilder: buildAppTextEditMenu,
       onSubmit: onSubmitted,
       onTapOutside: (_) => _focusScope.unfocus(),
       suffixBuilder: suffix == null ? null : (_, _, _) => suffix,

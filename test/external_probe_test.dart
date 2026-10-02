@@ -92,6 +92,7 @@ void main() {
       expect(ExternalProbePreferences.save(store, 'one', config), isTrue);
       final restored = ExternalProbePreferences.load(store, 'one');
       expect(restored.selected, config.selected); expect(restored.custom.single.keyword, 'healthy');
+      expect(restored.homepageTargets.map((e) => e.id), ['github', 'custom_a']);
       expect(ExternalProbePreferences.load(store, 'two').selected, {'netflix'});
       ExternalProbePreferences.forget(store, 'one');
       expect(ExternalProbePreferences.load(store, 'one').selected, {'netflix'});

@@ -16,8 +16,30 @@ import 'package:server_box/data/model/server/server_private_info.dart';
 import 'package:server_box/data/provider/server/all.dart';
 import 'package:server_box/data/provider/server/single.dart';
 import 'package:server_box/data/res/store.dart';
+import 'package:server_box/view/widget/app_ui.dart';
+import 'package:server_box/view/widget/floating_dialog.dart';
 import 'package:server_box/view/widget/geo_data_install.dart';
 import 'package:server_box/view/widget/globe/view.dart';
+
+enum ServerGlobeMode { legacy, preview, explorer }
+
+/// Shared only while the homepage card or its full-screen route is mounted.
+class ServerGlobeSession extends ChangeNotifier {
+  final located = <String, ResolvedGeo>{};
+  final misses = <String, GeoMiss>{};
+  final inputs = <String, ({String? host, GeoCoord? manual})>{};
+  Future<void>? pending;
+  int _users = 0;
+  int? revision;
+  void attach() => _users++;
+  void detach() {
+    if (--_users == 0) dispose();
+  }
+
+  void changed() {
+    if (_users > 0) notifyListeners();
+  }
+}
 
 /// The server list, as a globe.
 ///
@@ -36,11 +58,19 @@ class ServerGlobe extends ConsumerStatefulWidget {
     required this.onTapServer,
     required this.onEditServer,
     this.action,
+    this.mode = ServerGlobeMode.legacy,
+    this.session,
+    this.controller,
+    this.onSelection,
   });
 
   /// In the order the list is showing them, which decides which one the globe
   /// opens facing.
   final List<String> ids;
+  final ServerGlobeMode mode;
+  final ServerGlobeSession? session;
+  final GlobeViewController? controller;
+  final ValueChanged<List<String>>? onSelection;
 
   final void Function(Spi spi) onTapServer;
 
@@ -64,7 +94,9 @@ class ServerGlobe extends ConsumerStatefulWidget {
 const _kCardSize = Size(136, 46);
 
 class _ServerGlobeState extends ConsumerState<ServerGlobe> {
-  final _located = <String, ResolvedGeo>{};
+  final _localLocated = <String, ResolvedGeo>{};
+  Map<String, ResolvedGeo> get _located =>
+      widget.session?.located ?? _localLocated;
 
   /// Servers nothing could place and why, remembered so the chain is not
   /// walked again on every rebuild — for a name that does not resolve that is
@@ -74,7 +106,9 @@ class _ServerGlobeState extends ConsumerState<ServerGlobe> {
   /// along the bottom says. "Unknown" over a tab of LAN servers is true and
   /// useless: it is the ordinary state of an install with nothing on the
   /// public internet, and nothing on screen said so.
-  final _unplaceable = <String, GeoMiss>{};
+  final _localUnplaceable = <String, GeoMiss>{};
+  Map<String, GeoMiss> get _unplaceable =>
+      widget.session?.misses ?? _localUnplaceable;
 
   /// What each id was resolved *from*, so an edited address is looked up
   /// again.
@@ -84,7 +118,31 @@ class _ServerGlobeState extends ConsumerState<ServerGlobe> {
   /// the manual coordinate leaves `widget.ids` unchanged, so both inputs have
   /// to travel with the answer or the old dot stays where it was for as long as
   /// this widget lives.
-  final _resolvedFrom = <String, ({String? host, GeoCoord? manual})>{};
+  final _localResolvedFrom = <String, ({String? host, GeoCoord? manual})>{};
+  Map<String, ({String? host, GeoCoord? manual})> get _resolvedFrom =>
+      widget.session?.inputs ?? _localResolvedFrom;
+  List<String> _selection = const [];
+  final _connections = <String, ServerConn>{};
+
+  // A removed provider can be invalidated before this widget drops its old
+  // subscriptions. Consume that disposal event without reading a deleted ID.
+  ServerConn _connection(String id) {
+    final provider = serverProvider(id).select((s) => s.conn);
+    ref.listen(
+      provider,
+      (_, next) {
+        if (mounted) setState(() => _connections[id] = next);
+      },
+      onError: (error, stack) {
+        if (ref.read(serversProvider).servers.containsKey(id)) {
+          FlutterError.reportError(
+            FlutterErrorDetails(exception: error, stack: stack),
+          );
+        }
+      },
+    );
+    return _connections[id] = ref.read(provider);
+  }
 
   /// One at a time, not `Future.wait`. Fifty servers behind fifty names is
   /// fifty simultaneous DNS queries, which is a burst a router notices — and
@@ -104,6 +162,8 @@ class _ServerGlobeState extends ConsumerState<ServerGlobe> {
   @override
   void initState() {
     super.initState();
+    widget.session?.attach();
+    widget.session?.addListener(_onSession);
     // Installed or removed from anywhere — the strip's own button, the settings
     // page in another tab — and every answer this holds was reached against the
     // data that changed. `_resolvedFrom` is cleared with it so the pass is not
@@ -114,12 +174,21 @@ class _ServerGlobeState extends ConsumerState<ServerGlobe> {
 
   @override
   void dispose() {
+    widget.session?.removeListener(_onSession);
+    widget.session?.detach();
     GeoData.revision.removeListener(_onGeoData);
     super.dispose();
   }
 
+  void _onSession() {
+    if (mounted) setState(() {});
+  }
+
   void _onGeoData() {
     if (!mounted) return;
+    final session = widget.session;
+    if (session != null && session.revision == GeoData.revision.value) return;
+    if (session != null) session.revision = GeoData.revision.value;
     _resolvedFrom.clear();
     _located.clear();
     _unplaceable.clear();
@@ -143,6 +212,16 @@ class _ServerGlobeState extends ConsumerState<ServerGlobe> {
       return;
     }
     _resolving = true;
+    final session = widget.session;
+    if (session?.pending case final pending?) {
+      await pending;
+      if (!mounted) {
+        _resolving = false;
+        return;
+      }
+    }
+    final completed = Completer<void>();
+    if (session != null) session.pending = completed.future;
     try {
       do {
         _resolveAgain = false;
@@ -150,6 +229,10 @@ class _ServerGlobeState extends ConsumerState<ServerGlobe> {
       } while (_resolveAgain && mounted);
     } finally {
       _resolving = false;
+      if (session != null && identical(session.pending, completed.future)) {
+        session.pending = null;
+      }
+      completed.complete();
     }
     if (mounted) _reportPlacements();
   }
@@ -220,6 +303,7 @@ class _ServerGlobeState extends ConsumerState<ServerGlobe> {
     final unplaceable = <String, GeoMiss>{};
     final resolvedFrom = <String, ({String? host, GeoCoord? manual})>{};
     final cleared = <String>{};
+    final dataRevision = GeoData.revision.value;
 
     for (final id in widget.ids) {
       if (!mounted) return;
@@ -273,7 +357,28 @@ class _ServerGlobeState extends ConsumerState<ServerGlobe> {
       }
     }
 
-    if (!mounted || resolvedFrom.isEmpty) return;
+    if (!mounted) return;
+    if (dataRevision != GeoData.revision.value) {
+      _resolveAgain = true;
+      return;
+    }
+    final current = ref.read(serversProvider).servers;
+    for (final id in resolvedFrom.keys.toList()) {
+      final spi = current[id];
+      if (spi == null ||
+          (host: IpGeo.geoHostOf(spi), manual: spi.custom?.geo) !=
+              resolvedFrom[id]) {
+        resolvedFrom.remove(id);
+        located.remove(id);
+        unplaceable.remove(id);
+        cleared.remove(id);
+        _resolveAgain = true;
+      }
+    }
+    _located.removeWhere((id, _) => !current.containsKey(id));
+    _unplaceable.removeWhere((id, _) => !current.containsKey(id));
+    _resolvedFrom.removeWhere((id, _) => !current.containsKey(id));
+    if (resolvedFrom.isEmpty) return;
     setState(() {
       _resolvedFrom.addAll(resolvedFrom);
       for (final id in located.keys) {
@@ -290,6 +395,7 @@ class _ServerGlobeState extends ConsumerState<ServerGlobe> {
       _located.addAll(located);
       _unplaceable.addAll(unplaceable);
     });
+    widget.session?.changed();
   }
 
   /// Whether [id] has an address on hand that nothing has read yet.
@@ -330,6 +436,9 @@ class _ServerGlobeState extends ConsumerState<ServerGlobe> {
       unawaited(_resolve());
     });
     final servers = ref.watch(serversProvider.select((s) => s.servers));
+    if (widget.mode != ServerGlobeMode.legacy) {
+      return _buildDistribution(servers);
+    }
 
     final items = <GlobeItem>[];
     final unplaced = <Widget>[];
@@ -410,11 +519,21 @@ class _ServerGlobeState extends ConsumerState<ServerGlobe> {
   /// Re-runs location resolution when an extended poll has something that can
   /// fill a private miss or replace an expired self-reported address.
   void _listenForSelfAddr(String id) {
-    ref.listen(serverProvider(id).select((s) => s.status.ips), (_, ips) {
-      if (ips.isNotEmpty && Stores.selfAddr.isStale(id)) {
-        unawaited(_resolve());
-      }
-    });
+    ref.listen(
+      serverProvider(id).select((s) => s.status.ips),
+      (_, ips) {
+        if (ips.isNotEmpty && Stores.selfAddr.isStale(id)) {
+          unawaited(_resolve());
+        }
+      },
+      onError: (error, stack) {
+        if (ref.read(serversProvider).servers.containsKey(id)) {
+          FlutterError.reportError(
+            FlutterErrorDetails(exception: error, stack: stack),
+          );
+        }
+      },
+    );
   }
 
   /// Opens a server, saying which of the two things that reach it was pressed.
@@ -426,6 +545,296 @@ class _ServerGlobeState extends ConsumerState<ServerGlobe> {
   void _openServer(Spi spi, {required String from}) {
     Diag.crumb(SbDiag.globe, 'open server', data: {'from': from});
     widget.onTapServer(spi);
+  }
+
+  String _text(String zh, String en) =>
+      Localizations.localeOf(context).languageCode == 'zh' ? zh : en;
+
+  String _connectionLabel(ServerConn conn) => switch (conn) {
+    ServerConn.finished => _text('已连接', 'Connected'),
+    ServerConn.failed => _text('连接失败', 'Connection failed'),
+    ServerConn.connecting ||
+    ServerConn.loading ||
+    ServerConn.connected => _text('连接中', 'Connecting'),
+    ServerConn.disconnected => _text('未连接', 'Disconnected'),
+  };
+
+  void _select(List<String> ids, {bool focus = false}) {
+    setState(() => _selection = ids);
+    widget.onSelection?.call(ids);
+    if (focus && ids.isNotEmpty) {
+      final geo = _located[ids.first];
+      if (geo != null) widget.controller?.focus(geo.coord);
+    }
+  }
+
+  Widget _buildDistribution(Map<String, Spi> servers) {
+    final ids = widget.ids.where(servers.containsKey).toList();
+    final preview = widget.mode == ServerGlobeMode.preview;
+    final items = <GlobeItem>[];
+    for (final id in ids) {
+      final geo = _located[id];
+      if (geo == null || geo.source == GeoSource.selfReported) {
+        _listenForSelfAddr(id);
+      }
+      final conn = _connection(id);
+      if (geo != null) {
+        items.add(
+          GlobeItem(
+            id: id,
+            coord: geo.coord,
+            color: _colorOf(conn),
+            card: const SizedBox.shrink(),
+          ),
+        );
+      }
+    }
+    final globe = RepaintBoundary(
+      child: GlobeView(
+        key: const ValueKey('distribution-globe'),
+        items: items,
+        cardSize: Size.zero,
+        initialCoord: items.firstOrNull?.coord,
+        interactive: !preview,
+        autoRotate: false,
+        showLabels: false,
+        clusterMarkers: true,
+        animateEntrance: !preview,
+        radiusFactor: .82,
+        controller: widget.controller,
+        onTapGroup: (ids) => _select(ids),
+      ),
+    );
+    if (preview) return IgnorePointer(child: globe);
+    final selected = _selection.where(ids.contains).toList();
+    return LayoutBuilder(
+      builder: (context, constraints) => Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    _text(
+                      '${items.length} 已定位 · ${ids.length - items.length} 未定位',
+                      '${items.length} located · ${ids.length - items.length} unplaced',
+                    ),
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ),
+                TextButton.icon(
+                  key: const ValueKey('globe-server-picker'),
+                  onPressed: () => _chooseServer(servers, ids),
+                  icon: const Icon(Icons.list, size: 18),
+                  label: Text(_text('选择服务器', 'Servers')),
+                ),
+              ],
+            ),
+          ),
+          Expanded(child: globe),
+          ConstrainedBox(
+            constraints: BoxConstraints(maxHeight: constraints.maxHeight * .45),
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                child: AppCard(
+                  padding: const EdgeInsets.all(14),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      if (selected.isEmpty)
+                        Text(
+                          _text(
+                            '拖动旋转 · 双指缩放 · 点击标记查看服务器',
+                            'Drag to rotate · Pinch to zoom · Tap a marker',
+                          ),
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      if (selected.isEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Wrap(
+                            spacing: 12,
+                            runSpacing: 4,
+                            children: [
+                              for (final conn in [
+                                ServerConn.finished,
+                                ServerConn.connecting,
+                                ServerConn.failed,
+                                ServerConn.disconnected,
+                              ])
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.circle,
+                                      size: 7,
+                                      color: _colorOf(conn),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      _connectionLabel(conn),
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.bodySmall,
+                                    ),
+                                  ],
+                                ),
+                            ],
+                          ),
+                        ),
+                      if (selected.length > 1) ...[
+                        Text(
+                          _text(
+                            '此位置有 ${selected.length} 台服务器',
+                            '${selected.length} servers at this location',
+                          ),
+                          style: const TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                        for (final id in selected)
+                          ListTile(
+                            dense: true,
+                            title: Text(servers[id]!.name),
+                            trailing: const Icon(Icons.chevron_right),
+                            onTap: () => _select([id], focus: true),
+                          ),
+                      ],
+                      if (selected.length == 1)
+                        _summary(servers[selected.single]!),
+                      if (GeoData.installed() == null &&
+                          ids.any((id) => _unplaceable[id] == GeoMiss.noData))
+                        TextButton.icon(
+                          onPressed: () => GeoDataInstall.run(context),
+                          icon: const Icon(Icons.download_outlined, size: 18),
+                          label: Text(
+                            _text('下载定位数据', 'Download location data'),
+                          ),
+                        ),
+                      if (ids.any((id) => _unplaceable.containsKey(id)))
+                        TextButton(
+                          onPressed: () => _chooseServer(
+                            servers,
+                            ids.where(_unplaceable.containsKey).toList(),
+                          ),
+                          child: Text(
+                            _text('查看未定位服务器', 'View unplaced servers'),
+                          ),
+                        ),
+                      if (ids.isEmpty)
+                        Text(
+                          _text(
+                            '当前筛选下没有服务器',
+                            'No servers match the current filters',
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _summary(Spi spi) {
+    final geo = _located[spi.id];
+    final conn = _connections[spi.id] ?? ServerConn.disconnected;
+    final source = switch (geo?.source) {
+      GeoSource.manual => _text('手动坐标', 'Manual coordinates'),
+      GeoSource.selfReported => _text(
+        '服务器公网地址推算 · 近似位置',
+        'Reported public IP · Approximate location',
+      ),
+      GeoSource.city => _text(
+        'IP 定位 · 近似位置',
+        'IP lookup · Approximate location',
+      ),
+      null => _text('未定位', 'Unplaced'),
+    };
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          children: [
+            Icon(Icons.dns_outlined, color: _colorOf(conn), size: 20),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                spi.name,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ),
+            IconButton(
+              tooltip: _text('关闭摘要', 'Close summary'),
+              onPressed: () => _select([]),
+              icon: const Icon(Icons.close, size: 18),
+            ),
+          ],
+        ),
+        Text(_connectionLabel(conn)),
+        Text(source, style: Theme.of(context).textTheme.bodySmall),
+        Text(
+          geo?.coord.text ??
+              (_unplaceable[spi.id] == GeoMiss.private
+                  ? _text(
+                      '内网地址，可手动设置坐标',
+                      'Private address; set coordinates manually',
+                    )
+                  : _text('暂无可用位置数据', 'No location data available')),
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+        const SizedBox(height: 8),
+        AppButton(
+          onPressed: () => widget.onTapServer(spi),
+          child: Flexible(
+            child: Text(
+              _text('查看详情', 'View details'),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ),
+        TextButton(
+          onPressed: () => widget.onEditServer(spi),
+          child: Text(_text('编辑位置', 'Edit location')),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _chooseServer(Map<String, Spi> servers, List<String> ids) async {
+    final selected = await showDialog<String>(
+      context: context,
+      builder: (context) => AppFloatingDialog(
+        title: Text(_text('选择服务器', 'Choose a server')),
+        content: SizedBox(
+          width: 440,
+          height: MediaQuery.sizeOf(context).height * .5,
+          child: ListView(
+            children: [
+              for (final id in ids)
+                ListTile(
+                  title: Text(servers[id]!.name),
+                  subtitle: Text(
+                    _located.containsKey(id)
+                        ? _located[id]!.coord.text
+                        : _text('未定位', 'Unplaced'),
+                  ),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.pop(context, id),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (!mounted || selected == null || !widget.ids.contains(selected)) return;
+    _select([selected], focus: true);
   }
 
   Color _colorOf(ServerConn conn) {

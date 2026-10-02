@@ -62,7 +62,10 @@ String probeStateLabel(BuildContext context, ProbeResult? result, {bool tcp = fa
   };
 }
 
-Color probeColor(BuildContext context, ProbeResult? result) => switch (result?.state) {
+Color probeColor(BuildContext context, ProbeResult? result) =>
+  result != null && !result.isFresh(DateTime.now())
+  ? Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: .65)
+  : switch (result?.state) {
   ProbeState.reachable => Theme.of(context).brightness == Brightness.dark
     ? const Color(0xff91cf96) : const Color(0xff276b31),
   ProbeState.rejected => Theme.of(context).colorScheme.error,

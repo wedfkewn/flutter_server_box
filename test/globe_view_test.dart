@@ -29,6 +29,12 @@ void main() {
     void Function(String)? onTap,
     int labelLimit = 14,
     GeoCoord? initial,
+    bool interactive = true,
+    bool autoRotate = true,
+    bool showLabels = true,
+    bool clusters = false,
+    GlobeViewController? controller,
+    ValueChanged<List<String>>? onGroup,
   }) async {
     await tester.pumpWidget(
       MaterialApp(
@@ -42,6 +48,12 @@ void main() {
               onTapItem: onTap,
               labelLimit: labelLimit,
               initialCoord: initial ?? GeoCoord.tryNew(0, 0),
+              interactive: interactive,
+              autoRotate: autoRotate,
+              showLabels: showLabels,
+              clusterMarkers: clusters,
+              controller: controller,
+              onTapGroup: onGroup,
             ),
           ),
         ),
@@ -50,6 +62,120 @@ void main() {
     // Past the entrance, without waiting for a quiet frame.
     await tester.pump(const Duration(milliseconds: 600));
   }
+
+  testWidgets(
+    'explorer controller faces a server and resets zoom without automatic motion',
+    (tester) async {
+      final controller = GlobeViewController();
+      addTearDown(controller.dispose);
+      await show(
+        tester,
+        [item('a', 0, 0), item('b', 0, 180)],
+        autoRotate: false,
+        showLabels: false,
+        controller: controller,
+      );
+      GlobePainter painter() => tester
+          .widgetList<CustomPaint>(find.byType(CustomPaint))
+          .map((w) => w.painter)
+          .whereType<GlobePainter>()
+          .single;
+      final radius = painter().projection.camera.radius;
+      final pointer = TestPointer(1, PointerDeviceKind.mouse);
+      pointer.hover(tester.getCenter(find.byType(GlobeView)));
+      await tester.sendEventToBinding(pointer.scroll(const Offset(0, -2000)));
+      await tester.pump();
+      expect(painter().projection.camera.radius, closeTo(radius * 3.5, .01));
+      controller.focus(GeoCoord.tryNew(0, 180)!);
+      await tester.pump();
+      expect(painter().projection.camera.lon.abs(), 180);
+      controller.reset();
+      await tester.pump();
+      expect(painter().projection.camera.lon, 0);
+      expect(painter().projection.camera.radius, radius);
+      final camera = painter().projection.camera;
+      await tester.pump(const Duration(seconds: 2));
+      expect(painter().projection.camera, camera);
+      await tester.pumpWidget(const SizedBox.shrink());
+    },
+  );
+
+  testWidgets(
+    'clusters on the backside are hidden and visible clusters select all their servers',
+    (tester) async {
+      List<String>? selected;
+      await show(
+        tester,
+        [
+          item('a', 0, 0),
+          item('b', 0, 0),
+          item('back-a', 0, 180),
+          item('back-b', 0, 180),
+        ],
+        autoRotate: false,
+        showLabels: false,
+        clusters: true,
+        onGroup: (ids) => selected = ids,
+      );
+      expect(find.text('2'), findsOneWidget);
+      await tester.tap(find.text('2'));
+      await tester.pump();
+      expect(selected, ['a', 'b']);
+    },
+  );
+
+  testWidgets('explorer coasting stops when the app is hidden', (tester) async {
+    await show(tester, [item('a', 0, 0)], autoRotate: false, showLabels: false);
+    await tester.fling(find.byType(GlobeView), const Offset(160, 0), 1000);
+    await tester.pump();
+    expect(tester.binding.transientCallbackCount, greaterThan(0));
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+    await tester.pump();
+    GlobePainter painter() => tester
+        .widgetList<CustomPaint>(find.byType(CustomPaint))
+        .map((w) => w.painter)
+        .whereType<GlobePainter>()
+        .single;
+    final camera = painter().projection.camera;
+    await tester.pump(const Duration(seconds: 2));
+    expect(painter().projection.camera, camera);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  testWidgets('1, 20 and 100 markers rotate without floating-card layout', (
+    tester,
+  ) async {
+    for (final count in [1, 20, 100]) {
+      await show(
+        tester,
+        [
+          for (var i = 0; i < count; i++)
+            item('s$i', (i % 17) * 8.0 - 60, (i * 31 % 360) - 180.0),
+        ],
+        autoRotate: false,
+        showLabels: false,
+        clusters: true,
+      );
+      final watch = Stopwatch()..start();
+      final gesture = await tester.startGesture(
+        tester.getCenter(find.byType(GlobeView)),
+      );
+      for (var i = 0; i < 30; i++) {
+        await gesture.moveBy(const Offset(3, 0));
+        await tester.pump(const Duration(milliseconds: 16));
+      }
+      await gesture.up();
+      watch.stop();
+      // Widget-test timing is a regression reference, not a device FPS claim.
+      debugPrint(
+        'globe-marker-check count=$count frames=30 elapsedMs=${watch.elapsedMilliseconds}',
+      );
+      expect(find.byKey(const ValueKey('card-s0')), findsNothing);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+    }
+  });
 
   testWidgets('a server on the near side gets a card', (tester) async {
     await show(tester, [item('a', 0, 0)]);
@@ -64,9 +190,7 @@ void main() {
   });
 
   testWidgets('cards do not overlap each other', (tester) async {
-    await show(tester, [
-      for (var i = 0; i < 8; i++) item('s$i', 0, 0),
-    ]);
+    await show(tester, [for (var i = 0; i < 8; i++) item('s$i', 0, 0)]);
     final rects = [
       for (var i = 0; i < 8; i++)
         tester.getRect(find.byKey(ValueKey('card-s$i'))),
@@ -151,7 +275,9 @@ void main() {
     expect(find.byKey(const ValueKey('card-s0')), findsOneWidget);
 
     // A corner, which is outside the disc entirely.
-    await tester.tapAt(tester.getTopLeft(find.byType(GlobeView)) + const Offset(4, 4));
+    await tester.tapAt(
+      tester.getTopLeft(find.byType(GlobeView)) + const Offset(4, 4),
+    );
     await tester.pump(const Duration(milliseconds: 50));
     expect(find.byKey(const ValueKey('card-s0')), findsNothing);
     expect(opened, isNull);
@@ -552,10 +678,7 @@ void main() {
 
       final after = tester.getRect(find.byKey(const ValueKey('card-near')));
       await turn(tester, 2000);
-      expect(
-        tester.getRect(find.byKey(const ValueKey('card-near'))),
-        after,
-      );
+      expect(tester.getRect(find.byKey(const ValueKey('card-near'))), after);
     });
 
     testWidgets('it stops the ticker rather than turning forever', (
@@ -645,11 +768,7 @@ void main() {
     testWidgets('is drawn in the top right corner', (tester) async {
       await showWithAction(
         tester,
-        action: const SizedBox(
-          key: ValueKey('action'),
-          width: 48,
-          height: 48,
-        ),
+        action: const SizedBox(key: ValueKey('action'), width: 48, height: 48),
       );
       final at = tester.getRect(find.byKey(const ValueKey('action')));
       final box = tester.getRect(find.byType(GlobeView));
@@ -674,11 +793,7 @@ void main() {
       await showWithAction(
         tester,
         items: [for (var i = 0; i < crowd; i++) item('s$i', 40, 60)],
-        action: const SizedBox(
-          key: ValueKey('action'),
-          width: 48,
-          height: 48,
-        ),
+        action: const SizedBox(key: ValueKey('action'), width: 48, height: 48),
       );
       final at = tester.getRect(find.byKey(const ValueKey('action')));
       for (var i = 0; i < crowd; i++) {
@@ -725,7 +840,9 @@ void main() {
       ]);
     });
 
-    testWidgets('a wheel is the other path and is named as one', (tester) async {
+    testWidgets('a wheel is the other path and is named as one', (
+      tester,
+    ) async {
       // It reaches none of the gesture code — see the group above — so a globe
       // that reported only gestures would report nothing at all on a desktop.
       await show(tester, [item('a', 30, 30)]);
