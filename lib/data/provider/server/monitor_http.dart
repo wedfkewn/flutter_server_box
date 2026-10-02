@@ -7,6 +7,7 @@ import 'package:meta/meta.dart';
 import 'package:server_box/core/extension/context/locale.dart';
 import 'package:server_box/core/utils/secure_endpoint.dart';
 import 'package:server_box/data/model/app/error.dart';
+import 'package:server_box/data/model/app/external_probe.dart';
 import 'package:server_box/data/model/app/service_reachability.dart';
 import 'package:server_box/data/model/server/monitor_capabilities.dart';
 import 'package:server_box/data/model/server/monitor_exec_output.dart';
@@ -332,6 +333,37 @@ class MonitorHttpClient {
   }
 
   // --------------------------------------------------------------- files
+  Future<Map<String, ProbeResult>> externalProbes(List<ProbeTarget> targets) {
+    return _authed(() async {
+      Map<String, dynamic> raw;
+      try {
+        raw = await _object('/api/v1/external-probes',
+          post: {'targets': targets.map((e) => e.toJson()).toList()});
+      } on DioException catch (e) {
+        final reason = switch (e.response?.statusCode) {
+          404 => 'agentUpgrade', 403 => 'permission', 429 => 'rateLimited',
+          _ => null,
+        };
+        if (reason == null) rethrow;
+        return {for (final target in targets) target.id: ProbeResult(
+          id: target.id, state: ProbeState.unknown, reason: reason,
+          checkedAt: DateTime.now(), transport: 'Monitor')};
+      }
+      final values = raw['results'];
+      if (values is! List) throw const FormatException('Invalid external probe results');
+      final requested = targets.map((e) => e.id).toSet();
+      final results = <String, ProbeResult>{};
+      for (final value in values) {
+        if (value is! Map || !requested.contains(value['id'])) continue;
+        try {
+          final result = ProbeResult.fromJson(value);
+          results[result.id] = result;
+        } catch (_) { /* A malformed observation is never a success. */ }
+      }
+      return results;
+    });
+  }
+
   //
   // `/api/v1/fs/*`, which the agent serves only when its operator switched it
   // on and named the directories it may reach. Every path is absolute and is

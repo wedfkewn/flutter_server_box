@@ -10,8 +10,7 @@ extension _Server on _AppSettingsPageState {
   }
 
   Widget _buildServer() {
-    return Column(
-      children: [
+    final rows = <Widget>[
         _buildDistIcon(),
         _buildNetViewType(),
         _buildConnectionStats(),
@@ -19,8 +18,15 @@ extension _Server on _AppSettingsPageState {
         _buildCpuView(),
         _buildGlobe(),
         _buildServerMore(),
-      ].map((e) => CardX(child: e)).toList(),
-    );
+      ];
+    if (warmSettingsPhone(context)) {
+      return Column(children: [
+        WarmSettingsGroup(title: warmSettingsText(context, '信息与图表', 'Information and charts'), children: [rows[0], rows[1], rows[4], rows[5]]),
+        WarmSettingsGroup(title: warmSettingsText(context, '连接与刷新', 'Connections and refresh'), children: [rows[2], rows[6]]),
+        WarmSettingsGroup(title: warmSettingsText(context, '服务器管理', 'Server management'), children: [rows[3]]),
+      ]);
+    }
+    return Column(children: rows.map((e) => CardX(child: e)).toList());
   }
 
   Widget _buildNetViewType() {

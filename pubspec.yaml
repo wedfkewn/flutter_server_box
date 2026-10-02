@@ -4,8 +4,10 @@ publish_to: "none"
 version: 1.0.1579+1579
 
 environment:
+  # Keep existing Freezed output on Dart 3.11 library semantics. Flutter 3.47
+  # supplies the Dart 3.13 runtime required by ForUI's own libraries.
   sdk: ">=3.11.0"
-  flutter: ">=3.44.9"
+  flutter: ">=3.47.0"
 
 dependencies:
   flutter:
@@ -104,6 +106,8 @@ dependencies:
   fixnum: ^1.1.1
   device_info_plus: ^13.2.0
   aptabase_flutter: ^0.5.0
+  forui: 0.26.0
+  flutter_animate: 4.5.2
 dev_dependencies:
   integration_test:
     sdk: flutter

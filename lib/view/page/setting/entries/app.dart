@@ -355,6 +355,20 @@ extension _App on _AppSettingsPageState {
   /// two rows on it: the settings search matches on the node id, so `privacy`
   /// is now a thing to search for.
   Widget _buildPrivacy() {
+    if (warmSettingsPhone(context)) {
+      return Column(children: [
+        WarmSettingsIntro(icon: Icons.shield_outlined,
+          text: warmSettingsText(context, '管理诊断信息的发送方式，以及后台画面的隐私保护。',
+            'Control diagnostic reporting and protect app content in the task switcher.')),
+        if (DiagnosticsUpload.availableInBuild)
+          WarmSettingsGroup(title: warmSettingsText(context, '诊断信息', 'Diagnostics'),
+            children: [_buildDiagnosticsUpload()]),
+        WarmSettingsGroup(title: warmSettingsText(context, '报告与隐私', 'Reports and privacy'), children: [
+          _buildLastCrashReport(carded: false), _buildPrivacyPolicy(),
+          ?PlatformPublicSettings.buildPrivacyBlur,
+        ]),
+      ]);
+    }
     return Column(
       children: [
         // Only where a report could actually be sent. A control that cannot do
@@ -395,6 +409,7 @@ extension _App on _AppSettingsPageState {
   /// A page has the room for it. This one holds two rows.
   Widget _buildDiagnosticsUpload() {
     return DiagnosticsLevelPicker(
+      grouped: warmSettingsPhone(context),
       // Applied now rather than at the next launch: turning it down has to
       // take the sink out immediately, not eventually.
       onPicked: () => unawaited(DiagnosticsUpload.sync()),
@@ -411,7 +426,7 @@ extension _App on _AppSettingsPageState {
   /// Read through a [FutureBuilder] because whether a report exists is a file
   /// on disk, and this page builds synchronously. The miss is the common case
   /// and costs one `exists` call.
-  Widget _buildLastCrashReport() {
+  Widget _buildLastCrashReport({bool carded = true}) {
     return FutureBuilder<String?>(
       // Held rather than started here. A `FutureBuilder` given a fresh future
       // on every build re-reads the file on every unrelated rebuild of this
@@ -421,7 +436,7 @@ extension _App on _AppSettingsPageState {
       builder: (_, snapshot) {
         final report = snapshot.data;
         if (report == null) return UIs.placeholder;
-        return ListTile(
+        final tile = ListTile(
           leading: const Icon(Icons.bug_report_outlined),
           title: Text(l10n.crashReportTitle),
           subtitle: Text(
@@ -438,7 +453,8 @@ extension _App on _AppSettingsPageState {
             _savedCrashReport = null;
             refresh();
           },
-        ).cardx;
+        );
+        return carded ? tile.cardx : tile;
       },
     );
   }

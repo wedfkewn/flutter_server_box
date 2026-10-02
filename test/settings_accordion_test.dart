@@ -9,6 +9,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:forui/localizations.dart';
 import 'package:server_box/core/extension/context/locale.dart' as app_locale;
 import 'package:server_box/core/warm_theme.dart';
 import 'package:server_box/data/res/store.dart';
@@ -16,6 +17,7 @@ import 'package:server_box/data/store/server.dart';
 import 'package:server_box/data/store/setting.dart';
 import 'package:server_box/generated/l10n/l10n.dart';
 import 'package:server_box/view/page/setting/entry.dart';
+import 'package:server_box/view/widget/app_ui.dart';
 
 import 'helpers/test_db.dart';
 
@@ -84,7 +86,7 @@ void main() {
             debugShowCheckedModeBanner: false,
             locale: const Locale('zh'),
             localizationsDelegates: const [
-              LibLocalizations.delegate,
+              FLocalizations.delegate, LibLocalizations.delegate,
               ...AppLocalizations.localizationsDelegates,
             ],
             supportedLocales: AppLocalizations.supportedLocales,
@@ -103,7 +105,7 @@ void main() {
               data: MediaQuery.of(
                 context,
               ).copyWith(textScaler: TextScaler.linear(textScale)),
-              child: ResponsivePoints.builder(context, child),
+              child: AppUiScope(child: ResponsivePoints.builder(context, child)),
             ),
             home: Builder(
               builder: (context) {
@@ -221,12 +223,15 @@ void main() {
     await settle(tester);
     await tester.tap(find.text('服务器信息显示'));
     await settle(tester);
-    expect(find.byType(SwitchListTile), findsNWidgets(4));
+    expect(find.byType(SwitchListTile), findsOneWidget);
+    expect(find.text('外网服务检测'), findsOneWidget);
     expect(find.byKey(const ValueKey('server-info-back')), findsNothing);
     Stores.setting.probeNetflix.put(true);
-    await tester.tap(find.widgetWithText(SwitchListTile, 'ChatGPT'));
+    Stores.setting.ipLookupConsent.put(true);
+    final previous = Stores.setting.showServerNetworkInfo.fetch();
+    await tester.tap(find.byType(SwitchListTile));
     await settle(tester);
-    expect(Stores.setting.probeChatGpt.fetch(), isTrue);
+    expect(Stores.setting.showServerNetworkInfo.fetch(), !previous);
     await tester.tap(find.byType(BackButton).first);
     await settle(tester);
     expect(find.text('服务器信息显示'), findsOneWidget);
@@ -244,7 +249,8 @@ void main() {
       final back = find.byKey(const ValueKey('server-info-back'));
       expect(back.hitTestable(), findsOneWidget);
       expect(find.byType(BackButton), findsOneWidget);
-      expect(find.byType(SwitchListTile), findsNWidgets(4));
+      expect(find.byType(SwitchListTile), findsOneWidget);
+      expect(find.text('外网服务检测'), findsOneWidget);
       await capture(tester, 'server-info-back-button.png');
       await tester.tap(back);
       await settle(tester);

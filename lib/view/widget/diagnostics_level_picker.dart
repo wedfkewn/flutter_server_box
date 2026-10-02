@@ -24,8 +24,9 @@ final class DiagnosticsLevelPicker extends StatelessWidget {
   /// nothing uploads until it is finished, while the settings page has to put
   /// the sink in or take it out at once.
   final VoidCallback? onPicked;
+  final bool grouped;
 
-  const DiagnosticsLevelPicker({super.key, this.onPicked});
+  const DiagnosticsLevelPicker({super.key, this.onPicked, this.grouped = false});
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +49,7 @@ final class DiagnosticsLevelPicker extends StatelessWidget {
           // is the only platform F-Droid distributes — so the case for
           // collecting has to be made here rather than by pre-selecting it.
           children: DiagnosticsLevel.values.reversed
-              .map((e) => _tile(context, e))
+              .map((e) => _tile(context, e, carded: !grouped))
               .toList(),
         ),
       );
@@ -56,9 +57,9 @@ final class DiagnosticsLevelPicker extends StatelessWidget {
   }
 
   /// One level, with its own sentence saying what it sends.
-  static Widget _tile(BuildContext ctx, DiagnosticsLevel level) {
+  static Widget _tile(BuildContext ctx, DiagnosticsLevel level, {bool carded = true}) {
     final (title, tip) = _levelText(ctx.l10n, level);
-    return RadioListTile<DiagnosticsLevel>(
+    final tile = RadioListTile<DiagnosticsLevel>(
       value: level,
       title: level == kRecommendedLevel
           ? Row(
@@ -78,7 +79,8 @@ final class DiagnosticsLevelPicker extends StatelessWidget {
             )
           : Text(title),
       subtitle: SimpleMarkdown(data: tip),
-    ).cardx;
+    );
+    return carded ? tile.cardx : tile;
   }
 
   /// Which level this argues for.

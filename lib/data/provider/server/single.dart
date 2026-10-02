@@ -7,6 +7,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:server_box/core/extension/ssh_client.dart';
+import 'package:server_box/core/service/external_probe.dart';
 import 'package:server_box/core/service/service_reachability.dart';
 import 'package:server_box/core/utils/monitor_exec.dart';
 import 'package:server_box/core/utils/server.dart';
@@ -15,6 +16,7 @@ import 'package:server_box/core/utils/ssh_exec.dart';
 import 'package:server_box/data/helper/ssh_decoder.dart';
 import 'package:server_box/data/helper/system_detector.dart';
 import 'package:server_box/data/model/app/error.dart';
+import 'package:server_box/data/model/app/external_probe.dart';
 import 'package:server_box/data/model/app/scripts/cmd_types.dart';
 import 'package:server_box/data/model/app/scripts/shell_func.dart';
 import 'package:server_box/data/model/app/service_reachability.dart';
@@ -643,6 +645,48 @@ class ServerNotifier extends _$ServerNotifier {
       ServiceReachability.command(state.status.system, services),
     );
     return ServiceReachability.parse(result.stdout);
+  }
+
+  Future<Map<String, ProbeResult>> probeExternalServices(List<ProbeTarget> targets) async {
+    if (targets.isEmpty) return const {};
+    if (targets.length > 3 || targets.any((e) => e.validationError != null)) {
+      throw ArgumentError('Invalid probe batch');
+    }
+    final credential = ServerConnectCredential.fromSpi(state.spi);
+    if (credential is ServerConnectCredentialMonitorHttp) {
+      // Manual checks must also work before the first status poll, and never
+      // require the agent's arbitrary-command endpoint for built-in targets.
+      final source = _resolveSource(credential) as MonitorHttpDataSource;
+      return source.externalProbes(targets);
+    }
+    final exec = await ensureExec();
+    if (exec is MonitorExec) {
+      final source = _source;
+      if (source is MonitorHttpDataSource) return source.externalProbes(targets);
+    }
+    // A manual check can authenticate before the first metrics poll has
+    // detected the OS. Honour explicit overrides and detect a cold SSH host.
+    final system = state.spi.customSystemType ??
+      (exec is SshExec && state.conn < ServerConn.loading
+        ? await SystemDetector.detect(exec.client, state.spi)
+        : state.status.system);
+    if (system == SystemType.windows) {
+      // Separate SSH channels keep Windows checks concurrent without relying
+      // on PowerShell 7 jobs; each process has its own timeout and variables.
+      final parts = await Future.wait(targets.map((target) async {
+        try {
+          final output = await exec.run(ExternalProbe.windowsInput([target]),
+            entry: ExternalProbe.windowsEntry);
+          return ExternalProbe.parse(output.stdout, [target]);
+        } catch (_) {
+          return {target.id: ProbeResult(id: target.id, state: ProbeState.unknown,
+            reason: 'transportError', checkedAt: DateTime.now(), transport: 'SSH')};
+        }
+      }));
+      return {for (final part in parts) ...part};
+    }
+    final output = await exec.run(ExternalProbe.command(system, targets), entry: 'sh');
+    return ExternalProbe.parse(output.stdout, targets);
   }
 
   Future<ServerExec> _execOver(

@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:ui' as ui;
 
+import 'package:fl_chart/fl_chart.dart';
 import 'package:fl_lib/fl_lib.dart';
 import 'package:fl_lib/generated/l10n/lib_l10n.dart';
 import 'package:flutter/material.dart';
@@ -10,10 +11,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:forui/localizations.dart';
 import 'package:server_box/core/extension/context/locale.dart' as app_locale;
 import 'package:server_box/core/route.dart';
 import 'package:server_box/core/warm_theme.dart';
 import 'package:server_box/data/model/app/scripts/cmd_types.dart';
+import 'package:server_box/data/model/server/net_speed.dart';
 import 'package:server_box/data/model/server/port_forward.dart';
 import 'package:server_box/data/model/server/server.dart';
 import 'package:server_box/data/model/server/server_exec.dart';
@@ -37,6 +40,7 @@ import 'package:server_box/view/page/process.dart';
 import 'package:server_box/view/page/server/detail/view.dart';
 import 'package:server_box/view/page/server/edit/edit.dart';
 import 'package:server_box/view/page/services.dart';
+import 'package:server_box/view/widget/app_ui.dart';
 import 'package:server_box/view/widget/server_func_btns.dart';
 
 import 'helpers/spi_fixture.dart';
@@ -159,10 +163,10 @@ void main() {
     await tester.pumpWidget(RepaintBoundary(key: captureKey,
       child: UncontrolledProviderScope(container: container, child: MaterialApp(
         key: UniqueKey(), debugShowCheckedModeBanner: false, theme: theme,
-        localizationsDelegates: const [LibLocalizations.delegate, ...AppLocalizations.localizationsDelegates],
+        localizationsDelegates: const [FLocalizations.delegate, LibLocalizations.delegate, ...AppLocalizations.localizationsDelegates],
         locale: const Locale('zh'), supportedLocales: AppLocalizations.supportedLocales,
-        builder: (context, child) => ResponsivePoints.builder(context, MediaQuery(
-          data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(scale)), child: child!)),
+        builder: (context, child) => AppUiScope(child: ResponsivePoints.builder(context, MediaQuery(
+          data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(scale)), child: child!))),
         initialRoute: '/page',
         routes: {'/': (_) => const SizedBox.shrink(), '/page': (context) => Builder(builder: (context) {
           app_locale.l10n = AppLocalizations.of(context)!;
@@ -212,7 +216,7 @@ void main() {
 
   testWidgets('editor supports dual transport without losing typed host', (tester) async {
     await pump(tester, 'editor');
-    final host = find.byWidgetPredicate((w) => w is TextField && w.controller?.text == '43.138.167.180');
+    final host = find.byWidgetPredicate((w) => w is EditableText && w.controller.text == '43.138.167.180');
     await tester.enterText(host, '192.0.2.42');
     final monitorSwitch = find.descendant(of: find.widgetWithText(SwitchListTile, 'Monitor HTTP'), matching: find.byType(Switch));
     await tester.ensureVisible(monitorSwitch);
@@ -233,6 +237,79 @@ void main() {
       expect(find.text(text), findsWidgets);
     }
     await capture(tester, 'tools');
+    await tester.pumpWidget(const SizedBox.shrink()); await frames(tester);
+  });
+
+  void clearHistory() {
+    // Replace the test snapshot before the provider builds; production FIFO
+    // buffers deliberately cannot be resized through the List interface.
+    server.snapshot = server.snapshot.copyWith(status: fixture.observedStatus());
+  }
+
+  testWidgets('detail charts preserve gaps and irregular sampling times', (tester) async {
+    clearHistory();
+    final h = server.snapshot.status.history;
+    final start = DateTime(2026, 10, 1, 16).millisecondsSinceEpoch;
+    final values = <double?>[12, null, 15, double.nan, 60];
+    for (var i = 0; i < values.length; i++) {
+      h.add(timeMs: start + [0, 3000, 6000, 9000, 39000][i], cpu: values[i], mem: 36);
+    }
+    await pump(tester, 'detail');
+    final chart = tester.widget<LineChart>(find.byType(LineChart).first);
+    final line = chart.data.lineBarsData.single;
+    expect(line.spots.where((s) => !s.isNull()).map((s) => s.y), [12, 15, 60]);
+    expect(line.spots.where((s) => !s.isNull()).map((s) => s.x), [0, 6, 39]);
+    expect(line.spots.where((s) => s.isNull()), hasLength(2));
+    final item = chart.data.lineTouchData.touchTooltipData.getTooltipItems(
+      [LineBarSpot(line, 0, line.spots.last)]).single!;
+    expect(item.text, contains('CPU  60%'));
+    expect(item.children!.single.text, '\n16:00:39');
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink()); await frames(tester);
+  });
+
+  testWidgets('detail charts label the measured network series when receive is missing', (tester) async {
+    clearHistory();
+    Stores.setting.detailCardOrder.put(['net']);
+    final h = server.snapshot.status.history;
+    server.snapshot.status.netSpeed.update([
+      NetSpeedPart('eth0', BigInt.zero, BigInt.from(1024), 1),
+    ]);
+    h.add(timeMs: DateTime(2026, 10, 1, 16).millisecondsSinceEpoch, netTx: 1024);
+    h.add(timeMs: DateTime(2026, 10, 1, 16, 0, 3).millisecondsSinceEpoch, netTx: 2048);
+    await pump(tester, 'detail');
+    final chart = tester.widget<LineChart>(find.byType(LineChart).first);
+    final line = chart.data.lineBarsData.single;
+    final item = chart.data.lineTouchData.touchTooltipData.getTooltipItems(
+      [LineBarSpot(line, 0, line.spots.last)]).single!;
+    expect(item.text, startsWith('↑'));
+    expect(item.text, isNot(startsWith('↓')));
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink()); await frames(tester);
+  });
+
+  testWidgets('detail chart renders a single sample without invented history', (tester) async {
+    clearHistory();
+    server.snapshot.status.history.add(
+      timeMs: DateTime(2026, 10, 1, 16).millisecondsSinceEpoch, cpu: 100, mem: 36);
+    await pump(tester, 'detail');
+    final chart = tester.widget<LineChart>(find.byType(LineChart).first);
+    expect(chart.data.lineBarsData.single.spots, [const FlSpot(0, 100)]);
+    expect(chart.data.maxX, greaterThan(chart.data.minX));
+    expect(chart.data.maxY, greaterThan(chart.data.minY));
+    await tester.tap(find.byType(LineChart).first);
+    await frames(tester);
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink()); await frames(tester);
+  });
+
+  testWidgets('detail charts fit enlarged text after scrolling on a small phone', (tester) async {
+    await pump(tester, 'detail', size: const Size(320, 740), scale: 1.5);
+    final list = find.descendant(of: find.byType(ServerDetailPage), matching: find.byType(ListView)).first;
+    await tester.drag(list, const Offset(0, -680)); await frames(tester);
+    expect(find.byType(LineChart), findsWidgets);
+    expect(tester.takeException(), isNull);
+    await capture(tester, 'detail-chart-large');
     await tester.pumpWidget(const SizedBox.shrink()); await frames(tester);
   });
 
@@ -277,7 +354,7 @@ void main() {
 
   testWidgets('mobile editor saves changed fields with original credentials', (tester) async {
     await pump(tester, 'editor');
-    final host = find.byWidgetPredicate((w) => w is TextField && w.controller?.text == '43.138.167.180');
+    final host = find.byWidgetPredicate((w) => w is EditableText && w.controller.text == '43.138.167.180');
     await tester.enterText(host, '192.0.2.42');
     await tester.tap(find.text(libL10n.save)); await frames(tester);
     final saved = Stores.server.fetch().firstWhere((server) => server.id == spi.id);
@@ -324,7 +401,7 @@ class _PageServers extends ServersNotifier {
 
 class _PageServer extends ServerNotifier {
   _PageServer(this.snapshot);
-  final ServerState snapshot;
+  ServerState snapshot;
   final exec = _ProcessExec();
   @override
   ServerState build(String serverId) => snapshot;

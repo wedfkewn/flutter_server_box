@@ -5,6 +5,7 @@ import 'package:dynamic_color/dynamic_color.dart';
 import 'package:fl_lib/fl_lib.dart';
 import 'package:fl_lib/generated/l10n/lib_l10n.dart';
 import 'package:flutter/material.dart';
+import 'package:forui/localizations.dart';
 import 'package:icons_plus/icons_plus.dart';
 import 'package:server_box/core/app_navigator.dart';
 import 'package:server_box/core/chan.dart';
@@ -16,6 +17,7 @@ import 'package:server_box/data/res/store.dart';
 import 'package:server_box/data/res/url.dart';
 import 'package:server_box/generated/l10n/l10n.dart';
 import 'package:server_box/view/page/home.dart';
+import 'package:server_box/view/widget/app_ui.dart';
 import 'package:server_box/view/widget/diagnostics_level_picker.dart';
 
 part 'intro.dart';
@@ -136,10 +138,11 @@ class _MyAppState extends State<MyApp> {
         // rebuilds when the seed color, the brightness or the system's dynamic
         // color changes — each of which the native badge has to follow.
         _syncIslandBrandColors(ctx);
-        return ToastHost(child: ResponsivePoints.builder(ctx, child));
+        return AppUiScope(child: ToastHost(child: ResponsivePoints.builder(ctx, child)));
       },
       locale: locale,
       localizationsDelegates: const [
+        FLocalizations.delegate,
         LibLocalizations.delegate,
         ...AppLocalizations.localizationsDelegates,
       ],

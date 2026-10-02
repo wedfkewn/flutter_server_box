@@ -14,8 +14,7 @@ extension _Editor on _AppSettingsPageState {
   }
 
   Widget _buildEditor() {
-    return Column(
-      children: [
+    final rows = <Widget>[
         _buildEditorWrap(),
         _buildEditorFontFamily(),
         _buildEditorFontSize(),
@@ -23,8 +22,15 @@ extension _Editor on _AppSettingsPageState {
         _buildEditorDarkTheme(),
         _buildEditorHighlight(),
         _buildEditorCloseAfterEdit(),
-      ].map((e) => CardX(child: e)).toList(),
-    );
+      ];
+    if (warmSettingsPhone(context)) {
+      return Column(children: [
+        WarmSettingsGroup(title: warmSettingsText(context, '文字与排版', 'Text and layout'), children: rows.sublist(0, 3)),
+        WarmSettingsGroup(title: warmSettingsText(context, '代码显示', 'Code appearance'), children: rows.sublist(3, 6)),
+        WarmSettingsGroup(title: warmSettingsText(context, '保存行为', 'Saving'), children: rows.sublist(6)),
+      ]);
+    }
+    return Column(children: rows.map((e) => CardX(child: e)).toList());
   }
 
   Widget _buildEditorCloseAfterEdit() {
@@ -49,7 +55,7 @@ extension _Editor on _AppSettingsPageState {
       title: Text('${libL10n.bright} ${libL10n.theme.toLowerCase()}'),
       trailing: ValBuilder(
         listenable: _setting.editorTheme.listenable(),
-        builder: (val) => Text(val, style: UIs.text15),
+        builder: (val) => WarmSettingValue(val),
       ),
       onTap: () => _pickEditorTheme(_setting.editorTheme),
     );
@@ -61,7 +67,7 @@ extension _Editor on _AppSettingsPageState {
       title: Text('${libL10n.dark} ${libL10n.theme.toLowerCase()}'),
       trailing: ValBuilder(
         listenable: _setting.editorDarkTheme.listenable(),
-        builder: (val) => Text(val, style: UIs.text15),
+        builder: (val) => WarmSettingValue(val),
       ),
       onTap: () => _pickEditorTheme(_setting.editorDarkTheme),
     );
@@ -93,9 +99,8 @@ extension _Editor on _AppSettingsPageState {
       title: Text(libL10n.font),
       trailing: ValBuilder(
         listenable: _setting.editorFontFamily.listenable(),
-        builder: (val) => Text(
+        builder: (val) => WarmSettingValue(
           val.isEmpty ? libL10n.auto.toLowerCase() : val,
-          style: UIs.text15,
         ),
       ),
       onTap: () => _showFontFamilyDialog(_setting.editorFontFamily),

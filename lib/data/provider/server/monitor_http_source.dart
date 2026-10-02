@@ -1,4 +1,5 @@
 import 'package:server_box/core/utils/monitor_exec.dart';
+import 'package:server_box/data/model/app/external_probe.dart';
 import 'package:server_box/data/model/app/service_reachability.dart';
 import 'package:server_box/data/model/server/connect_credential.dart';
 import 'package:server_box/data/model/server/monitor_capabilities.dart';
@@ -42,6 +43,9 @@ class MonitorHttpDataSource implements ServerDataSource {
   Future<Map<ServiceKind, ServiceReachabilityResult>> serviceReachability(
     Set<ServiceKind> services,
   ) => _client.serviceReachability(services);
+
+  Future<Map<String, ProbeResult>> externalProbes(List<ProbeTarget> targets) =>
+      _client.externalProbes(targets);
 
   @override
   Future<ServerStatus> fetchStatus(ServerStatus into) async {

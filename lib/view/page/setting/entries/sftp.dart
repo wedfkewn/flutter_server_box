@@ -2,14 +2,19 @@ part of '../entry.dart';
 
 extension _SFTP on _AppSettingsPageState {
   Widget _buildSFTP() {
-    return Column(
-      children: [
+    final rows = <Widget>[
         _buildSftpEditor(),
         _buildSftpRmrDir(),
         _buildSftpOpenLastPath(),
         _buildSftpShowFoldersFirst(),
-      ].map((e) => CardX(child: e)).toList(),
-    );
+      ];
+    if (warmSettingsPhone(context)) {
+      return Column(children: [
+        WarmSettingsGroup(title: warmSettingsText(context, '文件浏览', 'File browsing'), children: rows.sublist(2)),
+        WarmSettingsGroup(title: warmSettingsText(context, '编辑与删除', 'Editing and deletion'), children: rows.sublist(0, 2)),
+      ]);
+    }
+    return Column(children: rows.map((e) => CardX(child: e)).toList());
   }
 
   Widget _buildSftpOpenLastPath() {
@@ -41,7 +46,7 @@ extension _SFTP on _AppSettingsPageState {
       return ListTile(
         leading: const Icon(MingCute.edit_fill),
         title: TipText(libL10n.editor, l10n.sftpEditorTip),
-        trailing: Text(val.isEmpty ? libL10n.inner : val, style: UIs.text15),
+        trailing: WarmSettingValue(val.isEmpty ? libL10n.inner : val),
         onTap: () => showTextSettingDialog(
           title: libL10n.select,
           initialValue: val,

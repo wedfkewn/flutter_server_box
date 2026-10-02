@@ -5,6 +5,7 @@ import 'package:server_box/core/extension/context/locale.dart';
 import 'package:server_box/data/model/app/server_detail_card.dart';
 import 'package:server_box/data/res/store.dart';
 import 'package:server_box/view/page/setting/seq/reorder_proxy_decorator.dart';
+import 'package:server_box/view/widget/warm_settings.dart';
 
 class ServerDetailOrderPage extends StatefulWidget {
     /// Whether it is being shown inside the settings pane rather than pushed.
@@ -53,7 +54,7 @@ class _ServerDetailOrderPageState extends State<ServerDetailOrderPage> {
   Widget build(BuildContext context) {
     // Not the bottom: the list takes that as padding of its own, so it can
     // be scrolled through rather than cutting the page short of it.
-    final body = SafeArea(bottom: false, child: _buildBody(context));
+    final body = WarmSettingsSurface(child: SafeArea(bottom: false, child: _buildBody(context)));
     if (widget.embedded) return body;
     return Scaffold(
       appBar: CustomAppBar(title: Text(l10n.serverDetailOrder)),
@@ -64,7 +65,10 @@ class _ServerDetailOrderPageState extends State<ServerDetailOrderPage> {
   Widget _buildBody(BuildContext context) {
     return ReorderableListView.builder(
       key: const PageStorageKey('srv_detail_seq'),
-      padding: context.padBottom(const EdgeInsets.all(7)),
+      padding: context.padBottom(const EdgeInsets.fromLTRB(18, 12, 18, 24)),
+      header: WarmSettingsIntro(icon: Icons.dashboard_customize_outlined,
+        text: warmSettingsText(context, '拖动右侧手柄调整卡片顺序，勾选决定是否显示。修改后自动保存。',
+          'Drag the handle to reorder cards and tick to show them. Changes save automatically.')),
       buildDefaultDragHandles: false,
       itemCount: _order.length,
       proxyDecorator: reorderProxyDecorator,
@@ -75,16 +79,23 @@ class _ServerDetailOrderPageState extends State<ServerDetailOrderPage> {
 
   Widget _buildListItem(String key, int idx) {
     final isEnabled = _enabled.contains(key);
-    return ReorderableDelayedDragStartListener(
+    return Padding(
       key: ValueKey(key),
-      index: idx,
-      child: CardX(
+      padding: const EdgeInsets.only(bottom: 8), child: Material(
+        color: Theme.of(context).colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(18), clipBehavior: Clip.antiAlias,
         child: ListTile(
           contentPadding: const EdgeInsets.only(left: 23, right: 11),
           leading: Icon(ServerDetailCards.fromName(key)?.icon),
           title: Text(
-            key,
-            style: isEnabled ? null : TextStyle(color: Colors.grey),
+            switch (key) {
+              'mem' => warmSettingsText(context, '内存', 'Memory'),
+              'swap' => warmSettingsText(context, '交换空间', 'Swap'),
+              'gpu' => 'GPU',
+              _ => ServerDetailCards.fromName(key)?.toStr ?? key,
+            },
+            style: TextStyle(fontWeight: FontWeight.w700, color: Theme.of(context).colorScheme
+              .onSurface.withValues(alpha: isEnabled ? 1 : .55)),
           ),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
@@ -92,7 +103,7 @@ class _ServerDetailOrderPageState extends State<ServerDetailOrderPage> {
               _buildCheckBox(key, isEnabled),
               ReorderableDragStartListener(
                 index: idx,
-                child: const Icon(Icons.drag_handle),
+                child: const SizedBox(width: 40, height: 44, child: Icon(Icons.drag_handle)),
               ),
             ],
           ),

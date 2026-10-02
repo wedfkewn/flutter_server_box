@@ -22,6 +22,7 @@ import 'package:server_box/data/provider/server/single.dart';
 import 'package:server_box/data/res/store.dart';
 import 'package:server_box/data/ssh/session_manager.dart';
 import 'package:server_box/data/store/entity_store.dart';
+import 'package:server_box/data/store/external_probe_preferences.dart';
 
 part 'all.freezed.dart';
 part 'all.g.dart';
@@ -499,6 +500,7 @@ class ServersNotifier extends _$ServersNotifier {
     Stores.selfAddr.forget(id);
     Stores.ipLookupCache.forgetServer(id);
     Stores.serviceReachabilityCache.forgetServer(id);
+    ExternalProbePreferences.forget(Stores.setting, id);
   }
 
   Future<void> updateServerOrder(List<String> order) =>

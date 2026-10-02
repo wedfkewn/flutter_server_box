@@ -48,6 +48,7 @@ import 'package:server_box/data/store/setting.dart';
 import 'package:server_box/generated/l10n/l10n.dart';
 import 'package:server_box/view/page/backup.dart';
 import 'package:server_box/view/page/bmc_credential/list.dart';
+import 'package:server_box/view/page/external_probes.dart';
 import 'package:server_box/view/page/port_forward.dart';
 import 'package:server_box/view/page/private_key/list.dart';
 import 'package:server_box/view/page/server/connection_stats.dart';
@@ -59,6 +60,7 @@ import 'package:server_box/view/page/setting/platform/platform_pub.dart';
 import 'package:server_box/view/page/setting/seq/known_hosts.dart';
 import 'package:server_box/view/page/setting/seq/srv_orders.dart';
 import 'package:server_box/view/page/setting/seq/virt_key.dart';
+import 'package:server_box/view/widget/app_ui.dart';
 import 'package:server_box/view/widget/crash_debug.dart';
 import 'package:server_box/view/widget/crash_report_dialog.dart';
 import 'package:server_box/view/widget/diagnostics_level_picker.dart';
@@ -67,8 +69,10 @@ import 'package:server_box/view/widget/dmg_notice.dart';
 import 'package:server_box/view/widget/edge_fade_scroll.dart';
 import 'package:server_box/view/widget/geo_data_install.dart';
 import 'package:server_box/view/widget/pane_settings.dart';
+import 'package:server_box/view/widget/probe_labels.dart';
 import 'package:server_box/view/widget/progress_line.dart';
 import 'package:server_box/view/widget/rootfs_install.dart';
+import 'package:server_box/view/widget/warm_settings.dart';
 
 part 'about.dart';
 part 'open_source.dart';
@@ -158,6 +162,18 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       Loggers.app.warning('Failed to clear settings', e, s);
       Toast.error(libL10n.fail);
     }
+  }
+
+  void _confirmResetSettings() {
+    context.showRoundDialog(
+      title: libL10n.attention,
+      child: SimpleMarkdown(data: libL10n.askContinue(
+        '${libL10n.delete} **${libL10n.all}** ${libL10n.setting}')),
+      actions: [CountDownBtn(onTap: () {
+        context.popDialog();
+        _clearAllSettings();
+      }, afterColor: Colors.red)],
+    );
   }
 
   /// The menu, built here because every title comes from the l10n of the
@@ -596,7 +612,11 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       appBar: CustomAppBar(
         // The list names itself; everything else is named by what it shows.
         title: Text(
-          !wide ? (_path.lastOrNull?.title ?? libL10n.setting) : selected.title,
+          !wide ? switch (_path.lastOrNull?.id) {
+            'server.setting' => warmSettingsText(context, '服务器设置', 'Server settings'),
+            'terminal.setting' => context.l10n.settingsTerminalTitle,
+            _ => _path.lastOrNull?.title ?? libL10n.setting,
+          } : selected.title,
           style: const TextStyle(fontSize: 20),
         ),
         // Out of the level rather than out of the settings, while there is a
@@ -606,6 +626,22 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             ? BackButton(onPressed: _onTabBack)
             : null,
         actions: [
+          if (!wide) PopupMenuButton<String>(
+            tooltip: libL10n.more,
+            onSelected: (value) {
+              if (value == 'reset') { _confirmResetSettings(); }
+              else if (value == 'debug') { CrashDebugMenu.show(context); }
+              else { DebugPage.route.go(context, args: DebugPageArgs(
+                title: '${context.libL10n.logs}(${BuildData.build})')); }
+            },
+            itemBuilder: (_) => [
+              PopupMenuItem(value: 'logs', child: Text(context.libL10n.logs)),
+              if (kDebugMode) PopupMenuItem(value: 'debug', child: Text(warmSettingsText(context, '诊断工具', 'Diagnostics'))),
+              const PopupMenuDivider(),
+              PopupMenuItem(value: 'reset', child: Text(warmSettingsText(context, '重置所有设置', 'Reset all settings'),
+                style: TextStyle(color: Theme.of(context).colorScheme.error))),
+            ],
+          ) else ...[
           Btn.text(
             text: context.libL10n.logs,
             onTap: () => DebugPage.route.go(
@@ -645,6 +681,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               ],
             ),
           ),
+          ],
         ],
       ),
       // The same column every other list-beside-content page has, rather than
@@ -1030,10 +1067,11 @@ final class _AppSettingsPageState extends ConsumerState<AppSettingsPage> {
       SettingsSection.fullScreen => _buildFullScreen(),
     };
 
-    return ListView(
-      padding: context.padBottom(UIs.roundRectCardPadding),
+    return WarmSettingsSurface(child: ListView(
+      padding: context.padBottom(warmSettingsPhone(context)
+        ? const EdgeInsets.fromLTRB(18, 18, 18, 24) : UIs.roundRectCardPadding),
       children: [group],
-    );
+    ));
   }
 
   /// Redraws after something a listenable does not cover.

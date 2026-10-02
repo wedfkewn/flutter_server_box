@@ -271,6 +271,7 @@ fn configure_api_inner(cfg: &mut web::ServiceConfig, exec_max_request: usize) {
                 web::post().to(service_reachability),
             )
             .route("/ws-ticket", web::post().to(issue_ws_ticket))
+            .route("/external-probes", web::post().to(super::external_probes::check))
             .route("/terminal/ws", web::get().to(terminal_ws))
             .service(
                 // Its own payload limit: ntex allows 32 KiB by

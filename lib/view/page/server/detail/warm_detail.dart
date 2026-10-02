@@ -96,14 +96,15 @@ extension _WarmDetail on _ServerDetailPageState {
         Text(label, style: theme.textTheme.labelMedium),
       ]),
       const SizedBox(height: 8),
-      Text(value == null ? '--' : '${value.toStringAsFixed(0)}%', style: theme.textTheme.titleLarge),
+      AppValueText(value == null ? '--' : '${value.toStringAsFixed(0)}%', style: theme.textTheme.titleLarge),
       const SizedBox(height: 4), Text(subtitle, style: theme.textTheme.bodySmall),
     ]);
   }
 
   Widget _warmCpuCard(ServerState si) {
     final ss = si.status;
-    return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+    return AppCard(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 16),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
       _warmChartHeading(l10n.warmCpuUsage, '${_warmPercent(ss.cpu.user)} user  ${_warmPercent(ss.cpu.idle)} idle'),
       if (_cpuViewAsProgress) ..._buildCPUProgress(ss.cpu),
       ?_buildCpuChart(si),
@@ -122,21 +123,22 @@ extension _WarmDetail on _ServerDetailPageState {
           for (final brand in ss.cpu.brand.entries) _buildCpuModelItem(brand),
         ],
       ),
-    ]);
+    ]));
   }
 
   Widget? _warmMemoryCard(ServerState si) {
     final mem = si.status.mem;
     if (mem.total == 0) return null;
     final used = (mem.total * mem.usedPercent * 1024).round();
-    return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+    return AppCard(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 16),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
       _warmChartHeading(l10n.warmMemoryUsage, '${used.bytes2Str} / ${(mem.total * 1024).bytes2Str}'),
       ?_buildMemChart(si),
       Wrap(spacing: 18, children: [
         Text('${(mem.free / mem.total * 100).toStringAsFixed(1)}% free', style: Theme.of(context).textTheme.bodySmall),
         Text('${(mem.availPercent * 100).toStringAsFixed(1)}% avail', style: Theme.of(context).textTheme.bodySmall),
       ]),
-    ]);
+    ]));
   }
 
   Widget _warmChartHeading(String title, String subtitle) => Padding(

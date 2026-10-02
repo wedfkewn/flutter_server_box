@@ -5,6 +5,7 @@ import 'package:fl_lib/generated/l10n/lib_l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:forui/localizations.dart';
 import 'package:server_box/core/route.dart';
 import 'package:server_box/data/model/app/scripts/cmd_types.dart';
 import 'package:server_box/data/model/server/server.dart';
@@ -16,6 +17,7 @@ import 'package:server_box/data/store/server.dart';
 import 'package:server_box/data/store/setting.dart';
 import 'package:server_box/generated/l10n/l10n.dart';
 import 'package:server_box/view/page/server/detail/view.dart';
+import 'package:server_box/view/widget/app_ui.dart';
 
 import 'helpers/spi_fixture.dart';
 import 'helpers/test_db.dart';
@@ -78,11 +80,11 @@ void main() {
       ProviderScope(
         child: MaterialApp(
           localizationsDelegates: const [
-            LibLocalizations.delegate,
+            FLocalizations.delegate, LibLocalizations.delegate,
             ...AppLocalizations.localizationsDelegates,
           ],
           supportedLocales: AppLocalizations.supportedLocales,
-          builder: ResponsivePoints.builder,
+          builder: (context, child) => AppUiScope(child: ResponsivePoints.builder(context, child)),
           home: ServerDetailPage(args: SpiRequiredArgs(spi)),
         ),
       ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:server_box/view/widget/app_ui.dart';
 
 /// A single surface for related server controls; rows keep their own focus.
 class ServerGroup extends StatelessWidget {
@@ -11,10 +12,7 @@ class ServerGroup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Material(
-      color: theme.colorScheme.surfaceContainerLow,
-      borderRadius: BorderRadius.circular(18),
-      clipBehavior: Clip.antiAlias,
+    return AppCard(
       child: Padding(
         padding: EdgeInsets.all(padding),
         child: Column(

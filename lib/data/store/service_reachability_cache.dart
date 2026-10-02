@@ -1,4 +1,5 @@
 import 'package:fl_lib/fl_lib.dart';
+import 'package:server_box/data/model/app/external_probe.dart';
 import 'package:server_box/data/model/app/service_reachability.dart';
 
 class ServiceReachabilityCacheStore extends SqliteStore {
@@ -42,6 +43,19 @@ class ServiceReachabilityCacheStore extends SqliteStore {
 
   bool put(String serverId, String target, ServiceReachabilityResult result) =>
       set(_key(serverId, target, result.service), result.toJson());
+
+  String _externalKey(String serverId, String scope, ProbeTarget target) =>
+      '$serverId::external::v${ProbeCatalog.version}::$scope::${target.fingerprint}';
+
+  /// Expired observations remain available with their original timestamp.
+  ProbeResult? external(String serverId, String scope, ProbeTarget target) {
+    final raw = get<Map>(_externalKey(serverId, scope, target));
+    if (raw == null) return null;
+    try { return ProbeResult.fromJson(raw); } catch (_) { return null; }
+  }
+
+  bool putExternal(String serverId, String scope, ProbeTarget target, ProbeResult result) =>
+      set(_externalKey(serverId, scope, target), result.toJson());
 
   void forgetServer(String serverId) {
     for (final key in keys().where((key) => key.startsWith('$serverId::'))) {

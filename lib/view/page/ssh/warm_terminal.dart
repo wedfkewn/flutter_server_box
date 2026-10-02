@@ -193,12 +193,8 @@ extension _WarmTerminal on _SSHTabPageState {
 
   Widget _warmDrawer() {
     final scheme = Theme.of(context).colorScheme;
-    final dark = Theme.of(context).brightness == Brightness.dark;
-    return Material(
+    return AppCard(
       key: const ValueKey('terminal-connections-drawer'),
-      color: dark ? scheme.surfaceContainerLow : WarmTheme.surface,
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
-      clipBehavior: Clip.antiAlias,
       child: Column(
         children: [
           const SizedBox(height: 12),

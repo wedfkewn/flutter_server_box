@@ -28,7 +28,13 @@ extension _Linux on _AppSettingsPageState {
     // redraw together with the list.
     return ValBuilder(
       listenable: _setting.linuxProfile.listenable(),
-      builder: (_) => Column(
+      builder: (_) => warmSettingsPhone(context) ? Column(children: [
+        WarmSettingsIntro(icon: Icons.science_outlined, text: l10n.betaTip),
+        WarmSettingsGroup(title: warmSettingsText(context, '本机 Linux 环境', 'Local Linux environments'),
+          children: [_buildLinuxProfiles(), ?_buildLinuxShell()]),
+        WarmSettingsGroup(title: warmSettingsText(context, '下载与网络', 'Downloads and network'),
+          children: [_buildLinuxMirror(), _buildLinuxDns()]),
+      ]) : Column(
         children: [
           _buildLinuxBeta(),
           _buildLinuxProfiles(),

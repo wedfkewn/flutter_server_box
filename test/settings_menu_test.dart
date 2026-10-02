@@ -5,11 +5,13 @@ import 'package:fl_lib/generated/l10n/lib_l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:forui/localizations.dart';
 import 'package:server_box/data/res/store.dart';
 import 'package:server_box/data/store/server.dart';
 import 'package:server_box/data/store/setting.dart';
 import 'package:server_box/generated/l10n/l10n.dart';
 import 'package:server_box/view/page/setting/entry.dart';
+import 'package:server_box/view/widget/app_ui.dart';
 
 import 'helpers/test_db.dart';
 
@@ -41,11 +43,11 @@ void main() {
         child: MaterialApp(
           locale: const Locale('en'),
           localizationsDelegates: const [
-            LibLocalizations.delegate,
+            FLocalizations.delegate, LibLocalizations.delegate,
             ...AppLocalizations.localizationsDelegates,
           ],
           supportedLocales: AppLocalizations.supportedLocales,
-          builder: ResponsivePoints.builder,
+          builder: (context, child) => AppUiScope(child: ResponsivePoints.builder(context, child)),
           home: const SettingsPage(),
         ),
       ),
@@ -105,10 +107,8 @@ void main() {
     expect(find.text('Server information display'), findsOneWidget);
     await tester.tap(find.text('Server information display'));
     await tester.pumpAndSettle();
-    expect(find.byType(SwitchListTile), findsNWidgets(4));
-    expect(find.text('ChatGPT'), findsOneWidget);
-    expect(find.text('Netflix'), findsOneWidget);
-    expect(find.text('Gemini'), findsOneWidget);
+    expect(find.byType(SwitchListTile), findsOneWidget);
+    expect(find.text('External service checks'), findsOneWidget);
     await tester.tap(find.byType(BackButton).first);
     await tester.pumpAndSettle();
     expect(find.text('Server information display'), findsOneWidget);

@@ -1,5 +1,6 @@
 pub mod custom_cmds;
 pub mod exec;
+pub mod external_probes;
 pub mod fs;
 pub mod cors;
 pub mod auth;

@@ -33,6 +33,7 @@ import 'package:server_box/data/provider/server/single.dart';
 import 'package:server_box/data/res/store.dart';
 import 'package:server_box/view/page/pve.dart';
 import 'package:server_box/view/page/server/edit/edit.dart';
+import 'package:server_box/view/widget/app_ui.dart';
 import 'package:server_box/view/widget/server_func_btns.dart';
 import 'package:server_box/view/widget/server_group.dart';
 import 'package:server_box/view/widget/server_share.dart';
@@ -205,7 +206,7 @@ class _ServerDetailPageState extends ConsumerState<ServerDetailPage>
         padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 20),
         children: [
           if (err != null) ...[
-            CardX(
+            AppCard(
               child: Padding(
                 padding: const EdgeInsets.all(13),
                 child: SimpleMarkdown(data: _errMarkdown(err)),
@@ -430,7 +431,7 @@ ${err.message ?? 'null'}
     if (err == null) return null;
 
     final solution = err.solution;
-    return CardX(
+    return AppCard(
       child: ListTile(
         leading: const Icon(Icons.error_outline, color: Colors.red, size: 20),
         title: Text(libL10n.error, style: UIs.text15),
@@ -579,7 +580,7 @@ ${err.message ?? 'null'}
         if (publicIp != null)
           _buildAboutRow(l10n.publicIp, publicIp.address, secret: true),
       ],
-    ).cardx;
+    ).appCard;
   }
 
   Widget _buildAboutRow(String label, String value, {bool secret = false}) {
@@ -654,7 +655,7 @@ ${err.message ?? 'null'}
       controller: _expand('cpu', _getInitExpand(1)),
       trailing: Row(mainAxisSize: MainAxisSize.min, children: details),
       children: children,
-    ).cardx;
+    ).appCard;
   }
 
   /// RAM, laid out to mirror the CPU card so the two read as one scale.
@@ -692,7 +693,7 @@ ${err.message ?? 'null'}
         ],
       ),
       children: [?_buildMemChart(si)],
-    ).cardx;
+    ).appCard;
   }
 
   Widget _buildCpuModelItem(MapEntry<String, int> e) {
@@ -844,7 +845,7 @@ ${err.message ?? 'null'}
           _buildProgress(used),
         ],
       ),
-    ).cardx;
+    ).appCard;
   }
 
   Widget? _buildGpuView(ServerState si) {
@@ -871,7 +872,7 @@ ${err.message ?? 'null'}
       leading: const Icon(Icons.memory, size: 17),
       controller: _expand('gpu', _getInitExpand(children.length, 3)),
       children: children,
-    ).cardx;
+    ).appCard;
   }
 
   Widget _buildNvidiaGpuItem(NvidiaSmiItem item) {
@@ -999,7 +1000,7 @@ ${err.message ?? 'null'}
       leading: Icon(ServerDetailCards.disk.icon, size: 17),
       controller: _expand('disk', _getInitExpand(1)),
       children: children,
-    ).cardx;
+    ).appCard;
   }
 
   Widget _buildDiskItemWithHierarchy(
@@ -1083,7 +1084,7 @@ ${err.message ?? 'null'}
   Widget? _buildDiskSmart(ServerState si) {
     final smarts = si.status.diskSmart;
     if (smarts.isEmpty) return null;
-    return CardX(
+    return AppCard(
       child: ExpandTile(
         title: Text(l10n.diskHealth),
         leading: Icon(ServerDetailCards.smart.icon, size: 17),
@@ -1282,7 +1283,7 @@ ${err.message ?? 'null'}
       childrenPadding: EdgeInsets.zero,
       controller: _expand('net', _getInitExpand(1)),
       children: children,
-    ).cardx;
+    ).appCard;
   }
 
   Widget _buildNetSpeedItem(NetSpeed ns, String device) {
@@ -1369,7 +1370,7 @@ ${err.message ?? 'null'}
       note = null;
     }
 
-    return CardX(
+    return AppCard(
       child: ExpandTile(
         title: Text(libL10n.temperature),
         leading: const Icon(Icons.ac_unit, size: 20),
@@ -1390,7 +1391,7 @@ ${err.message ?? 'null'}
     final chart = _buildBatteryChart(si);
     if (chart != null) children.add(chart);
 
-    return CardX(
+    return AppCard(
       child: ExpandTile(
         title: Text(libL10n.battery),
         leading: const Icon(Icons.battery_charging_full, size: 17),
@@ -1430,7 +1431,7 @@ ${err.message ?? 'null'}
   Widget? _buildSensors(ServerState si) {
     final ss = si.status;
     if (ss.sensors.isEmpty) return UIs.placeholder;
-    return CardX(
+    return AppCard(
       child: ExpandTile(
         title: Text(libL10n.sensors),
         leading: const Icon(Icons.thermostat, size: 17),
@@ -1483,7 +1484,7 @@ ${err.message ?? 'null'}
   Widget? _buildPve(ServerState si) {
     final addr = si.spi.custom?.pveAddr;
     if (addr == null || addr.isEmpty) return null;
-    return CardX(
+    return AppCard(
       child: ListTile(
         title: const Text('PVE'),
         leading: const Icon(FontAwesome.server_solid, size: 17),
@@ -1586,7 +1587,7 @@ ${err.message ?? 'null'}
       );
     }
 
-    return CardX(
+    return AppCard(
       child: ExpandTile(
         leading: const Icon(Icons.developer_board, size: 17),
         // A suffix here and the full sentence in the editor, which is the
@@ -1699,7 +1700,7 @@ ${err.message ?? 'null'}
   Widget? _buildCustomCmd(ServerState si) {
     final ss = si.status;
     if (ss.customCmds.isEmpty) return null;
-    return CardX(
+    return AppCard(
       child: ExpandTile(
         leading: const Icon(MingCute.command_line, size: 17),
         title: Text(l10n.customCmd),
@@ -1726,14 +1727,9 @@ ${err.message ?? 'null'}
     );
   }
 
-  Widget _buildAnimatedText(Key key, String text, TextStyle style) {
-    return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 277),
-      child: Text(key: key, text, style: style, textScaler: _textFactor),
-      transitionBuilder: (child, animation) =>
-          FadeTransition(opacity: animation, child: child),
-    );
-  }
+  Widget _buildAnimatedText(Key key, String text, TextStyle style) =>
+      AppValueText(text, style: style, textScaler: _textFactor);
+
 }
 
 /// A value that is on screen only once someone asks for it.

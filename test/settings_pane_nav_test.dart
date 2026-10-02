@@ -16,6 +16,7 @@ import 'package:fl_lib/generated/l10n/lib_l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:forui/localizations.dart';
 import 'package:server_box/core/extension/context/locale.dart' as app_locale;
 import 'package:server_box/data/res/store.dart';
 import 'package:server_box/data/store/agent_conversation.dart';
@@ -30,6 +31,7 @@ import 'package:server_box/data/store/setting.dart';
 import 'package:server_box/data/store/snippet.dart';
 import 'package:server_box/generated/l10n/l10n.dart';
 import 'package:server_box/view/page/setting/entry.dart';
+import 'package:server_box/view/widget/app_ui.dart';
 
 import 'helpers/test_db.dart';
 
@@ -46,9 +48,10 @@ void _useWideView(WidgetTester tester) {
 
 Widget _app() => ProviderScope(
   child: MaterialApp(
+    builder: (context, child) => AppUiScope(child: child!),
     locale: const Locale('en'),
     localizationsDelegates: const [
-      LibLocalizations.delegate,
+      FLocalizations.delegate, LibLocalizations.delegate,
       ...AppLocalizations.localizationsDelegates,
     ],
     supportedLocales: AppLocalizations.supportedLocales,
@@ -66,9 +69,10 @@ Widget _app() => ProviderScope(
 /// tree gets.
 Widget _sectionApp(SettingsSection section) => ProviderScope(
   child: MaterialApp(
+    builder: (context, child) => AppUiScope(child: child!),
     locale: const Locale('en'),
     localizationsDelegates: const [
-      LibLocalizations.delegate,
+      FLocalizations.delegate, LibLocalizations.delegate,
       ...AppLocalizations.localizationsDelegates,
     ],
     supportedLocales: AppLocalizations.supportedLocales,
@@ -179,9 +183,13 @@ void main() {
     expect(find.text('pushed editor'), findsOneWidget);
 
     // Any other section in the left menu.
+    await tester.tap(find.text('App & about'));
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
     final target = find.text(libL10n.ai);
     expect(target, findsWidgets, reason: 'the menu has to be on screen');
     await tester.tap(target.first);
+    await tester.pump(const Duration(milliseconds: 500));
     await tester.pump(const Duration(milliseconds: 500));
 
     expect(
@@ -208,7 +216,11 @@ void main() {
     );
     await tester.pump(const Duration(milliseconds: 500));
 
+    await tester.tap(find.text('App & about'));
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
     await tester.tap(find.text(libL10n.ai).first);
+    await tester.pump(const Duration(milliseconds: 500));
     await tester.pump(const Duration(milliseconds: 500));
 
     // `popUntil` stops at the first route whose settings is a `Page`. Popping

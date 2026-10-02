@@ -44,8 +44,7 @@ extension _AI on _AppSettingsPageState {
   /// that already says "AI".
   Widget _buildAskAiConfig() {
     final l10n = context.l10n;
-    return Column(
-      children: [
+    final rows = <Widget>[
         _buildAskAiProtocol(l10n),
         ListTile(
           leading: const Icon(Icons.verified_user_outlined, size: _kIconSize),
@@ -118,8 +117,17 @@ extension _AI on _AppSettingsPageState {
         _buildCompactAt(l10n),
         _buildContextTokens(l10n),
         _buildModelTable(l10n),
-      ].map((e) => CardX(child: e)).toList(),
-    );
+    ];
+    if (warmSettingsPhone(context)) {
+      final connection = rows.length - 7;
+      return Column(children: [
+        WarmSettingsGroup(title: warmSettingsText(context, '接口与模型', 'Endpoint and model'),
+          children: [rows.first, ...rows.sublist(connection, connection + 4)]),
+        WarmSettingsGroup(title: warmSettingsText(context, '命令与输入', 'Commands and input'), children: rows.sublist(1, connection)),
+        WarmSettingsGroup(title: warmSettingsText(context, '上下文管理', 'Context management'), children: rows.sublist(connection + 4)),
+      ]);
+    }
+    return Column(children: rows.map((e) => CardX(child: e)).toList());
   }
 
   /// How full the context gets before the conversation is summarised.

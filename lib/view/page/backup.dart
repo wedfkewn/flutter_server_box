@@ -17,6 +17,7 @@ import 'package:server_box/data/provider/snippet.dart';
 import 'package:server_box/data/res/misc.dart';
 import 'package:server_box/data/res/store.dart';
 import 'package:server_box/view/widget/server_share.dart';
+import 'package:server_box/view/widget/warm_settings.dart';
 import 'package:webdav_client_plus/webdav_client_plus.dart';
 
 /// Which half of the page to show.
@@ -70,21 +71,32 @@ final class _BackupPageState extends ConsumerState<BackupPage>
     super.build(context);
 
     final section = widget.section;
-    if (section == null) return Scaffold(body: SafeArea(child: _buildBody));
+    if (section == null) return Scaffold(body: SafeArea(child: WarmSettingsSurface(child: _buildBody)));
 
     // Shown in the settings content pane, which brings the Scaffold and the
     // bar. No heading either, for the reason [AppSettingsPage] gives: the menu
     // names the group and the bar repeats it, so a third would be one too many.
-    return ListView(
-      padding: context.padBottom(UIs.roundRectCardPadding),
+    return WarmSettingsSurface(child: ListView(
+      padding: context.padBottom(warmSettingsPhone(context)
+        ? const EdgeInsets.fromLTRB(18, 18, 18, 24) : UIs.roundRectCardPadding),
       children: switch (section) {
         BackupSection.sync => _syncTiles,
         BackupSection.import => _importTiles,
       },
-    );
+    ));
   }
 
-  List<Widget> get _syncTiles => [
+  Widget _settingsCard({required Widget child}) =>
+    warmSettingsPhone(context) ? child : CardX(child: child);
+
+  List<Widget> get _syncTiles => warmSettingsPhone(context) ? [
+    WarmSettingsIntro(icon: Icons.backup_outlined, text: l10n.backupTip),
+    WarmSettingsGroup(title: warmSettingsText(context, '备份保护', 'Backup protection'), children: [_buildBakPwd]),
+    WarmSettingsGroup(title: warmSettingsText(context, '云端同步', 'Cloud sync'),
+      children: [if (isICloudSupported) _buildIcloud, _buildWebdav, _buildGist]),
+    WarmSettingsGroup(title: warmSettingsText(context, '手动备份与恢复', 'Manual backup and restore'),
+      children: [_buildFile, _buildClipboard]),
+  ] : [
     _buildTip,
     _buildBakPwd,
     if (isICloudSupported) _buildIcloud,
@@ -94,7 +106,13 @@ final class _BackupPageState extends ConsumerState<BackupPage>
     _buildClipboard,
   ];
 
-  List<Widget> get _importTiles => [
+  List<Widget> get _importTiles => warmSettingsPhone(context) ? [
+    WarmSettingsIntro(icon: Icons.download_outlined,
+      text: warmSettingsText(context, '导入共享服务器、服务器配置和代码片段。每次导入前都可以确认内容。',
+        'Import shared servers, server configurations or snippets, with a review before importing.')),
+    WarmSettingsGroup(title: warmSettingsText(context, '选择导入内容', 'Choose what to import'),
+      children: [_buildImportSharedServer, _buildBulkImportServers, _buildImportSnippet]),
+  ] : [
     _buildImportSharedServer,
     _buildBulkImportServers,
     _buildImportSnippet,
@@ -121,7 +139,7 @@ final class _BackupPageState extends ConsumerState<BackupPage>
       future: SecureStoreProps.bakPwd.read(),
       builder: (context, snapshot) {
         final hasPwd = snapshot.data?.isNotEmpty == true;
-        return CardX(
+        return _settingsCard(
           child: ListTile(
             leading: const Icon(Icons.lock),
             title: Text(l10n.backupPassword),
@@ -222,7 +240,7 @@ final class _BackupPageState extends ConsumerState<BackupPage>
   }
 
   Widget get _buildTip {
-    return CardX(
+    return _settingsCard(
       child: ListTile(
         leading: const Icon(Icons.warning),
         title: Text(libL10n.attention),
@@ -232,7 +250,7 @@ final class _BackupPageState extends ConsumerState<BackupPage>
   }
 
   Widget get _buildFile {
-    return CardX(
+    return _settingsCard(
       child: ExpandTile(
         leading: const Icon(Icons.file_open),
         title: Text(libL10n.file),
@@ -254,7 +272,7 @@ final class _BackupPageState extends ConsumerState<BackupPage>
   }
 
   Widget get _buildIcloud {
-    return CardX(
+    return _settingsCard(
       child: ExpandTile(
         leading: const Icon(Icons.cloud),
         title: const Text('iCloud'),
@@ -290,7 +308,7 @@ final class _BackupPageState extends ConsumerState<BackupPage>
   }
 
   Widget get _buildWebdav {
-    return CardX(
+    return _settingsCard(
       child: ExpandTile(
         leading: const Icon(Icons.storage),
         title: const Text('WebDAV'),
@@ -367,7 +385,7 @@ final class _BackupPageState extends ConsumerState<BackupPage>
   }
 
   Widget get _buildGist {
-    return CardX(
+    return _settingsCard(
       child: ExpandTile(
         leading: const Icon(Icons.code),
         title: const Text('GitHub Gist'),
@@ -437,7 +455,7 @@ final class _BackupPageState extends ConsumerState<BackupPage>
   }
 
   Widget get _buildClipboard {
-    return CardX(
+    return _settingsCard(
       child: ExpandTile(
         leading: const Icon(Icons.content_paste),
         title: Text(libL10n.clipboard),
@@ -549,9 +567,10 @@ final class _BackupPageState extends ConsumerState<BackupPage>
   /// of servers and carries no keys: this one takes an encrypted payload made
   /// by another device, which does.
   Widget get _buildImportSharedServer {
-    return CardX(
+    return _settingsCard(
       child: ListTile(
         title: Text(l10n.shareImportTitle),
+        subtitle: Text(warmSettingsText(context, '从另一台设备接收加密共享配置', 'Receive an encrypted configuration from another device')),
         leading: const Icon(Icons.ios_share),
         onTap: () => ServerShareUi.receiveFromFile(context, ref),
         trailing: const Icon(Icons.keyboard_arrow_right),
@@ -560,9 +579,10 @@ final class _BackupPageState extends ConsumerState<BackupPage>
   }
 
   Widget get _buildBulkImportServers {
-    return CardX(
+    return _settingsCard(
       child: ListTile(
         title: Text(libL10n.server),
+        subtitle: Text(warmSettingsText(context, '从 JSON 文件或文本导入', 'Import from a JSON file or text')),
         leading: const Icon(BoxIcons.bx_server),
         onTap: () => _onBulkImportServers(context),
         trailing: const Icon(Icons.keyboard_arrow_right),
@@ -571,8 +591,9 @@ final class _BackupPageState extends ConsumerState<BackupPage>
   }
 
   Widget get _buildImportSnippet {
-    return ListTile(
+    final tile = ListTile(
       title: Text(libL10n.snippet),
+      subtitle: Text(warmSettingsText(context, '导入可重复使用的命令片段', 'Import reusable command snippets')),
       leading: const Icon(MingCute.code_line),
       trailing: const Icon(Icons.keyboard_arrow_right),
       onTap: () async {
@@ -635,7 +656,8 @@ final class _BackupPageState extends ConsumerState<BackupPage>
         }
         context.pop();
       },
-    ).cardx;
+    );
+    return _settingsCard(child: tile);
   }
 
   @override

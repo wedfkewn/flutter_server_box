@@ -7,6 +7,7 @@ import 'package:server_box/core/service/watch_sync.dart';
 import 'package:server_box/core/utils/misc.dart';
 import 'package:server_box/data/model/server/server_private_info.dart';
 import 'package:server_box/data/res/store.dart';
+import 'package:server_box/view/widget/warm_settings.dart';
 
 class IosSettingsPage extends StatefulWidget {
   /// Whether it is being shown inside the settings pane rather than pushed.
@@ -62,15 +63,23 @@ class _IosSettingsPageState extends State<IosSettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final body = ListView(
-      padding: context.padBottom(const EdgeInsets.symmetric(horizontal: 17)),
-      children: [
+    final body = WarmSettingsSurface(child: ListView(
+      padding: context.padBottom(const EdgeInsets.fromLTRB(18, 18, 18, 24)),
+      children: warmSettingsPhone(context) ? [
+        WarmSettingsIntro(icon: Icons.phone_iphone,
+          text: warmSettingsText(context, '管理通知、锁屏显示，以及桌面和 Apple Watch 上的服务器信息。',
+            'Manage notifications, lock-screen information, widgets and Apple Watch.')),
+        WarmSettingsGroup(title: warmSettingsText(context, '通知与锁屏', 'Notifications and lock screen'),
+          children: [_buildPushToken(), _buildLiveActivity()]),
+        WarmSettingsGroup(title: warmSettingsText(context, '桌面与手表', 'Widgets and watch'),
+          children: [_buildAutoUpdateHomeWidget(), _buildWatchApp()]),
+      ] : [
         _buildPushToken(),
         _buildLiveActivity(),
         _buildAutoUpdateHomeWidget(),
         _buildWatchApp(),
       ].nonNulls.map((e) => CardX(child: e)).toList(),
-    );
+    ));
     if (widget.embedded) return body;
     return Scaffold(
       appBar: CustomAppBar(title: const Text('iOS')),
@@ -80,6 +89,7 @@ class _IosSettingsPageState extends State<IosSettingsPage> {
 
   Widget _buildPushToken() {
     return ListTile(
+      leading: const Icon(Icons.notifications_outlined),
       title: Text(l10n.pushToken),
       trailing: IconButton(tooltip: libL10n.copy, 
         icon: const Icon(Icons.copy),
@@ -102,7 +112,7 @@ class _IosSettingsPageState extends State<IosSettingsPage> {
         success: (text) {
           _pushToken.value = text;
           return Text(
-            text ?? 'null',
+            text ?? warmSettingsText(context, '尚未获取', 'Not available yet'),
             style: UIs.textGrey,
             overflow: TextOverflow.ellipsis,
             maxLines: 1,
@@ -124,6 +134,7 @@ class _IosSettingsPageState extends State<IosSettingsPage> {
   /// appears, and only one of the two places says why.
   Widget _buildLiveActivity() {
     return ListTile(
+      leading: const Icon(Icons.dynamic_feed_outlined),
       title: Text(l10n.liveActivity),
       subtitle: FutureWidget<bool>(
         future: _liveActivityAvailableFuture,
@@ -142,6 +153,7 @@ class _IosSettingsPageState extends State<IosSettingsPage> {
 
   Widget _buildAutoUpdateHomeWidget() {
     return ListTile(
+      leading: const Icon(Icons.widgets_outlined),
       title: Text(l10n.autoUpdateHomeWidget),
       subtitle: Text(l10n.whenOpenApp, style: UIs.textGrey),
       trailing: StoreSwitch(prop: Stores.setting.autoUpdateHomeWidget),
@@ -156,6 +168,7 @@ class _IosSettingsPageState extends State<IosSettingsPage> {
     // watch never agrees with.
     final count = WatchSync.syncedServerIds().length;
     return ListTile(
+      leading: const Icon(Icons.watch_outlined),
       title: const Text('Watch app'),
       // What the tile is for, which does not depend on whether a watch has
       // turned up: the exclusions are stored here either way. Only a watch

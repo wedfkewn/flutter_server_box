@@ -8,6 +8,7 @@ import 'package:server_box/data/model/server/server_private_info.dart';
 import 'package:server_box/data/provider/server/all.dart';
 import 'package:server_box/view/page/setting/seq/reorder_proxy_decorator.dart';
 import 'package:server_box/view/widget/dist_icon.dart';
+import 'package:server_box/view/widget/warm_settings.dart';
 
 class ServerOrderPage extends ConsumerStatefulWidget {
     /// Whether it is being shown inside the settings pane rather than pushed.
@@ -49,7 +50,7 @@ class _ServerOrderPageState extends ConsumerState<ServerOrderPage> {
 
     // Not the bottom: the list takes that as padding of its own, so it can
     // be scrolled through rather than cutting the page short of it.
-    final body = SafeArea(bottom: false, child: _buildBody(context));
+    final body = WarmSettingsSurface(child: SafeArea(bottom: false, child: _buildBody(context)));
     if (widget.embedded) return body;
     return Scaffold(
       appBar: CustomAppBar(title: Text(l10n.serverOrder)),
@@ -66,6 +67,9 @@ class _ServerOrderPageState extends ConsumerState<ServerOrderPage> {
     }
     return ReorderableListView.builder(
       footer: const SizedBox(height: 77),
+      header: WarmSettingsIntro(icon: Icons.dns_outlined,
+        text: warmSettingsText(context, '拖动右侧手柄调整首页的服务器顺序。修改后自动保存。',
+          'Drag the handle to reorder servers on the homepage. Changes save automatically.')),
       onReorderItem: (oldIndex, newIndex) async {
         final targetIndex = newIndex;
         if (targetIndex == oldIndex) {
@@ -81,7 +85,7 @@ class _ServerOrderPageState extends ConsumerState<ServerOrderPage> {
         });
         await ref.read(serversProvider.notifier).updateServerOrder(newOrder);
       },
-      padding: context.padBottom(const EdgeInsets.all(8)),
+      padding: context.padBottom(const EdgeInsets.fromLTRB(18, 12, 18, 24)),
       buildDefaultDragHandles: false,
       itemBuilder: (_, idx) {
         final id = order[idx];
@@ -94,13 +98,12 @@ class _ServerOrderPageState extends ConsumerState<ServerOrderPage> {
   }
 
   Widget _buildItem(int index, String id, Spi? spi) {
-    return ReorderableDelayedDragStartListener(
+    return Padding(
       key: ValueKey('server_item_$id'),
-      index: index,
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: 3),
-        child: _buildCardTile(index, spi).cardx,
-      ),
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Material(color: Theme.of(context).colorScheme.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(18), clipBehavior: Clip.antiAlias,
+          child: _buildCardTile(index, spi)),
     );
   }
 

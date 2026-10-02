@@ -98,12 +98,7 @@ extension _WarmEditor on _ServerEditPageState {
       ),
       bottomNavigationBar: SafeArea(top: false, child: Padding(
         padding: const EdgeInsets.fromLTRB(18, 8, 18, 12),
-        child: FilledButton(
-          style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-            backgroundColor: theme.colorScheme.primary),
-          onPressed: _onSave, child: Text(libL10n.save),
-        ),
+        child: AppButton(onPressed: _onSave, child: Text(libL10n.save)),
       )),
     );
   }
@@ -113,18 +108,13 @@ extension _WarmEditor on _ServerEditPageState {
     bool obscure = false, Widget? suffix, ValueChanged<String>? onSubmitted,
   }) {
     final theme = Theme.of(context);
-    final field = TextField(
-      controller: controller, focusNode: node, keyboardType: type,
+    final field = FTextField(
+      control: FTextFieldControl.managed(controller: controller),
+      focusNode: node, keyboardType: type, hint: hint,
       obscureText: obscure, autocorrect: false, enableSuggestions: false,
-      onSubmitted: onSubmitted, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+      onSubmit: onSubmitted,
       onTapOutside: (_) => _focusScope.unfocus(),
-      decoration: InputDecoration(
-        hintText: hint, suffixIcon: suffix, isDense: true, filled: false,
-        contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 6),
-        border: UnderlineInputBorder(borderSide: BorderSide(color: theme.colorScheme.outlineVariant)),
-        enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: theme.colorScheme.outlineVariant)),
-        focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: theme.colorScheme.primary)),
-      ),
+      suffixBuilder: suffix == null ? null : (_, _, _) => suffix,
     );
     return Semantics(label: label, child: Padding(
       padding: const EdgeInsets.only(bottom: 4),

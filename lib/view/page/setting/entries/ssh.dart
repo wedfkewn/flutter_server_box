@@ -9,8 +9,7 @@ extension _SSH on _AppSettingsPageState {
   }
 
   Widget _buildSSH() {
-    return Column(
-      children: [
+    final rows = <Widget>[
         if (isDesktop) _buildSSHConfigImport(),
         if (isDesktop) _buildSshConnectionMode(),
         _buildLetterCache(),
@@ -23,8 +22,15 @@ extension _SSH on _AppSettingsPageState {
         if (isDesktop) _buildDesktopSshAutoCopyPassword(),
         _buildSSHVirtualKeyAutoOff(),
         _buildTmuxAuto(),
-      ].map((e) => CardX(child: e)).toList(),
-    );
+      ];
+    if (warmSettingsPhone(context)) {
+      final appearance = isDesktop ? 4 : 2;
+      return Column(children: [
+        WarmSettingsGroup(title: warmSettingsText(context, '外观与字体', 'Appearance and fonts'), children: rows.sublist(appearance, appearance + 4)),
+        WarmSettingsGroup(title: warmSettingsText(context, '输入与会话', 'Input and sessions'), children: [...rows.sublist(0, appearance), ...rows.sublist(appearance + 4)]),
+      ]);
+    }
+    return Column(children: rows.map((e) => CardX(child: e)).toList());
   }
 
   Widget _buildSSHConfigImport() {
@@ -186,7 +192,7 @@ extension _SSH on _AppSettingsPageState {
       title: Text(libL10n.font),
       trailing: _setting.fontPath.listenable().listenVal((val) {
         final fontName = val.getFileName(withoutExtension: true);
-        return Text(fontName ?? libL10n.empty, style: UIs.text15);
+        return WarmSettingValue(fontName ?? libL10n.empty);
       }),
       onTap: () {
         context.showRoundDialog(
@@ -404,7 +410,7 @@ extension _SSH on _AppSettingsPageState {
       title: Text(libL10n.image),
       trailing: _setting.sshBgImage.listenable().listenVal((val) {
         final name = val.getFileName();
-        return Text(name ?? libL10n.empty, style: UIs.text15);
+        return WarmSettingValue(name ?? libL10n.empty);
       }),
       onTap: () {
         context.showRoundDialog(

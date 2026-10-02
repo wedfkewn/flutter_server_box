@@ -4,6 +4,7 @@ import 'package:server_box/core/extension/context/locale.dart';
 import 'package:server_box/view/page/setting/seq/srv_detail_seq.dart';
 import 'package:server_box/view/page/setting/seq/srv_func_seq.dart';
 import 'package:server_box/view/page/setting/seq/srv_seq.dart';
+import 'package:server_box/view/widget/warm_settings.dart';
 
 /// The three orderings a server has, on one page.
 ///
@@ -28,11 +29,22 @@ class ServerOrdersPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final phone = warmSettingsPhone(context);
+    final scheme = Theme.of(context).colorScheme;
     final tabs = TabBar(
+      isScrollable: phone,
+      tabAlignment: phone ? TabAlignment.start : TabAlignment.fill,
+      dividerColor: phone ? Colors.transparent : null,
+      indicatorSize: TabBarIndicatorSize.tab,
+      indicator: phone ? BoxDecoration(color: scheme.primaryContainer,
+        borderRadius: BorderRadius.circular(14)) : null,
+      labelColor: phone ? scheme.onPrimaryContainer : null,
+      unselectedLabelColor: scheme.onSurfaceVariant,
+      labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
       tabs: [
-        Tab(text: l10n.serverOrder),
-        Tab(text: l10n.serverDetailOrder),
-        Tab(text: l10n.serverFuncBtns),
+        Tab(text: phone ? warmSettingsText(context, '服务器', 'Servers') : l10n.serverOrder),
+        Tab(text: phone ? warmSettingsText(context, '详情卡片', 'Detail cards') : l10n.serverDetailOrder),
+        Tab(text: phone ? warmSettingsText(context, '功能按钮', 'Tools') : l10n.serverFuncBtns),
       ],
     );
 
@@ -47,7 +59,8 @@ class ServerOrdersPage extends StatelessWidget {
     return DefaultTabController(
       length: 3,
       child: embedded
-          ? Column(children: [tabs, const Expanded(child: views)])
+          ? Column(children: [Padding(padding: const EdgeInsets.fromLTRB(18, 12, 18, 8),
+              child: tabs), const Expanded(child: views)])
           : Scaffold(
               appBar: CustomAppBar(
                 title: Text(libL10n.sequence),

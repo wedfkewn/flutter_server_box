@@ -563,6 +563,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_animate:
+    dependency: "direct main"
+    description:
+      name: flutter_animate
+      sha256: "7befe2d3252728afb77aecaaea1dec88a89d35b9b1d2eea6d04479e8af9117b5"
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.5.2"
   flutter_displaymode:
     dependency: "direct main"
     description:
@@ -724,6 +732,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.2.2"
+  flutter_shaders:
+    dependency: transitive
+    description:
+      name: flutter_shaders
+      sha256: "34794acadd8275d971e02df03afee3dee0f98dbfb8c4837082ad0034f612a3e2"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.3"
   flutter_staggered_grid_view:
     dependency: transitive
     description:
@@ -750,6 +766,22 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  forui:
+    dependency: "direct main"
+    description:
+      name: forui
+      sha256: a00251e8db89430f388990049ea30ec62f7d1c9270f1fe6ab0d316b1a9415a72
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.26.0"
+  forui_lucide:
+    dependency: transitive
+    description:
+      name: forui_lucide
+      sha256: "5c797b7455b4c491504fc0f76c3d2d6eebe7cb49aeac1d5c02026f06ae1d2607"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.26.1"
   freezed:
     dependency: "direct dev"
     description:
@@ -1749,6 +1781,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.1"
+  sugar:
+    dependency: transitive
+    description:
+      name: sugar
+      sha256: a0a97f1d3552a3ef4cbec7c6e62c7b52c151cd5c11e984e8311700a918f73dc5
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.0.0"
   sync_http:
     dependency: transitive
     description:
@@ -2116,5 +2156,5 @@ packages:
     source: hosted
     version: "1.1.4"
 sdks:
-  dart: ">=3.12.0 <4.0.0"
-  flutter: ">=3.44.9"
+  dart: ">=3.13.0-0 <4.0.0"
+  flutter: ">=3.47.0"

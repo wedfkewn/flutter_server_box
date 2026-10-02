@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:server_box/core/extension/context/inset.dart';
 import 'package:server_box/data/model/app/menu/server_func.dart';
 import 'package:server_box/data/res/store.dart';
+import 'package:server_box/view/widget/warm_settings.dart';
 
 class ServerFuncBtnsOrderPage extends StatefulWidget {
     /// Whether it is being shown inside the settings pane rather than pushed.
@@ -27,10 +28,11 @@ class _ServerDetailOrderPageState extends State<ServerFuncBtnsOrderPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.embedded) return _buildBody(context);
+    final body = WarmSettingsSurface(child: _buildBody(context));
+    if (widget.embedded) return body;
     return Scaffold(
       appBar: CustomAppBar(title: Text(libL10n.sequence)),
-      body: _buildBody(context),
+      body: body,
     );
   }
 
@@ -45,7 +47,11 @@ class _ServerDetailOrderPageState extends State<ServerFuncBtnsOrderPage> {
         final allKeys = [...keys, ...disabled];
         return ReorderableListView.builder(
           key: const PageStorageKey('srv_func_seq'),
-          padding: context.padBottom(const EdgeInsets.all(7)),
+          padding: context.padBottom(const EdgeInsets.fromLTRB(18, 12, 18, 24)),
+          header: WarmSettingsIntro(icon: Icons.tune,
+            text: warmSettingsText(context, '勾选常用功能，拖动右侧手柄调整已启用按钮的顺序。修改后自动保存。',
+              'Choose your tools and drag enabled buttons to reorder them. Changes save automatically.')),
+          buildDefaultDragHandles: false,
           itemCount: allKeys.length,
           itemBuilder: (_, idx) => _buildListItem(allKeys[idx], idx, keys),
           onReorderItem: (o, n) {
@@ -67,20 +73,19 @@ class _ServerDetailOrderPageState extends State<ServerFuncBtnsOrderPage> {
 
   Widget _buildListItem(int key, int idx, List<int> keys) {
     final funcBtn = ServerFuncBtn.values[key];
-    return CardX(
+    final enabled = idx < keys.length;
+    return Padding(
       key: ValueKey(key),
-      child: ListTile(
-        title: RichText(
-          text: TextSpan(
-            children: [
-              WidgetSpan(child: Icon(funcBtn.icon)),
-              const WidgetSpan(child: UIs.width13),
-              TextSpan(text: funcBtn.toStr, style: UIs.textGrey),
-            ],
-          ),
-        ),
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Material(color: Theme.of(context).colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(18), clipBehavior: Clip.antiAlias, child: ListTile(
+        title: Row(children: [Icon(funcBtn.icon, size: 22), const SizedBox(width: 12),
+          Expanded(child: Text(funcBtn.toStr, style: TextStyle(fontWeight: FontWeight.w700,
+            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: enabled ? 1 : .55))))]),
         leading: _buildCheckBox(keys, key, idx, idx < keys.length),
-      ),
+        trailing: enabled ? ReorderableDragStartListener(index: idx,
+          child: const SizedBox(width: 40, height: 44, child: Icon(Icons.drag_handle))) : null,
+      )),
     );
   }
 

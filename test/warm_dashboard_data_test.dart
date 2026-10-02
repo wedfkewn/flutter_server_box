@@ -9,7 +9,9 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:forui/localizations.dart';
 import 'package:server_box/core/warm_theme.dart';
+import 'package:server_box/data/model/app/external_probe.dart';
 import 'package:server_box/data/model/app/ip_lookup.dart';
 import 'package:server_box/data/model/app/service_reachability.dart';
 import 'package:server_box/data/model/server/cpu.dart';
@@ -18,6 +20,7 @@ import 'package:server_box/data/model/server/memory.dart';
 import 'package:server_box/data/model/server/server.dart';
 import 'package:server_box/data/model/server/server_exec.dart';
 import 'package:server_box/data/model/server/server_private_info.dart';
+import 'package:server_box/data/provider/external_probe.dart';
 import 'package:server_box/data/provider/server/single.dart';
 import 'package:server_box/data/res/status.dart';
 import 'package:server_box/data/res/store.dart';
@@ -29,6 +32,7 @@ import 'package:server_box/data/store/service_reachability_cache.dart';
 import 'package:server_box/data/store/setting.dart';
 import 'package:server_box/generated/l10n/l10n.dart';
 import 'package:server_box/view/page/server/tab/tab.dart';
+import 'package:server_box/view/widget/app_ui.dart';
 
 import 'helpers/spi_fixture.dart';
 import 'helpers/test_db.dart';
@@ -138,12 +142,12 @@ void main() {
               ),
             ),
             localizationsDelegates: const [
-              LibLocalizations.delegate,
+              FLocalizations.delegate, LibLocalizations.delegate,
               ...AppLocalizations.localizationsDelegates,
             ],
             locale: const Locale('zh'),
             supportedLocales: AppLocalizations.supportedLocales,
-            builder: (context, child) => ResponsivePoints.builder(
+            builder: (context, child) => AppUiScope(child: ResponsivePoints.builder(
               context,
               MediaQuery(
                 data: MediaQuery.of(
@@ -151,7 +155,7 @@ void main() {
                 ).copyWith(textScaler: TextScaler.linear(textScale)),
                 child: child!,
               ),
-            ),
+            )),
             home: const ServerPage(),
           ),
         ),
@@ -231,7 +235,7 @@ void main() {
 
       for (final label in [
         '服务器信息',
-        '服务检测',
+        '外网服务',
         'ubuntu',
         'ubuntu@43.138.167.180:22',
         '🇨🇳 CN',
@@ -249,8 +253,8 @@ void main() {
       ]) {
         expect(find.text(label), findsOneWidget, reason: label);
       }
-      expect(find.text('ChatGPT · 未开启'), findsOneWidget);
-      expect(find.text('Netflix · 未开启'), findsOneWidget);
+      expect(find.text('ChatGPT · 未检测'), findsOneWidget);
+      expect(find.text('Google · 未检测'), findsOneWidget);
       expect(notifier.requests, isEmpty);
       expect(tester.takeException(), isNull);
       await capture(tester);
@@ -261,8 +265,8 @@ void main() {
       seedState(ServiceKind.netflix, ServiceReachabilityState.unreachable);
       enableChecks();
       await settleFrames(tester);
-      expect(find.text('ChatGPT · 可访问'), findsOneWidget);
-      expect(find.text('Netflix · 不可访问'), findsOneWidget);
+      expect(find.text('ChatGPT · 网站响应'), findsOneWidget);
+      expect(find.text('Netflix · 响应异常'), findsOneWidget);
       expect(notifier.requests, isEmpty);
       expect(tester.takeException(), isNull);
       await capture(tester, fileName: 'implementation-dashboard-checks.png');
@@ -314,24 +318,24 @@ void main() {
       );
       await pumpDashboard(tester, notifier);
 
-      expect(find.text('ChatGPT · 可访问'), findsOneWidget);
-      expect(find.text('Netflix · 不可访问'), findsOneWidget);
-      expect(find.text('Gemini · 暂不可用'), findsOneWidget);
+      expect(find.text('ChatGPT · 网站响应'), findsOneWidget);
+      expect(find.text('Netflix · 响应异常'), findsOneWidget);
+      expect(find.text('Gemini · 待确认'), findsOneWidget);
       expect(notifier.requests, isEmpty);
       expect(tester.takeException(), isNull);
     },
   );
 
   testWidgets(
-    'disabled checks remain visible and make no requests on an online server',
+    'default selections stay manual and make no requests on an online server',
     (tester) async {
       final notifier = _DashboardServer(
         ServerState(spi: spi, status: emptyStatus(), conn: ServerConn.finished),
       );
       await pumpDashboard(tester, notifier);
 
-      expect(find.text('ChatGPT · 未开启'), findsOneWidget);
-      expect(find.text('Netflix · 未开启'), findsOneWidget);
+      expect(find.text('ChatGPT · 未检测'), findsOneWidget);
+      expect(find.text('Google · 未检测'), findsOneWidget);
       expect(notifier.requests, isEmpty);
       expect(notifier.execCalls, 0);
       expect(notifier.refreshCalls, 0);
@@ -387,14 +391,11 @@ void main() {
       });
       await settleFrames(tester);
 
-      expect(find.text('ChatGPT · 可访问'), findsOneWidget);
-      expect(find.text('Netflix · 不可访问'), findsOneWidget);
-      expect(
-        Stores.serviceReachabilityCache
-            .fresh(spi.id, spi.displayAddr, ServiceKind.netflix)
-            ?.state,
-        ServiceReachabilityState.unreachable,
-      );
+      expect(find.text('ChatGPT · 网站响应'), findsOneWidget);
+      expect(find.text('Netflix · 响应异常'), findsOneWidget);
+      expect(Stores.serviceReachabilityCache.external(spi.id,
+        externalProbeScope(notifier.snapshot), ProbeCatalog.targets.firstWhere((e) => e.id == 'netflix'))?.state,
+        ProbeState.rejected);
       notifier.replace(notifier.snapshot.copyWith(conn: ServerConn.loading));
       await settleFrames(tester);
       notifier.replace(notifier.snapshot.copyWith(conn: ServerConn.finished));
@@ -419,8 +420,8 @@ void main() {
         ),
       });
       await settleFrames(tester);
-      expect(find.text('ChatGPT · 可访问'), findsOneWidget);
-      expect(find.text('Netflix · 暂不可用'), findsOneWidget);
+      expect(find.text('ChatGPT · 网站响应'), findsOneWidget);
+      expect(find.text('Netflix · 待确认'), findsOneWidget);
 
       await tester.pumpWidget(const SizedBox.shrink());
       Stores.serviceReachabilityCache.clear();
@@ -430,9 +431,9 @@ void main() {
       await pumpDashboard(tester, failing);
       failing.fail(0);
       await settleFrames(tester);
-      expect(find.text('ChatGPT · 暂不可用'), findsOneWidget);
-      expect(find.text('Netflix · 暂不可用'), findsOneWidget);
-      expect(find.text('ChatGPT · 可访问'), findsNothing);
+      expect(find.text('ChatGPT · 待确认'), findsOneWidget);
+      expect(find.text('Netflix · 待确认'), findsOneWidget);
+      expect(find.text('ChatGPT · 网站响应'), findsNothing);
       expect(
         Stores.serviceReachabilityCache.fresh(
           spi.id,
@@ -440,7 +441,7 @@ void main() {
           ServiceKind.chatGpt,
         ),
         isNull,
-        reason: 'transport errors must allow a later check, not cache a result',
+        reason: 'new observations do not write the legacy cache',
       );
       expect(tester.takeException(), isNull);
     },
@@ -463,7 +464,7 @@ void main() {
       );
       notifier.replace(notifier.snapshot.copyWith(spi: nextSpi));
       await settleFrames(tester);
-      expect(notifier.requests.length, 2);
+      expect(notifier.requests.length, 1, reason: 'Wait for the bounded old batch to finish');
 
       notifier.finish(0, {
         ServiceKind.chatGpt: reading(
@@ -497,14 +498,11 @@ void main() {
         ),
       });
       await settleFrames(tester);
-      expect(find.text('ChatGPT · 不可访问'), findsOneWidget);
-      expect(find.text('Netflix · 暂不可用'), findsOneWidget);
-      expect(
-        Stores.serviceReachabilityCache
-            .fresh(spi.id, nextSpi.displayAddr, ServiceKind.chatGpt)
-            ?.state,
-        ServiceReachabilityState.unreachable,
-      );
+      expect(find.text('ChatGPT · 响应异常'), findsOneWidget);
+      expect(find.text('Netflix · 待确认'), findsOneWidget);
+      expect(Stores.serviceReachabilityCache.external(spi.id,
+        externalProbeScope(notifier.snapshot), ProbeCatalog.targets.firstWhere((e) => e.id == 'chatGpt'))?.state,
+        ProbeState.rejected);
       expect(tester.takeException(), isNull);
     },
   );
@@ -563,8 +561,8 @@ void main() {
       });
       await settleFrames(tester);
 
-      expect(find.text('ChatGPT · 未开启'), findsOneWidget);
-      expect(find.text('Netflix · 未开启'), findsOneWidget);
+      expect(find.text('ChatGPT · 未检测'), findsOneWidget);
+      expect(find.text('Google · 未检测'), findsOneWidget);
       for (final service in [ServiceKind.chatGpt, ServiceKind.netflix]) {
         expect(
           Stores.serviceReachabilityCache.fresh(
@@ -601,7 +599,7 @@ void main() {
             textScale: scale,
           );
           expect(find.text('服务器信息'), findsOneWidget);
-          expect(find.text('服务检测'), findsOneWidget);
+          expect(find.text('外网服务'), findsOneWidget);
           expect(tester.takeException(), isNull, reason: '$size, scale $scale');
         }
       }
@@ -681,6 +679,19 @@ class _DashboardServer extends ServerNotifier {
     final pending = Completer<Map<ServiceKind, ServiceReachabilityResult>>();
     _pending.add(pending);
     return pending.future;
+  }
+
+  @override
+  Future<Map<String, ProbeResult>> probeExternalServices(List<ProbeTarget> targets) {
+    final services = targets.map((e) => ServiceKind.values.byName(e.id)).toSet();
+    return probeServices(services).then((results) => {for (final entry in results.entries)
+      entry.key.name: ProbeResult(id: entry.key.name,
+        state: switch (entry.value.state) {
+          ServiceReachabilityState.reachable => ProbeState.reachable,
+          ServiceReachabilityState.unreachable => ProbeState.rejected,
+          ServiceReachabilityState.unknown => ProbeState.unknown,
+        }, reason: entry.value.reachable ? 'httpResponse' : 'network',
+        checkedAt: entry.value.checkedAt, transport: 'Fixture')});
   }
 
   void finish(int index, Map<ServiceKind, ServiceReachabilityResult> results) =>

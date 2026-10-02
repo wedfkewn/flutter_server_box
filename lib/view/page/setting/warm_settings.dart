@@ -4,7 +4,7 @@ extension _WarmSettings on _SettingsPageState {
   Widget _buildWarmSettings(List<SettingsNode> nodes) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    return ListView(
+    return AppPageBody(child: ListView(
       key: const PageStorageKey('warm-settings-root'),
       padding: const EdgeInsets.fromLTRB(
         WarmTheme.pagePadding,
@@ -32,7 +32,6 @@ extension _WarmSettings on _SettingsPageState {
           style: TextStyle(fontSize: 13, color: scheme.onSurfaceVariant),
         ),
         const SizedBox(height: 20),
-        Divider(height: 1, color: scheme.outlineVariant),
         for (final node in nodes)
           _WarmSettingsCategory(
             key: ValueKey('warm-category-${node.id}'),
@@ -50,7 +49,7 @@ extension _WarmSettings on _SettingsPageState {
           ),
         ),
       ],
-    );
+    ));
   }
 
   Widget _buildWarmSettingEntries(List<SettingsNode> nodes) {
@@ -74,11 +73,8 @@ extension _WarmSettings on _SettingsPageState {
           cardStyle: isMobile,
         );
         return isMobile
-            ? Material(
+            ? AppCard(
                 key: ValueKey(node.id),
-                color: Theme.of(context).colorScheme.surfaceContainerLow,
-                borderRadius: BorderRadius.circular(WarmTheme.cardRadius),
-                clipBehavior: Clip.antiAlias,
                 child: row,
               )
             : row;
@@ -113,11 +109,8 @@ class _WarmSettingsCategory extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: expanded ? 6 : 0),
-      child: Material(
-        color: expanded ? scheme.surfaceContainerLow : Colors.transparent,
-        borderRadius: BorderRadius.circular(WarmTheme.cardRadius),
-        clipBehavior: Clip.antiAlias,
+      padding: const EdgeInsets.only(bottom: 10),
+      child: AppCard(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -224,7 +217,6 @@ class _WarmSettingsCategory extends StatelessWidget {
                     )
                   : const SizedBox(width: double.infinity),
             ),
-            if (!expanded) Divider(height: 1, color: scheme.outlineVariant),
           ],
         ),
       ),
@@ -276,20 +268,21 @@ class _WarmServerInfoSheetState extends State<_WarmServerInfoSheet> {
     if (mounted) setState(() {});
   }
 
-  Future<void> _probe(void Function(bool) put, bool value) async {
-    final noneEnabled =
-        !Stores.setting.probeChatGpt.fetch() &&
-        !Stores.setting.probeNetflix.fetch() &&
-        !Stores.setting.probeGemini.fetch();
-    if (value && noneEnabled) {
-      final ok = await _confirm(
-        context.l10n.serviceProbePrivacyTitle,
-        context.l10n.serviceProbePrivacyBody,
-      );
-      if (!ok) return;
-    }
-    put(value);
-    if (mounted) setState(() {});
+  Future<void> _openChecks() async {
+    final servers = Stores.server.fetch();
+    final id = await showModalBottomSheet<String>(context: context,
+      showDragHandle: true, builder: (sheetContext) => SafeArea(child: ListView(
+        shrinkWrap: true, children: [
+          Padding(padding: const EdgeInsets.all(16), child: Text(
+            probeText(context, '选择要检测的服务器', 'Choose a server to check'),
+            style: Theme.of(context).textTheme.titleLarge)),
+          if (servers.isEmpty) Padding(padding: const EdgeInsets.all(20), child: Text(
+            probeText(context, '请先在首页添加服务器', 'Add a server on the homepage first'))),
+          for (final server in servers) ListTile(leading: const Icon(Icons.dns_outlined),
+            title: Text(server.name), subtitle: Text(server.displayAddr),
+            onTap: () => Navigator.pop(sheetContext, server.id)),
+        ])));
+    if (id != null && mounted) await ExternalProbesPage.show(context, id);
   }
 
   @override
@@ -319,29 +312,15 @@ class _WarmServerInfoSheetState extends State<_WarmServerInfoSheet> {
             value: Stores.setting.showServerNetworkInfo.fetch(),
             onChanged: _network,
           ),
-          for (final entry in [
-            (
-              'ChatGPT',
-              Stores.setting.probeChatGpt.fetch(),
-              Stores.setting.probeChatGpt.put,
-            ),
-            (
-              'Netflix',
-              Stores.setting.probeNetflix.fetch(),
-              Stores.setting.probeNetflix.put,
-            ),
-            (
-              'Gemini',
-              Stores.setting.probeGemini.fetch(),
-              Stores.setting.probeGemini.put,
-            ),
-          ])
-            SwitchListTile(
-              title: Text(entry.$1),
-              subtitle: Text(l10n.serviceProbeTip),
-              value: entry.$2,
-              onChanged: (value) => _probe(entry.$3, value),
-            ),
+          ListTile(
+            leading: const Icon(Icons.public),
+            title: Text(probeText(context, '外网服务检测', 'External service checks')),
+            subtitle: Text(probeText(context,
+              '分类目录、自定义检测和首页置顶，按服务器配置',
+              'Service catalog, custom checks and homepage pins, per server')),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: _openChecks,
+          ),
           Padding(
             padding: const EdgeInsets.only(top: 8),
             child: Text(

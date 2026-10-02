@@ -144,6 +144,8 @@ class SettingStore extends SqliteStore {
   late final probeChatGpt = propertyDefault('probeChatGpt', false);
   late final probeNetflix = propertyDefault('probeNetflix', false);
   late final probeGemini = propertyDefault('probeGemini', false);
+  /// Per-server external probe selections, custom targets and homepage pins.
+  late final externalProbeConfig = propertyDefault('externalProbeConfig', '{}');
 
   // SSH virtual key (ctrl | alt) auto turn off
   late final sshVirtualKeyAutoOff = propertyDefault(

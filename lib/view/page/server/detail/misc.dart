@@ -124,25 +124,27 @@ extension on _ServerDetailPageState {
   /// auto-scaled strip.
   ///
   /// These two return a bare chart, not a card: each is embedded in the CPU or
-  /// RAM card beneath the figure it plots. Both keep a fixed 0-100% axis, so
-  /// the two cards stay directly comparable even though they no longer share
-  /// one plot.
+  /// RAM card beneath the figure it plots. The percentage labels describe
+  /// the real readings, while the axis adapts to make small changes visible.
   Widget? _buildCpuChart(ServerState si) => _percentChart(
     'CPU',
     const Color(0xFF3B82F6),
     si.status.history.cpu,
+    si.status.history.time,
   );
 
   Widget? _buildMemChart(ServerState si) => _percentChart(
     'RAM',
     const Color(0xFF22C55E),
     si.status.history.mem,
+    si.status.history.time,
   );
 
-  Widget? _percentChart(String label, Color color, List<double?> values) {
+  Widget? _percentChart(String label, Color color, List<double?> values, List<int> times) {
     final spec = _ChartSpec(
       series: [_HistorySeries(label, color, values)],
       format: _formatPercent,
+      times: times,
     );
     return spec.hasData ? _buildChart(spec) : null;
   }
@@ -162,6 +164,7 @@ extension on _ServerDetailPageState {
       ],
       format: _formatSpeed,
       binaryScale: true,
+      times: h.time,
     );
     return spec.hasData ? _buildChart(spec) : null;
   }
@@ -265,7 +268,8 @@ extension on _ServerDetailPageState {
   }
 
   Widget? _buildTempChart(ServerState si) {
-    final spec = _ChartSpec(series: _tempSeries(si), format: _formatTemp);
+    final spec = _ChartSpec(series: _tempSeries(si), format: _formatTemp,
+      times: si.status.history.time);
     return spec.hasData ? _buildChart(spec) : null;
   }
 
@@ -311,6 +315,7 @@ extension on _ServerDetailPageState {
       ],
       format: _formatSpeed,
       binaryScale: true,
+      times: h.time,
     );
     return spec.hasData ? _buildChart(spec) : null;
   }
@@ -321,30 +326,47 @@ extension on _ServerDetailPageState {
     libL10n.battery,
     const Color(0xFF14B8A6),
     si.status.history.battery,
+    si.status.history.time,
   );
 
   /// One chart plus the legend line carrying each series' latest value —
   /// mirrors `monitor/frontend/src/components/LineChart.svelte`.
   Widget _buildChart(_ChartSpec spec) {
+    final theme = Theme.of(context);
+    final dark = theme.brightness == Brightness.dark;
+    final activeSeries = spec.series.where((s) => s.spots.isNotEmpty).toList();
     final bars = <LineChartBarData>[];
-    for (final s in spec.series) {
-      final spots = s.spots;
-      if (spots.isEmpty) continue;
+    for (final s in activeSeries) {
+      final spots = s.spotsAt(spec.times);
       bars.add(
         LineChartBarData(
           spots: spots,
-          isCurved: false,
-          barWidth: 1.5,
+          isCurved: true,
+          curveSmoothness: .16,
+          preventCurveOverShooting: true,
+          preventCurveOvershootingThreshold: 0,
+          barWidth: 2.5,
           isStrokeCapRound: true,
+          isStrokeJoinRound: true,
           color: s.color,
-          dotData: const FlDotData(show: false),
-          belowBarData: BarAreaData(show: false),
+          dotData: FlDotData(
+            checkToShowDot: (spot, _) => spot == spots.last,
+            getDotPainter: (spot, percent, bar, index) => FlDotCirclePainter(
+              radius: 3, color: s.color, strokeWidth: 2,
+              strokeColor: theme.colorScheme.surface,
+            ),
+          ),
+          belowBarData: BarAreaData(show: true, gradient: LinearGradient(
+            begin: Alignment.topCenter, end: Alignment.bottomCenter,
+            colors: [s.color.withValues(alpha: dark ? .22 : .16),
+              s.color.withValues(alpha: .01)],
+          )),
         ),
       );
     }
     if (bars.isEmpty) return UIs.placeholder;
 
-    final hasLegend = spec.series.length > 1;
+    final hasLegend = activeSeries.length > 1;
     return Padding(
       // The extra bottom allowance is only for the axis' own overflow: fl_chart
       // centres the lowest label on the bottom gridline, so roughly half of it
@@ -353,18 +375,20 @@ extension on _ServerDetailPageState {
       //
       // The top keeps the topmost axis label off whatever heading is above it;
       // at 7 the two touched.
-      padding: EdgeInsets.fromLTRB(17, 15, 17, hasLegend ? 0 : 15),
+      padding: EdgeInsets.fromLTRB(8, 18, 8, hasLegend ? 0 : 6),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            height: 110,
-            child: _buildHistoryLineChart(
+            height: 166 + (MediaQuery.textScalerOf(context).scale(11) - 11).clamp(0, 22),
+            child: AppEntrance(child: _buildHistoryLineChart(
               bars,
-              series: spec.series,
+              context: context,
+              series: activeSeries,
+              times: spec.times,
               format: spec.format,
               binaryScale: spec.binaryScale,
-            ),
+            )),
           ),
           // Only worth drawing when there is something to tell apart. A lone
           // line needs no key: the card already names its subject, and the
@@ -375,7 +399,7 @@ extension on _ServerDetailPageState {
               spacing: 13,
               runSpacing: 3,
               children: [
-                for (final s in spec.series)
+                for (final s in activeSeries)
                   if (s.latest != null)
                     Row(
                       mainAxisSize: MainAxisSize.min,
@@ -391,7 +415,7 @@ extension on _ServerDetailPageState {
                         UIs.width7,
                         Text(
                           '${s.label} ${spec.format(s.latest!)}',
-                          style: UIs.text12Grey,
+                          style: theme.textTheme.bodySmall,
                         ),
                       ],
                     ),
@@ -408,6 +432,7 @@ extension on _ServerDetailPageState {
 class _ChartSpec {
   final List<_HistorySeries> series;
   final String Function(double) format;
+  final List<int> times;
 
   /// Whether the values are byte-based, so the axis should step in multiples
   /// of 1024 rather than of 10 — see [_niceAxis]
@@ -416,6 +441,7 @@ class _ChartSpec {
   const _ChartSpec({
     required this.series,
     required this.format,
+    required this.times,
     this.binaryScale = false,
   });
 
@@ -423,9 +449,8 @@ class _ChartSpec {
 }
 
 /// One line. Reads straight off a [StatusHistory] ring buffer, whose gaps are
-/// `null` for "not measured at that sample" — those points are skipped rather
-/// than plotted as 0, so an interface that only just appeared doesn't drag the
-/// line down to the axis.
+/// `null` for "not measured at that sample". Interior gaps break the line;
+/// missing samples never become zero or an interpolated measurement.
 class _HistorySeries {
   final String label;
   final Color color;
@@ -433,15 +458,23 @@ class _HistorySeries {
 
   const _HistorySeries(this.label, this.color, this.values);
 
-  List<FlSpot> get spots => [
-    for (var i = 0; i < values.length; i++)
-      if (values[i] != null) FlSpot(i.toDouble(), values[i]!),
-  ];
+  List<FlSpot> get spots => spotsAt(const []);
+
+  List<FlSpot> spotsAt(List<int> times) {
+    final first = values.indexWhere((v) => v != null && v.isFinite);
+    final last = values.lastIndexWhere((v) => v != null && v.isFinite);
+    if (first < 0) return const [];
+    return [for (var i = first; i <= last; i++)
+      if (values[i] != null && values[i]!.isFinite)
+        FlSpot(times.length > i ? (times[i] - times.first) / 1000 : i.toDouble(), values[i]!)
+      else FlSpot.nullSpot,
+    ];
+  }
 
   double? get latest {
     for (var i = values.length - 1; i >= 0; i--) {
       final v = values[i];
-      if (v != null) return v;
+      if (v != null && v.isFinite) return v;
     }
     return null;
   }
@@ -589,119 +622,118 @@ enum _NetSortType {
   }
 }
 
-/// Multi-series chart. Every series shares one axis, whose bounds come from
-/// the data rather than from a fixed range.
-///
-/// Anchoring at 0 was tried first and spent most of the plot on empty axis:
-/// a CPU idling at 8% and a machine sitting at 40 °C both drew a flat line
-/// hugging the bottom edge. Both bounds now snap outwards to whole intervals,
-/// which is also where the margin around the data comes from.
+/// Shared fl_chart styling for the detail page. X is elapsed seconds from the
+/// first real sample, so pauses in polling remain visible on the time axis.
 Widget _buildHistoryLineChart(
   List<LineChartBarData> bars, {
+  required BuildContext context,
   required List<_HistorySeries> series,
+  required List<int> times,
   required String Function(double) format,
   bool binaryScale = false,
 }) {
-  // fl_chart throws a LateInitializationError on `mostLeftSpot` when handed a
-  // bar with no spots at all
-  if (bars.isEmpty || bars.every((b) => b.spots.isEmpty)) {
-    return UIs.placeholder;
-  }
+  final measured = bars.expand((b) => b.spots).where((s) => !s.isNull()).toList();
+  if (measured.isEmpty) return UIs.placeholder;
 
-  final peak = bars
-      .expand((b) => b.spots)
-      .map((e) => e.y)
-      .fold<double>(0, (a, b) => a > b ? a : b);
-  final trough = bars
-      .expand((b) => b.spots)
-      .map((e) => e.y)
-      .fold<double>(double.infinity, (a, b) => a < b ? a : b);
+  final theme = Theme.of(context);
+  final scheme = theme.colorScheme;
+  final textScaler = MediaQuery.textScalerOf(context);
+  final labelStyle = theme.textTheme.bodySmall?.copyWith(fontSize: 10);
+  final peak = measured.map((e) => e.y).reduce(math.max);
+  final trough = measured.map((e) => e.y).reduce(math.min);
   final axis = _niceAxis(trough: trough, peak: peak, binary: binaryScale);
-  final bottom = axis.bottom;
-  final top = axis.top;
-  final interval = axis.interval;
+  final span = times.length > 1 ? (times.last - times.first) / 1000 : 0.0;
+  final maxX = span > 0 ? span : math.max(1.0, measured.last.x);
+
+  String timeLabel(double x, {bool precise = false}) {
+    if (times.isEmpty) return '';
+    final at = DateTime.fromMillisecondsSinceEpoch(times.first + (x * 1000).round());
+    String pad(int n) => n.toString().padLeft(2, '0');
+    final hm = '${pad(at.hour)}:${pad(at.minute)}';
+    return precise || span < 120 ? '$hm:${pad(at.second)}' : hm;
+  }
 
   return LineChart(
     LineChartData(
+      minX: 0,
+      maxX: maxX,
+      minY: axis.bottom,
+      maxY: axis.top,
+      clipData: const FlClipData.vertical(),
+      lineBarsData: bars,
       lineTouchData: LineTouchData(
+        touchSpotThreshold: 24,
+        getTouchedSpotIndicator: (bar, indexes) => indexes.map((_) =>
+          TouchedSpotIndicatorData(
+            FlLine(color: scheme.onSurfaceVariant.withValues(alpha: .4),
+              strokeWidth: 1, dashArray: [4, 4]),
+            FlDotData(getDotPainter: (spot, percent, bar, index) => FlDotCirclePainter(
+              radius: 4, color: bar.color ?? scheme.primary, strokeWidth: 2,
+              strokeColor: scheme.surface,
+            )),
+          ),
+        ).toList(),
         touchTooltipData: LineTouchTooltipData(
-          tooltipPadding: const EdgeInsets.all(5),
-          tooltipBorderRadius: BorderRadius.circular(8),
-          // fl_chart wraps at 120 by default, which folded rows like
-          // "gas gauge battery 33°C" onto three lines
-          maxContentWidth: 220,
-          // A spot near the top of the plot puts the tooltip outside the box,
-          // where the card clips it. Reflowing it back inside keeps the axis
-          // honest — the alternative, reserving headroom by inflating maxY,
-          // would permanently shrink the plot for a transient overlay and
-          // cannot work at all on the fixed 0-100% charts.
+          tooltipPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          tooltipBorderRadius: BorderRadius.circular(12),
+          maxContentWidth: 240,
           fitInsideVertically: true,
           fitInsideHorizontally: true,
+          getTooltipColor: (_) => scheme.inverseSurface,
           getTooltipItems: (touchedSpots) => touchedSpots.map((e) {
-            final label = e.barIndex < series.length
-                ? series[e.barIndex].label
-                : '';
+            final label = e.barIndex < series.length ? series[e.barIndex].label : '';
             return LineTooltipItem(
-              '$label ${format(e.y)}',
-              // One colour for every line. Tinting each row to match its
-              // series repeated what the legend already encodes, and on the
-              // tooltip's own background the lighter series read as washed
-              // out next to the darker ones.
-              const TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-              ),
+              '$label  ${format(e.y)}',
+              TextStyle(fontSize: 11, fontWeight: FontWeight.w700,
+                color: scheme.onInverseSurface),
+              children: [if (times.isNotEmpty) TextSpan(
+                text: '\n${timeLabel(e.x, precise: true)}',
+                style: TextStyle(fontSize: 10, fontWeight: FontWeight.w400,
+                  color: scheme.onInverseSurface.withValues(alpha: .75)),
+              )],
             );
           }).toList(),
         ),
-        handleBuiltInTouches: true,
       ),
       gridData: FlGridData(
         show: true,
         drawVerticalLine: false,
-        horizontalInterval: interval,
-        getDrawingHorizontalLine: (value) => const FlLine(
-          color: Color.fromARGB(43, 88, 91, 94),
+        horizontalInterval: axis.interval,
+        getDrawingHorizontalLine: (_) => FlLine(
+          color: scheme.onSurfaceVariant.withValues(alpha: .12),
           strokeWidth: 1,
+          dashArray: [4, 4],
         ),
       ),
       titlesData: FlTitlesData(
-        show: true,
-        rightTitles: const AxisTitles(
-          sideTitles: SideTitles(showTitles: false),
-        ),
+        rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
         topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-        bottomTitles: const AxisTitles(
-          sideTitles: SideTitles(showTitles: false),
-        ),
-        leftTitles: AxisTitles(
-          sideTitles: SideTitles(
-            showTitles: true,
-            // Without an explicit interval fl_chart emits a label per pixel
-            // step, which stacked them into an unreadable smear
-            interval: interval,
-            // Sized to the labels this axis will actually draw. A fixed
-            // reserve had to assume the worst case, which left a wide empty
-            // gutter on every chart whose ticks happened to be short.
-            reservedSize: _axisWidth(bottom, top, interval, format),
-            getTitlesWidget: (val, meta) => SideTitleWidget(
-              meta: meta,
-              child: Text(
-                format(val),
-                style: UIs.text12Grey,
-                maxLines: 1,
-                softWrap: false,
-                overflow: TextOverflow.visible,
-              ),
-            ),
+        bottomTitles: AxisTitles(sideTitles: SideTitles(
+          showTitles: times.length > 1,
+          interval: maxX / 2,
+          reservedSize: textScaler.scale(10) + 14,
+          getTitlesWidget: (val, meta) => SideTitleWidget(
+            meta: meta, space: 8,
+            fitInside: SideTitleFitInsideData.fromTitleMeta(meta, distanceFromEdge: 0),
+            child: Text(timeLabel(val), style: labelStyle, maxLines: 1, softWrap: false),
           ),
-        ),
+        )),
+        leftTitles: AxisTitles(sideTitles: SideTitles(
+          showTitles: true,
+          interval: axis.interval,
+          reservedSize: _axisWidth(axis.bottom, axis.top, axis.interval, format)
+              * math.max(1.0, textScaler.scale(10) / 12),
+          getTitlesWidget: (val, meta) => SideTitleWidget(
+            meta: meta, space: 8,
+            fitInside: SideTitleFitInsideData.fromTitleMeta(meta, distanceFromEdge: 0),
+            child: Text(format(val), style: labelStyle, maxLines: 1, softWrap: false),
+          ),
+        )),
       ),
       borderData: FlBorderData(show: false),
-      minY: bottom,
-      maxY: top,
-      lineBarsData: bars,
     ),
+    duration: MediaQuery.maybeOf(context)?.disableAnimations == true
+        ? Duration.zero : const Duration(milliseconds: 180),
+    curve: Curves.easeOutCubic,
   );
 }

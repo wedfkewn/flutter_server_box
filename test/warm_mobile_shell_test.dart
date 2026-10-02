@@ -8,16 +8,19 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:forui/localizations.dart';
 import 'package:server_box/core/warm_theme.dart';
 import 'package:server_box/data/res/store.dart';
 import 'package:server_box/data/store/private_key.dart';
 import 'package:server_box/data/store/self_addr.dart';
 import 'package:server_box/data/store/server.dart';
+import 'package:server_box/data/store/service_reachability_cache.dart';
 import 'package:server_box/data/store/setting.dart';
 import 'package:server_box/generated/l10n/l10n.dart';
 import 'package:server_box/view/page/benchmark/log_view.dart';
 import 'package:server_box/view/page/server/tab/tab.dart';
 import 'package:server_box/view/page/setting/entry.dart';
+import 'package:server_box/view/widget/app_ui.dart';
 
 import 'helpers/spi_fixture.dart';
 import 'helpers/test_db.dart';
@@ -62,6 +65,7 @@ void main() {
     getIt.registerSingleton<ServerStore>(ServerStore());
     getIt.registerSingleton<PrivateKeyStore>(PrivateKeyStore());
     getIt.registerSingleton<SelfAddrStore>(SelfAddrStore('self_addr_test'));
+    getIt.registerSingleton<ServiceReachabilityCacheStore>(ServiceReachabilityCacheStore('mobile_probe_test'));
     Stores.setting.serverStatusUpdateInterval.put(0);
     Stores.server.put(
       spiFixture(
@@ -112,12 +116,12 @@ void main() {
               ),
             ),
             localizationsDelegates: const [
-              LibLocalizations.delegate,
+              FLocalizations.delegate, LibLocalizations.delegate,
               ...AppLocalizations.localizationsDelegates,
             ],
             locale: const Locale('zh'),
             supportedLocales: AppLocalizations.supportedLocales,
-            builder: ResponsivePoints.builder,
+            builder: (context, child) => AppUiScope(child: ResponsivePoints.builder(context, child)),
             home: child,
           ),
         ),
@@ -152,7 +156,7 @@ void main() {
     expect(find.text('告警'), findsOneWidget);
     expect(find.text('编辑'), findsOneWidget);
     expect(find.text('删除'), findsOneWidget);
-    expect(find.byIcon(Icons.public), findsNothing);
+    expect(find.descendant(of: find.byType(ActionChip), matching: find.byIcon(Icons.public)), findsNWidgets(4));
     expect(find.byIcon(Icons.travel_explore), findsOneWidget);
     await capture(tester, 'implementation-dashboard.png');
 
@@ -180,9 +184,8 @@ void main() {
     expect(find.text('服务器信息显示'), findsOneWidget);
     await tester.tap(find.text('服务器信息显示'));
     await tester.pumpAndSettle();
-    expect(find.text('ChatGPT'), findsOneWidget);
-    expect(find.text('Netflix'), findsOneWidget);
-    expect(find.text('Gemini'), findsOneWidget);
+    expect(find.text('外网服务检测'), findsOneWidget);
+    expect(find.textContaining('分类目录、自定义检测'), findsOneWidget);
 
     await tester.tap(find.byType(BackButton).first);
     await tester.pumpAndSettle();
@@ -269,6 +272,7 @@ void main() {
     await tester.drag(find.byType(CustomScrollView), const Offset(0, -700));
     await tester.pump(const Duration(milliseconds: 300));
     expect(find.byKey(const ValueKey('server-0')), findsOneWidget);
+    await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
   });
 

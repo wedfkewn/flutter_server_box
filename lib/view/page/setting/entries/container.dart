@@ -2,13 +2,18 @@ part of '../entry.dart';
 
 extension _Container on _AppSettingsPageState {
   Widget _buildContainer() {
-    return Column(
-      children: [
+    final rows = <Widget>[
         _buildUsePodman(),
         _buildContainerTrySudo(),
         _buildContainerParseStat(),
-      ].map((e) => CardX(child: e)).toList(),
-    );
+      ];
+    if (warmSettingsPhone(context)) {
+      return Column(children: [
+        WarmSettingsGroup(title: warmSettingsText(context, '容器运行', 'Container runtime'), children: rows.sublist(0, 2)),
+        WarmSettingsGroup(title: warmSettingsText(context, '资源监控', 'Resource monitoring'), children: rows.sublist(2)),
+      ]);
+    }
+    return Column(children: rows.map((e) => CardX(child: e)).toList());
   }
 
   Widget _buildUsePodman() {

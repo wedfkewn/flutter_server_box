@@ -70,22 +70,19 @@ class WarmPersistentTabStack extends StatelessWidget {
   );
 }
 
-/// The warm, low-contrast visual system used by the mobile ServerBox shell.
-///
-/// Kept in one place so cards, sheets, navigation and the terminal all share
-/// the same paper-and-copper palette instead of carrying screenshot colours
-/// as unrelated literals.
+/// Shared mobile geometry and a restrained, system-like palette.
+/// Existing names are retained so business-facing pages need no rewrite.
 abstract final class WarmTheme {
-  static const canvas = Color(0xfffffaf7);
-  static const surface = Color(0xfffff2e8);
-  static const surfaceStrong = Color(0xffffe7d5);
-  static const peach = Color(0xffffd9bd);
-  static const copper = Color(0xff955b24);
-  static const ink = Color(0xff382f29);
-  static const muted = Color(0xff7f7168);
-  static const olive = Color(0xff68702c);
-  static const lemon = Color(0xfffff69a);
-  static const danger = Color(0xffbd2b22);
+  static const canvas = Color(0xfff5f6f8);
+  static const surface = Color(0xffffffff);
+  static const surfaceStrong = Color(0xffedf0f5);
+  static const peach = Color(0xffe7efff);
+  static const copper = Color(0xff2563eb);
+  static const ink = Color(0xff172033);
+  static const muted = Color(0xff697386);
+  static const olive = Color(0xff16834a);
+  static const lemon = Color(0xffedf7ec);
+  static const danger = Color(0xffdc3545);
   static const pagePadding = 18.0;
   static const cardRadius = 22.0;
   static const controlRadius = 16.0;
@@ -116,7 +113,7 @@ abstract final class WarmTheme {
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           minimumSize: const Size(44, 44),
-          shape: const StadiumBorder(),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           textStyle: const TextStyle(fontWeight: FontWeight.w700),
         ),
       ),
@@ -150,10 +147,10 @@ abstract final class WarmTheme {
       surfaceContainer: surface,
       surfaceContainerHigh: surfaceStrong,
       surfaceContainerHighest: peach,
-      outline: Color(0xffcdb7a6),
-      outlineVariant: Color(0xffead8ca),
+      outline: Color(0xffbbc3cf),
+      outlineVariant: Color(0xffe3e7ee),
       shadow: Color(0x22000000),
-      scrim: Color(0xaa1f1a17),
+      scrim: Color(0xaa172033),
     );
 
     return ThemeData(
@@ -187,7 +184,7 @@ abstract final class WarmTheme {
       ),
       navigationBarTheme: NavigationBarThemeData(
         height: 76,
-        backgroundColor: const Color(0xfff8eee8),
+        backgroundColor: const Color(0xfff5f6f8),
         surfaceTintColor: Colors.transparent,
         indicatorColor: peach,
         elevation: 0,
@@ -208,7 +205,7 @@ abstract final class WarmTheme {
         ),
       ),
       navigationRailTheme: const NavigationRailThemeData(
-        backgroundColor: Color(0xfff8eee8),
+        backgroundColor: Color(0xfff5f6f8),
         indicatorColor: peach,
         selectedIconTheme: IconThemeData(color: copper),
       ),
@@ -238,35 +235,35 @@ abstract final class WarmTheme {
         subtitleTextStyle: TextStyle(color: muted, fontSize: 12, height: 1.25),
       ),
       chipTheme: const ChipThemeData(
-        backgroundColor: Color(0xffffeee2),
+        backgroundColor: Color(0xffedf0f5),
         selectedColor: peach,
-        side: BorderSide(color: Color(0xffd5c0b1)),
+        side: BorderSide(color: Color(0xffe3e7ee)),
         shape: StadiumBorder(),
         labelStyle: TextStyle(color: ink, fontSize: 11),
         padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       ),
       dividerTheme: const DividerThemeData(
-        color: Color(0xffead8ca),
+        color: Color(0xffe3e7ee),
         thickness: 1,
       ),
       sliderTheme: const SliderThemeData(
         activeTrackColor: copper,
         inactiveTrackColor: peach,
         thumbColor: copper,
-        overlayColor: Color(0x22955b24),
+        overlayColor: Color(0x222563eb),
       ),
       switchTheme: SwitchThemeData(
         thumbColor: WidgetStateProperty.resolveWith(
           (states) => states.contains(WidgetState.selected)
               ? Colors.white
-              : const Color(0xff9a8a7d),
+              : const Color(0xff8893a4),
         ),
         trackColor: WidgetStateProperty.resolveWith(
           (states) => states.contains(WidgetState.selected)
               ? copper
-              : const Color(0xffffe4d1),
+              : const Color(0xffe3e7ee),
         ),
-        trackOutlineColor: const WidgetStatePropertyAll(Color(0xffa89282)),
+        trackOutlineColor: const WidgetStatePropertyAll(Color(0xffaab3c1)),
       ),
       textTheme: const TextTheme(
         headlineSmall: TextStyle(
